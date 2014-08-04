@@ -1,11 +1,6 @@
-/*#ifndef _PGTRACK_
-#define _PGTRACK_
-#include "TrTrack.h"
-#endif
-#include <cstdio>
+/*#include <cstdio>
 // #include <iomanip>
 #include "root.h"
-#include "amschain.h"
 #include "HistoMan.h"
 #include "TFile.h"
 #include "TH1.h"
@@ -19,8 +14,22 @@
 #include "TMath.h"
 #include <TrTrackSelection.h>
 #include <stdio.h>*/
+
 #include <vector>
-#include <selezioni.h>
+#include <string>
+#include <iostream>
+
+#ifndef _PGTRACK_
+#define _PGTRACK_
+#include "TrTrack.h"
+#endif
+
+#include "selezioni.h"
+#include "amschain.h"
+
+#include "inputs2312.h"
+
+
 //#include <TSpline.h>
 //#include </afs/cern.ch/work/f/fdimicco/private/Dimiccoli/Functions.h>
 
@@ -32,8 +41,8 @@ double efficienzadeut[23][11];
 double primari[23][11];
 double efficienzaver[23];
 double preselez[23];
-std::vector<float> time(11);
-long long double Utime=0;
+std::vector<float> Time(11);
+//long long double Utime=0; <-- unused
 double tbeg,tend;
 double tempozona[11]={0,0,0,0,0,0,0,0,0,0,0};
 int contasecondi[11]={0,0,0,0,0,0,0,0,0,0,0};
@@ -42,6 +51,7 @@ int controllogiov=0;
 int contaeventi=0;
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
 bool  deutoni(AMSEventR* ev);
+int severity=0;
 int U_time;
 float Latitude;
 float Chisquare=0;
@@ -119,6 +129,8 @@ int DR1,DR2,DR3=0;
 float Unbias=0;
 int controlloRICH=0;
 
+bool saa(float phi,float theta);
+
 int main()
 {
     for(int indice=4;indice<5;indice++)
@@ -128,7 +140,7 @@ int main()
         float E=-1.203972804;
         float EM=6.66722056;
         float a=(EM-E)/23;
-        for(int i=0;i<11;i++) time[i]=0;
+        for(int i=0;i<11;i++) Time[i]=0;
         for(int i=0;i<24;i++)
         { 
             float temp=i+7;
@@ -140,7 +152,7 @@ int main()
 
         }
 
-
+        TFile * File;
         for(int giro=1;giro<2;giro++){
 
             AMSChain* ch;
@@ -154,7 +166,7 @@ int main()
                 string istog= istogramma+".root";
                 string *file=&istog;	
 
-                TFile * File = new TFile(istog.c_str(), "RECREATE");
+                File = new TFile(istog.c_str(), "RECREATE");
                 //ch.Add("root://eosams.cern.ch///eos/ams/Data/AMS02/2011B/ISS.B620/pass4/1311472387.00533794.root");
                 for(int i=0;i<3;i++){	
                     string indirizzo="root://eosams.cern.ch///eos/ams/Data/AMS02/2011B/"+tipo+"/"+energia+"/"+rootpla[i];
@@ -287,7 +299,7 @@ int main()
                     contaeventi++;
                     if(ev->UTime()!=tempozona[zona]){
                         tempozona[zona]=ev->UTime();
-                        time[zona]=time[zona]+ev->LiveTime()/*trig->LiveTime*/;
+                        Time[zona]=Time[zona]+ev->LiveTime()/*trig->LiveTime*/;
                         contasecondi[zona]++;
                     }
                     //cout<<"Theta Mag: "<<ev->fHeader->ThetaM<<endl;
@@ -435,8 +447,7 @@ int main()
                 Livetime=ev->LiveTime();
                 Rcutoff=ev->pParticle(0)->Cutoff;//14.9*pow((cos(((zona/(float)10+0.5)/(double)10))),4);
                 if(!Tr->ParExists(fitID1) || !Tr->ParExists(fitID3) ||!Tr->ParExists(fitID2) ) continue;
-                TrTrackPar* parametri;
-                parametri=Tr->gTrTrackPar(fitID3);
+                TrTrackPar parametri = Tr->gTrTrackPar(fitID3);
                 ChargeR* carica= ev->pCharge(0);
                 if(!carica) continue;
                 ChargeSubDR* subcaricaTOF=carica->getSubD("AMSChargeTOF");
@@ -460,7 +471,7 @@ int main()
                     Endep[(ev->pTofCluster(j)->Layer)-1]=ev->pTofCluster(j)->Edep;
                 layernonusati=0;
                 for(int layer=2;layer<9;layer++)
-                    if(!parametri->TestHitLayerJ(layer)) layernonusati++;
+                    if(!parametri.TestHitLayerJ(layer)) layernonusati++;
                 NAnticluster=ev->NAntiCluster();
                 NTRDSegments=ev->NTrdSegment();
                 NTofClusters=ev->NTofCluster();
@@ -469,15 +480,16 @@ int main()
                 Rdown=Tr->GetRigidity(fitID2);
                 R=Tr->GetRigidity(fitID3);
                 Chisquare=Tr->GetChisq(fitID3);
-                chiq[6];
-                fit[6];
-                fit[0]=0x200+0x10+0x1++0x8000+0x10000+0x20000+0x40000;
+                float  chiq[6];
+                int fit[6];
+                double R_[6];
+
+                fit[0]=0x200+0x10+0x1+0x8000+0x10000+0x20000+0x40000;
                 fit[1]=0x200+0x10+0x1+0x1000+0x2000+0x20000+0x40000;
                 fit[2]=0x200+0x10+0x1+0x4000+0x8000+0x1000+0x2000;
                 fit[3]=0x200+0x10+0x1+0x4000+0x8000+0x10000;
                 fit[4]=0x200+0x10+0x1+0x4000+0x8000+0x10000+0x20000+0x2000+0x1000;
                 fit[5]=0x200+0x10+0x1+0x4000+0x8000+0x10000+0x20000+0x40000+0x2000;
-                R_[6];
                 for(int i=0; i<6;i++)  chiq[i] =Tr->FitT(fit[i],-1);
                 for(int i=0; i<6;i++) R_[i]=Tr->GetRigidity(fit[i]);
                 for (int layer=2;layer<9;layer++) {
@@ -492,7 +504,7 @@ int main()
                     ResiduiY[layer-2]=Residual_point.y();
                 }
 
-                Beta=particella->pBeta()->Beta;
+                Beta=particella->pBetaH()->GetBeta();
                 Betacorr=0;
                 if (Beta>=1)  Betacorr=Beta/(2*Beta-1);
                 else Betacorr=Beta;
@@ -501,7 +513,7 @@ int main()
                     BetaRICH=ev->pRichRing(0)->getBeta();
                     Betacorr=BetaRICH;
                 }
-                clusterusati=0;
+                int clusterusati=0;
                 Massa=pow(fabs(pow(fabs(R)*pow((1-pow(Betacorr,2)),0.5)/Betacorr,2)),0.5);
                 for(int j=0;j<ev->pTrdTrack(0)->NTrdSegment();j++) {
                     for(int i=0;i<ev->pTrdTrack(0)->pTrdSegment(j)->NTrdCluster();i++) {
@@ -580,19 +592,13 @@ int main()
                 if(ii%10000==0) cut_stuff->AutoSave();
             }
             }
+
+            File->Write();
+            File->Close();
         }
     }
 
-
-
-
-
-    File->Write();
-    File->Close();
-
-
     return 1;
-
 }
 
 
@@ -639,4 +645,3 @@ bool saa(float phi,float theta) {
   return ssa_good;
 }
 
-							

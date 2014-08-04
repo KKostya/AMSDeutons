@@ -1,6 +1,6 @@
 #include <root.h>
 
-void selezioni () {};
+void selezioni();
 
 
 AMSEventR* minimumbias(AMSEventR * ev,int fit);

@@ -5,10 +5,8 @@
 #include "TrTrack.h"
 #endif
 
-
 #include "selezioni.h"
 #include <TrTrackSelection.h>
-
 
 using namespace std;
 bool minimum_bias;
@@ -21,7 +19,7 @@ int particelletot=0;
 int eventiminimumbias=0;
 int preselezionate=0;
 int eventigolden=0;
-int severity=0;
+// int severity=0; <-- unused
 int minTRIGG=0;
 int minTOF=0;
 int minTRD=0;
@@ -47,7 +45,7 @@ int QTrack=0;
 int deut5=0;
 int deut6=0;
 int nprotoni=0;
-float Massa=0;
+//float Massa=0; <-- unused
 int giovacch=0;
 int buonfit1=0;
 int buonfit2=0;
@@ -85,6 +83,7 @@ AMSEventR* selezionadeutoni(AMSEventR* ev);
 TMatrixD  unfolding (23,23);
 
 
+void selezioni() {};
 
 AMSEventR* minimumbias(AMSEventR * ev,int fit) {
     int c=0;
@@ -353,7 +352,7 @@ AMSEventR* preselect ( AMSEventR* ev) {
     if(ev->nParticle()==1)
     {
         ParticleR* particella = ev->pParticle(0);
-        Beta=particella->pBetaH()->GetBeta();
+        double Beta=particella->pBetaH()->GetBeta();
         if(ev->nTrTrack()==1 &&  ev->NTrdTrack()>=1 && Beta>0 && particella->pCharge()->Charge()==1&&Beta<8)
         {	
             preselezionate++;
