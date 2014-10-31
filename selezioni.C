@@ -154,8 +154,8 @@ bool minimumbiasTOF(AMSEventR *ev){
     for(int i=0;i<4;i++) if (goodlayer[i]) c++;
     if(c>3) minimumbias=true;
     BetaHR *betah=ev->pParticle(0)->pBetaH();
-    if(!betah) return false;
-            if(betah->IsGoodBeta()==false) minimumbias=false;
+    //if(!betah) return false;
+     //       if(betah->IsGoodBeta()==false) minimumbias=false;
     return minimumbias;
 }
 
@@ -262,8 +262,8 @@ bool goldenTOF(AMSEventR *ev,int s,int fit)
         if(goodlayer[i]) c++;
     if(c>=3) good_match=true;
     BetaHR *betah=ev->pParticle(0)->pBetaH();
-    if(!betah) return false;
-        if(betah->IsTkTofMatch()==false) good_match=false;
+    //if(!betah) return false;
+     //   if(betah->IsTkTofMatch()==false) good_match=false;
     return good_match;
 }
 
@@ -352,15 +352,18 @@ AMSEventR* preselect ( AMSEventR* ev) {
     if(ev->nParticle()==1)
     {
         ParticleR* particella = ev->pParticle(0);
-        double Beta=particella->pBetaH()->GetBeta();
-        if(ev->nTrTrack()==1 &&  ev->NTrdTrack()>=1 && Beta>0 && particella->pCharge()->Charge()==1&&Beta<8)
+        //double Beta=particella->pBetaH()->GetBeta();
+        // solo per elettroni
+        double Beta=particella->pBeta()->Beta; 
+	//
+	if(ev->nTrTrack()==1 &&  ev->NTrdTrack()>=1 && Beta>0 && particella->pCharge()->Charge()==1&&Beta<8)
         {	
             preselezionate++;
             return ev;
         }
-         else return NULL;
+         else return ev;
     }
-    else  return NULL;	
+    else  return ev;	
 }
 
 

@@ -24,10 +24,8 @@
 #include "TrTrack.h"
 #endif
 
+#include <amschain.h>
 #include "selezioni.h"
-#include "amschain.h"
-
-#include "inputs2312.h"
 
 
 //#include <TSpline.h>
@@ -131,164 +129,117 @@ int controlloRICH=0;
 
 bool saa(float phi,float theta);
 
-int main()
+int main(int argc, char * argv[])
 {
-    for(int indice=4;indice<5;indice++)
-    {
-        cout<<"Inserisci parametri simulazione: massa part (GeV),energia min,energia max"<<endl;
-        cout<<"Errore?"<<endl;
-        float E=-1.203972804;
-        float EM=6.66722056;
-        float a=(EM-E)/23;
-        for(int i=0;i<11;i++) Time[i]=0;
-        for(int i=0;i<24;i++)
-        { 
-            float temp=i+7;
-            bin[i]=0.1*pow(10,temp/9.5);
-            //************** bin DAV
-            /*        bin[i]=exp(E);
-                      E=E+a;*/
-            cout<<bin[i]<<endl;	
 
+    float E=-1.203972804;
+    float EM=6.66722056;
+    float a=(EM-E)/23;
+    for(int i=0;i<11;i++) Time[i]=0;
+
+    if(argc < 2) return 1;
+
+    // Opening input file
+    AMSChain  * ch = new AMSChain;
+    ch->Add(argv[1]);
+
+    // Creating an output
+    TFile * File = new TFile("ntuple.root", "RECREATE");
+
+    int entries = ch->GetEntries();
+
+    cout<<entries<<endl;
+
+    TTree *measure_stuff= new TTree("parametri_geo","parametri_geo");
+    TTree *cut_stuff = new TTree("grandezze_tagli","grandezze_tagli");
+    measure_stuff->Branch("U_time",&U_time);
+    measure_stuff->Branch("Latitude",&Latitude);
+    measure_stuff->Branch("zonageo",&zonageo);
+    measure_stuff->Branch("Rcutoff",&Rcutoff);
+    measure_stuff->Branch("Livetime",&Livetime);
+    measure_stuff->Branch("ThetaS",&ThetaS);
+    measure_stuff->Branch("PhiS",&PhiS);
+    measure_stuff->Branch("Unbias",&Unbias);
+
+    cut_stuff->Branch("Livetime",&Livetime);
+    cut_stuff->Branch("U_time",&U_time);
+    cut_stuff->Branch("Latitude",&Latitude);
+    cut_stuff->Branch("ThetaS",&ThetaS);
+    cut_stuff->Branch("PhiS",&PhiS);
+    cut_stuff->Branch("Rcutoff",&Rcutoff);
+    cut_stuff->Branch("CaricaTOF",&CaricaTOF);
+    cut_stuff->Branch("CaricaTRD",&CaricaTRD);
+    cut_stuff->Branch("CaricaTrack",&CaricaTrack);
+    cut_stuff->Branch("ProbQ",&ProbQ);
+    cut_stuff->Branch("Qbest",&Qbest);
+    cut_stuff->Branch("Endep",&Endep);
+    cut_stuff->Branch("layernonusati",&layernonusati);
+    cut_stuff->Branch("NAnticluster",&NAnticluster);
+    cut_stuff->Branch("NTRDSegments",&NTRDSegments);
+    cut_stuff->Branch("NTofClusters",&NTofClusters);
+    cut_stuff->Branch("NTofClustersusati",&NTofClustersusati);
+    cut_stuff->Branch("Rup",&Rup);
+    cut_stuff->Branch("Rdown",&Rdown);
+    cut_stuff->Branch("R",&R);
+    cut_stuff->Branch("Chisquare",&Chisquare);
+    cut_stuff->Branch("ResiduiX",&ResiduiX);
+    cut_stuff->Branch("ResiduiY",&ResiduiY);
+    cut_stuff->Branch("chiq",&chiq);
+    cut_stuff->Branch("R_",&R_);
+    cut_stuff->Branch("Beta",&Beta);
+    cut_stuff->Branch("Betacorr",&Betacorr);
+    cut_stuff->Branch("BetaRICH",&BetaRICH);
+    cut_stuff->Branch("Massa",&Massa);
+    cut_stuff->Branch("EdepTRD",&EdepTRD);
+    cut_stuff->Branch("TRDclusters",&TRDclusters);
+    cut_stuff->Branch("NTRDclusters",&NTRDclusters);
+    cut_stuff->Branch("endepostatrack",&endepostatrack);
+    cut_stuff->Branch("NTrackHits",&NTrackHits);
+    cut_stuff->Branch("clusterTrack",&clusterTrack);
+
+    cut_stuff->Branch("DistTOF",&DistTOF);
+    cut_stuff->Branch("cosThetaTOF",&cosThetaTOF);
+    cut_stuff->Branch("cosPhiTOF",&cosPhiTOF);
+    cut_stuff->Branch("DistTrack",&DistTrack);
+    cut_stuff->Branch("cosThetaTrack",&cosThetaTrack);
+    cut_stuff->Branch("cosPhiTrack",&cosPhiTrack);
+    cut_stuff->Branch("DistTRD",&DistTRD);
+    cut_stuff->Branch("cosThetaTRD",&cosThetaTRD);
+    cut_stuff->Branch("cosPhiTRD",&cosPhiTRD);
+    cut_stuff->Branch("Unbias",&Unbias);
+    cut_stuff->Branch("zonageo",&zonageo);
+
+
+/////////////////////////////////////////////////////////////////
+// Event loop
+/////////////////////////////////////////////////////////////////
+
+    for(int ii=0;ii<entries;ii++)
+    { 
+        if (contaeventi>entries) break;
+        if(ii%10000==0){
+            printf("Processed %7d out of %7d\n",ii,entries);
+            printf("Evento numero: %7d\n",contaeventi);
+        }		
+        AMSEventR* ev=ch->GetEvent();
+        Level1R* trig=ev->pLevel1(0);
+        if(ev->pRichRing(0)&&controlloRICH!=1) {ev->pRichRing(0)->switchDynCalibration(); controlloRICH=1;}
+        if(ev&&trig){
+            if((trig->PhysBPatt&1)==1) Unbias=1;
+            else Unbias=0;
         }
-
-        TFile * File;
-        for(int giro=1;giro<2;giro++){
-
-            AMSChain* ch;
-            AMSEventList lista;
-
-            cout<<"inizio...."<<endl;
-
-
-            if(giro==1){
-                ch= new AMSChain;
-                string istog= istogramma+".root";
-                string *file=&istog;	
-
-                File = new TFile(istog.c_str(), "RECREATE");
-                //ch.Add("root://eosams.cern.ch///eos/ams/Data/AMS02/2011B/ISS.B620/pass4/1311472387.00533794.root");
-                for(int i=0;i<3;i++){	
-                    string indirizzo="root://eosams.cern.ch///eos/ams/Data/AMS02/2011B/"+tipo+"/"+energia+"/"+rootpla[i];
-                    ch->Add(indirizzo.c_str());
-                }
-            }
-            int entries = ch->GetEntries();
-            //entries=5000;		
-            cout<<entries<<endl;
-            /*TNtuple * protons = new TNtuple("protons","distr for pre","R:Beta:Betacorr:BetaRICH:EdepTOF:CaricaTOF:EdepTRD:CaricaTRD:EdepTrack:CaricaTrack:Massa:Zona");
-              TNtuple * deutons = new TNtuple("deutons","distr for pre","R:Beta:Betacorr:BetaRICH:EdepTOF:CaricaTOF:EdepTRD:CaricaTRD:EdepTrack:CaricaTrack:Massa:Zona");
-
-              9TNtuple * pre = new TNtuple("pre","distr for pre","R:Beta:Betacorr:BetaRICH:EdepTOF:CaricaTOF:EdepTRD:CaricaTRD:EdepTrack:CaricaTrack:Massa:Zona");
-              TNtuple * giov = new TNtuple("giov","distr for giov","R:Beta:Betacorr:BetaRICH:EdepTOF:CaricaTOF:EdepTRD:CaricaTRD:EdepTrack:CaricaTrack:Massa:Zona"); 
-              */
-            //contaeventi=entries;
-
-
-
-            TTree *measure_stuff= new TTree("parametri_geo","parametri_geo");
-            TTree *cut_stuff = new TTree("grandezze_tagli","grandezze_tagli");
-            measure_stuff->Branch("U_time",&U_time);
-            measure_stuff->Branch("Latitude",&Latitude);
-            measure_stuff->Branch("zonageo",&zonageo);
-            measure_stuff->Branch("Rcutoff",&Rcutoff);
-            measure_stuff->Branch("Livetime",&Livetime);
-            measure_stuff->Branch("ThetaS",&ThetaS);
-            measure_stuff->Branch("PhiS",&PhiS);
-            measure_stuff->Branch("Unbias",&Unbias);
-
-            /////////////////////////////////////ANALISI PRESELEZIONE //////////////////////////////////////////////
-            /*measure_stuff->Branch("nclusterTOFbuoni",&nclusterTOFbuoni);
-              measure_stuff->Branch("nTOFflag",&nTOFflag);
-              measure_stuff->Branch("nTRDHSegment",&nTRDHSegment);
-              measure_stuff->Branch("minbiastrack",&minbiastrack);
-              measure_stuff->Branch("chisqX",&chisqX);
-              measure_stuff->Branch("chisqY",&chisqY);
-              measure_stuff->Branch("nTOFclustermatching",&nTOFclustermatching);
-              measure_stuff->Branch("dxTRD",&dxTRD);
-              measure_stuff->Branch("dyTRD",&dyTRD);
-              measure_stuff->Branch("InTRDAcceptance",&InTRDAcceptance);
-              measure_stuff->Branch("nTrTracks",&nTrTracks);
-              measure_stuff->Branch("nTRDtracks",&nTRDtracks);
-              measure_stuff->Branch("Beta_pre",&Beta_pre);
-              measure_stuff->Branch("R_pre",&R_pre);
-              measure_stuff->Branch("nPart",&nPart);
-              measure_stuff->Branch("Qbest",&Qbest);*/
-            /////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-            cut_stuff->Branch("Livetime",&Livetime);
-            cut_stuff->Branch("U_time",&U_time);
-            cut_stuff->Branch("Latitude",&Latitude);
-            cut_stuff->Branch("ThetaS",&ThetaS);
-            cut_stuff->Branch("PhiS",&PhiS);
-            cut_stuff->Branch("Rcutoff",&Rcutoff);
-            cut_stuff->Branch("CaricaTOF",&CaricaTOF);
-            cut_stuff->Branch("CaricaTRD",&CaricaTRD);
-            cut_stuff->Branch("CaricaTrack",&CaricaTrack);
-            cut_stuff->Branch("ProbQ",&ProbQ);
-            cut_stuff->Branch("Qbest",&Qbest);
-            cut_stuff->Branch("Endep",&Endep);
-            cut_stuff->Branch("layernonusati",&layernonusati);
-            cut_stuff->Branch("NAnticluster",&NAnticluster);
-            cut_stuff->Branch("NTRDSegments",&NTRDSegments);
-            cut_stuff->Branch("NTofClusters",&NTofClusters);
-            cut_stuff->Branch("NTofClustersusati",&NTofClustersusati);
-            cut_stuff->Branch("Rup",&Rup);
-            cut_stuff->Branch("Rdown",&Rdown);
-            cut_stuff->Branch("R",&R);
-            cut_stuff->Branch("Chisquare",&Chisquare);
-            cut_stuff->Branch("ResiduiX",&ResiduiX);
-            cut_stuff->Branch("ResiduiY",&ResiduiY);
-            cut_stuff->Branch("chiq",&chiq);
-            cut_stuff->Branch("R_",&R_);
-            cut_stuff->Branch("Beta",&Beta);
-            cut_stuff->Branch("Betacorr",&Betacorr);
-            cut_stuff->Branch("BetaRICH",&BetaRICH);
-            cut_stuff->Branch("Massa",&Massa);
-            cut_stuff->Branch("EdepTRD",&EdepTRD);
-            cut_stuff->Branch("TRDclusters",&TRDclusters);
-            cut_stuff->Branch("NTRDclusters",&NTRDclusters);
-            cut_stuff->Branch("endepostatrack",&endepostatrack);
-            cut_stuff->Branch("NTrackHits",&NTrackHits);
-            cut_stuff->Branch("clusterTrack",&clusterTrack);
-
-            cut_stuff->Branch("DistTOF",&DistTOF);
-            cut_stuff->Branch("cosThetaTOF",&cosThetaTOF);
-            cut_stuff->Branch("cosPhiTOF",&cosPhiTOF);
-            cut_stuff->Branch("DistTrack",&DistTrack);
-            cut_stuff->Branch("cosThetaTrack",&cosThetaTrack);
-            cut_stuff->Branch("cosPhiTrack",&cosPhiTrack);
-            cut_stuff->Branch("DistTRD",&DistTRD);
-            cut_stuff->Branch("cosThetaTRD",&cosThetaTRD);
-            cut_stuff->Branch("cosPhiTRD",&cosPhiTRD);
-            cut_stuff->Branch("Unbias",&Unbias);
-            cut_stuff->Branch("zonageo",&zonageo);
-            for(int ii=0;ii<entries;ii++)
-            { 
-                if (contaeventi>entries) break;
-                if(ii%10000==0){
-                    printf("Processed %7d out of %7d\n",ii,entries);
-                    printf("Evento numero: %7d\n",contaeventi);
-                }		
-                AMSEventR* ev=ch->GetEvent();
-                Level1R* trig=ev->pLevel1(0);
-                if(ev->pRichRing(0)&&controlloRICH!=1) {ev->pRichRing(0)->switchDynCalibration(); controlloRICH=1;}
-                if(ev&&trig){
-                    if((trig->PhysBPatt&1)==1) Unbias=1;
-                    else Unbias=0;
-                }
-                //selezione delle run
-                if(ii%10000==0) {cout<<"Latitudine geomagnetica: "<<ev->fHeader.ThetaM<<" rad"<<endl;
-                    cout<<ev->UTime()<<endl;}
-                    if(!saa(ev->fHeader.PhiS,ev->fHeader.ThetaS)) continue;
-                    if(ev->UTime()==ev->fHeader.Run||ev->UTime()==ev->fHeader.Run+1) continue;
-                    if(ev->fHeader.RunType<=61442) continue;
-                    if(ev->fHeader.Zenith()>25) continue;		//scelta zona geomagnetica
-                    for(int i=0;i<12;i++){
-                        double geo= geomag[i]  ;
-                        double geo2=/*(i+1)/(double)10*/geomag[i+1];
-                        if(fabs(ev->fHeader.ThetaM)>geo && fabs(ev->fHeader.ThetaM)<geo2) //cout<<"yes "<< 14.9*pow((cos(ev->fHeader->ThetaM)),4)<<endl;
-                        zona=i;
+        //selezione delle run
+        if(ii%10000==0) {cout<<"Latitudine geomagnetica: "<<ev->fHeader.ThetaM<<" rad"<<endl;
+            cout<<ev->UTime()<<endl;}
+            if(!saa(ev->fHeader.PhiS,ev->fHeader.ThetaS)) continue;
+            if(ev->UTime()==ev->fHeader.Run||ev->UTime()==ev->fHeader.Run+1) continue;
+            if(ev->fHeader.RunType<=61442) continue;
+            if(ev->fHeader.Zenith()>25) continue;		//scelta zona geomagnetica
+            for(int i=0;i<12;i++){
+                double geo= geomag[i]  ;
+                double geo2=/*(i+1)/(double)10*/geomag[i+1];
+                if(fabs(ev->fHeader.ThetaM)>geo && fabs(ev->fHeader.ThetaM)<geo2) //cout<<"yes "<< 14.9*pow((cos(ev->fHeader->ThetaM)),4)<<endl;
+                zona=i;
 
                         else tempozona[i]=ev->UTime();
                     }
@@ -595,9 +546,6 @@ int main()
 
             File->Write();
             File->Close();
-        }
-    }
-
     return 1;
 }
 
