@@ -361,9 +361,9 @@ AMSEventR* preselect ( AMSEventR* ev) {
             preselezionate++;
             return ev;
         }
-         else return ev;
+        else return NULL;
     }
-    else  return ev;	
+    else  return NULL;	
 }
 
 
