@@ -50,8 +50,6 @@ int contaeventi=0;
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
 bool  deutoni(AMSEventR* ev);
 int severity=0;
-int U_time;
-float Latitude;
 float Chisquare=0;
 int zonageo;
 float Rcutoff;
@@ -121,8 +119,6 @@ float distETRD=0;
 float DistTOF=0;
 float DistTrack=0;
 float DistTRD=0;
-float ThetaS=0;
-float PhiS=0;
 int DR1,DR2,DR3=0;
 float Unbias=0;
 int controlloRICH=0;
@@ -145,13 +141,13 @@ int main(int argc, char * argv[])
 
     // Creating an output
     TFile * File = new TFile("ntuple.root", "RECREATE");
-
     int entries = ch->GetEntries();
 
     cout<<entries<<endl;
 
     TTree *measure_stuff= new TTree("parametri_geo","parametri_geo");
     TTree *cut_stuff = new TTree("grandezze_tagli","grandezze_tagli");
+
     measure_stuff->Branch("U_time",&U_time);
     measure_stuff->Branch("Latitude",&Latitude);
     measure_stuff->Branch("zonageo",&zonageo);
@@ -224,7 +220,7 @@ int main(int argc, char * argv[])
         AMSEventR* ev=ch->GetEvent();
         Level1R* trig=ev->pLevel1(0);
         if(ev->pRichRing(0)&&controlloRICH!=1) {ev->pRichRing(0)->switchDynCalibration(); controlloRICH=1;}
-        if(ev&&trig){
+        if(ev && trig){
             if((trig->PhysBPatt&1)==1) Unbias=1;
             else Unbias=0;
         }
@@ -243,10 +239,12 @@ int main(int argc, char * argv[])
 
                         else tempozona[i]=ev->UTime();
                     }
-                    int controllo=0;
                     if(ii%10000==0) cout<<"Zona: "<<zona<<endl;	
+
+                    int controllo=0;
                     if(zona>=0)	controllo=1;
                     if(controllo!=1) continue; 
+
                     contaeventi++;
                     if(ev->UTime()!=tempozona[zona]){
                         tempozona[zona]=ev->UTime();
@@ -263,119 +261,7 @@ int main(int argc, char * argv[])
                     ThetaS=ev->fHeader.ThetaS;
                     PhiS=ev->fHeader.PhiS;
                     zonageo=zona;
-                    ////////////////////////////////////////////////ANALISI PRESELEZIONE /////////////////////////////////
-                    /*                nclusterTOFbuoni=-1;
-                                      nTOFflag=0;
-                                      nTRDHSegment=-1;
-                                      minbiastrack=0;
-                                      chisqX=0;
-                                      chisqY=0;
-                                      nTOFclustermatching=-1;
-                                      dxTRD=-1;
-                                      dyTRD=-1;
-                                      InTRDAcceptance=0;
-                                      nTrTracks=0;
-                                      nTRDtracks=0;
-                                      Beta_pre=-1;
-                                      R_pre=-1;
-                                      nPart=-1;
-                                      Qbest=-1;
-                                      int c=0;
-                                      TofClusterR* cluster;
-                                      bool goodlayer[4]={false,false,false,false};
-                                      if(ev->nTofCluster()>0)
-                                      {
-                                      for(int ic=0;ic<ev->nTofCluster();ic++)
-                                      {
-                                      cluster=ev->pTofCluster(ic);
-                                      bool good_c=false;
-                                      if(cluster>0)
-                                      {
-                                      good_c=true;
-                                      for(int i=7;i<13;i++)
-                                      if((cluster->Status>>i)&1==1) good_c=false;
-                                      if((cluster->Status>>2)&1==1) good_c=false;
-                                      if((cluster->Status>>4)&1==1) good_c=false;
-                                      }
-                                      if(good_c) goodlayer[cluster->Layer-1]=true;
-                                      }
-                                      }
-                                      for(int i=0;i<4;i++) if (goodlayer[i]) c++;
-                                      nclusterTOFbuoni=c;
-                                      Level1R* level1=ev->pLevel1(0);
-                                      if (level1)nTOFflag=level1->TofFlag1;
-                                      TrdHTrackR *tracc = ev-> pTrdHTrack(0);
-                                      if(tracc)nTRDHSegment=tracc->nTrdHSegment();
-                                      if(minimumbiasTRACKER) minbiastrack=1;
-                                      TrTrackR* traccia=ev->pTrTrack(0);
-                                      if (traccia) {
-                                      int fitID=traccia->iTrTrackPar(1,3,1);
-                                      if(fitID>0&&traccia->ParExists(fitID)){
-                                      float rgt = fabs(traccia->GetRigidity (fitID));
-                                      R_pre=rgt;
-                                      chisqY=traccia->GetNormChisqY(fitID);
-                                      chisqX=traccia->GetNormChisqX(fitID);
-
-                                      int c=0;
-                                      TrTrackR* track=ev->pTrTrack(0);
-                                      float LONGCUT[4][10]={9.,8.,8.,8.,8.,8.,8.,9.,0.,0.,
-                                      12.,8.,8.,8.,8.,8.,8.,12.,0.,0.,
-                                      12.,8.,8.,8.,8.,8.,8.,8.,8.,12.,
-                                      10.,8.,8.,8.,8.,8.,8.,10.,0.,0.,};
-                                      float TRANCUT[4][10]={13.,6.,6.,6.,6.,6.,6.,13.,0.,0.,
-                                      14.,6.,6.,6.,6.,6.,6.,14.,0.,0.,
-                                      10.,6.,6.,6.,6.,6.,6.,6.,6.,10.,
-                                      14.,6.,6.,6.,6.,6.,6.,14.,0.,0.};
-                                      TofClusterR* cluster;
-                                      bool good_match=false;
-                                      double tlen;
-                                      AMSPoint pnt;
-                                      AMSDir dir;
-                                      int longit[4]={0,1,1,0};
-                                      int tranit[4]={1,0,0,1};
-                                      double dlong,dtran;
-                                      bool goodlayer[4]={false,false,false,false};
-                    for(int i=0; i<ev->nTofCluster();i++)
-                    {
-                        cluster=ev->pTofCluster(i);
-                        if(cluster>0)
-                        {
-                            int layer=cluster->Layer-1;
-                            int bar=cluster->Bar-1;
-                            tlen=track->Interpolate(cluster->Coo[2],pnt,dir,fitID);
-                            dlong=cluster->Coo[longit[layer]]-pnt[longit[layer]];
-                            dtran=cluster->Coo[tranit[layer]]-pnt[tranit[layer]];
-                            if(fabs(dlong)<(LONGCUT[layer][bar])&& fabs(dtran)<TRANCUT[layer][bar])
-                                goodlayer[layer]=true;
-                        }
-                    }
-
-                    for(int i=0; i<4; i++)
-                        if(goodlayer[i]) c++;
-                    nTOFclustermatching=c;
-                    TrdHTrackR* trd_track;
-                    trd_track=ev->pTrdHTrack(0);
-                    if(trd_track) if(trd_track->status>0)
-                    {
-                        AMSPoint pnt;
-                        AMSDir dir;
-                        TrTrackR* track=ev->pTrTrack(0);
-                        track->Interpolate(trd_track->Coo[2],pnt,dir,fitID);
-
-                        dxTRD=pnt.x()-trd_track->Coo[0];
-                        dyTRD=pnt.y()-trd_track->Coo[1];
-                    }
-                    if(InTrdAcceptance(ev,severity,3)) InTRDAcceptance=1;
-            }}
-            nTrTracks=ev->nTrTrack();
-            nTRDtracks=ev->NTrdTrack();
-            nPart=ev->nParticle();
-            ParticleR* particella = ev->pParticle(0) ;
-            if(particella) {
-                Beta_pre=particella->Beta;
-                if(particella->pCharge()) Qbest=particella->pCharge()->Charge();
-            }*/
-            /////////////////////////////////////////////////////////////////////////////////////
+                    
             measure_stuff->Fill();
             if(ii%10000==0) measure_stuff->AutoSave();
             if(ev==NULL) break;
