@@ -15,14 +15,6 @@ double Chi[23] = {
     2.50,	2.50,	2.50,   2.5,    2.5}; 
 
 TSpline3 *Chi2 = new TSpline3("Cubic Spline",ChiR,Chi,23);
-////////////////////////////////////////////////////////////////////////////
-
-bool SubSelection::Test(Data & data) 
-{ 
-    bool result = eval(data);
-    if(!result) nSelected += 1;
-    return result;
-}
 
 ////////////////////////////////////////////// Quality selection functions //////////////////////////////////////////
 
