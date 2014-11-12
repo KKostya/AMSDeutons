@@ -13,8 +13,10 @@
 #include <amschain.h>
 
 // local includes
+#include "Selections/Geo.h"
+#include "Selections/Golden.h"
+#include "Selections/MinBias.h"
 #include "Data.h"
-#include "SAA.h"
 
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
 
@@ -49,37 +51,36 @@ int main(int argc, char * argv[])
         Level1R * trig = ev->pLevel1(0);
         if((trig->PhysBPatt&1) == 1) data.Unbias=1; else data.Unbias=0;
 
-        // Geometry/Geography/SAA e.t.c
+        /////////////////////////////////
+        // Geometry/Geography/SAA e.t.c//
+        /////////////////////////////////
+        if (!GeoSelection(ev)) continue;
+
         data.ThetaS   = ev->fHeader.ThetaS;
         data.PhiS     = ev->fHeader.PhiS;
-        if(!saa(data.PhiS, data.ThetaS)) continue;
-
-        if(ev->fHeader.RunType <= 61442) continue;
-        if(ev->fHeader.Zenith() > 25) continue; // Angle between zenith and Z
-
-        int zona = 0;
-
-        for(int i=0;i<12;i++)
-        {
-            // Are we sure this is the best way to get geomagnetic zone?
-            double geo  = geomag[i];
-            double geo2 =/*(i+1)/(double)10*/geomag[i+1];
-            if(fabs(data.ThetaM) > geo && fabs(data.ThetaM)<geo2) 
-                zona = i;
-            else
-                tempozona[i] = ev->UTime();
-        }
-
-        if(zona == 0) continue; 
-        contaeventi++;
-
         data.U_time   = ev->UTime();
         data.Livetime = ev->LiveTime();
         data.Latitude = fabs(ev->fHeader.ThetaM);
-        data.zonageo  = zona;
+
+        for(int i=0;i<12;i++){
+            double geo= geomag[i]  ;
+            double geo2=/*(i+1)/(double)10*/geomag[i+1];
+            if(fabs(ev->fHeader.ThetaM)>geo && fabs(ev->fHeader.ThetaM)<geo2) 
+                data.zonageo = i;
+            else 
+                tempozona[i]=ev->UTime();
+        }
+
+        /////////////////////////////////
+        //       Minbias + Golden      //
+        /////////////////////////////////
+        bool minBias = MinBias(ev);
+        bool  golden =  Golden(ev);
+        bool 
+
+
         if(ev->pParticle(0)) data.Rcutoff = ev->pParticle(0)->Cutoff;
-        //14.9*pow((cos(((zona/(float)10+0.5)/(double)10))),4);	
-        
+         
 
     }
 }
