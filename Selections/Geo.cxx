@@ -17,19 +17,23 @@
 /// Geometry selections
 ////////////////////////////////////////////////
 
-bool notInSaaCut(AMSEventR * ev) 
-{ return saa(ev->fHeader.ThetaS, ev->fHeader.PhiS); }
+bool notInSaaCut(AMSEventR * ev){ return saa(ev->fHeader.ThetaS, ev->fHeader.PhiS); }
+bool   zenithCut(AMSEventR * ev){ return  ev->fHeader.Zenith() <= 25;  }
+bool  runtypeCut(AMSEventR * ev){ return  ev->fHeader.RunType > 61442; }
 
-bool zenithCut(AMSEventR * ev)  { return  ev->fHeader.Zenith() <= 25; }
-bool runtypeCut(AMSEventR * ev) { return  ev->fHeader.RunType > 61442; }
+
+
+/////////////////////////////////////////////
+//////////////// Utils //////////////////////
+/////////////////////////////////////////////
 
 std::vector<SubSelection<AMSEventR *> *> geoCuts;
 std::vector<SubSelection<AMSEventR *> *> GetGeoSelectionsList()
 {
     if(geoCuts.size() > 0) return geoCuts;
-    geoCuts.push_back(new SubSelection<AMSEventR*>(notInSaaCut, "Not in SAA"             ));
-    geoCuts.push_back(new SubSelection<AMSEventR*>(zenithCut,   "Zenith in 25 deg"       ));
-    geoCuts.push_back(new SubSelection<AMSEventR*>(runtypeCut,  "Proper RunType"         ));
+    geoCuts.push_back(new SubSelection<AMSEventR*>(notInSaaCut, "Not in SAA"       ));
+    geoCuts.push_back(new SubSelection<AMSEventR*>(zenithCut,   "Zenith in 25 deg" ));
+    geoCuts.push_back(new SubSelection<AMSEventR*>(runtypeCut,  "Proper RunType"   ));
     return geoCuts;
 }
 
