@@ -455,8 +455,7 @@ int main(int argc, char * argv[])
                         ResiduiX[layer-2]=Residual_point.x();
                     ResiduiY[layer-2]=Residual_point.y();
                 }
-
-                Beta=particella->pBetaH()->GetBeta();
+                if(particella->pBetaH()) Beta=particella->pBetaH()->GetBeta();
                 Betacorr=0;
                 if (Beta>=1)  Betacorr=Beta/(2*Beta-1);
                 else Betacorr=Beta;
