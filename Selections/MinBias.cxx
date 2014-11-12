@@ -6,6 +6,7 @@
 #include "TrTrack.h"
 #endif
 #include <amschain.h>
+#include "TrTrackSelection.h"
 
 // Local includes
 #include "MinBias.h"
@@ -17,8 +18,8 @@
 
 bool minimumbiasTOF(AMSEventR *ev)
 {
-    if(ev->nParticle() == 0) return false;
-    if(ev->nTofCluster() == 0) return false
+    if(ev->nParticle()   == 0) return false;
+    if(ev->nTofCluster() == 0) return false;
     bool goodlayer[4]={false,false,false,false};
     
     for(int ic=0;ic<ev->nTofCluster();ic++)
@@ -96,12 +97,12 @@ std::vector<SubSelection<AMSEventR *> *> GetMinBiasList()
     return minBiasCuts;
 }
 
-bool MinBias(AMSEventR *data)
+bool MinBias(AMSEventR * event)
 {
     bool selection = true;
-    std::vector<SubSelection *> cuts =  GetMinBiasList();
+    std::vector<SubSelection<AMSEventR *> *> cuts =  GetMinBiasList();
 
     for (int i=0; i<cuts.size(); i++) 
-        selection &= (!cuts[i]->Test(data));
+        selection &= (!cuts[i]->Test(event));
     return selection;
 }

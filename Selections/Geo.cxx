@@ -11,8 +11,6 @@
 #include "Geo.h"
 #include "SAA.h"
 
-
-
 ////////////////////////////////////////////////
 /// Geometry selections
 ////////////////////////////////////////////////
@@ -21,14 +19,12 @@ bool notInSaaCut(AMSEventR * ev){ return saa(ev->fHeader.ThetaS, ev->fHeader.Phi
 bool   zenithCut(AMSEventR * ev){ return  ev->fHeader.Zenith() <= 25;  }
 bool  runtypeCut(AMSEventR * ev){ return  ev->fHeader.RunType > 61442; }
 
-
-
 /////////////////////////////////////////////
 //////////////// Utils //////////////////////
 /////////////////////////////////////////////
 
 std::vector<SubSelection<AMSEventR *> *> geoCuts;
-std::vector<SubSelection<AMSEventR *> *> GetGeoSelectionsList()
+std::vector<SubSelection<AMSEventR *> *> GetListOfSelections()
 {
     if(geoCuts.size() > 0) return geoCuts;
     geoCuts.push_back(new SubSelection<AMSEventR*>(notInSaaCut, "Not in SAA"       ));
@@ -37,13 +33,13 @@ std::vector<SubSelection<AMSEventR *> *> GetGeoSelectionsList()
     return geoCuts;
 }
 
-bool GeoSelection(AMSEventR * ev)
+bool GeoSelection(AMSEventR * event)
 {
     bool selection = true;
-    std::vector<SubSelection *> cuts =  GetListOfSelections();
+    std::vector<SubSelection<AMSEventR *> *> cuts =  GetListOfSelections();
 
     for (int i=0; i<cuts.size(); i++) 
-        selection &= (!cuts[i]->Test(data));
+        selection &= (!cuts[i]->Test(event));
     return selection;
 }   
 
