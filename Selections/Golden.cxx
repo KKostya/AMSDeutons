@@ -20,7 +20,8 @@ bool goldenTRACKER(AMSEventR *ev)
 {	//chiedo che il fit sui layer interni sia buono
     
     float quality=5-(SEVERITY*10*20/100);
-    TrTrackR* traccia=ev->pTrTrack(0);
+    TrTrackR * traccia=ev->pTrTrack(0);
+    if(!traccia) return false;
     int fitID = traccia->iTrTrackPar(1,FIT,1);
     if (fitID < 0 || !traccia->ParExists(fitID)) return false;
     if(traccia->GetNormChisqY(fitID) > 5) return false;
@@ -34,6 +35,7 @@ bool goldenTOF(AMSEventR *ev)
     int c=0;
     if (ev->nParticle()==0) return false;
     TrTrackR* track=ev->pTrTrack(0);
+    if(!track) return false;
     int fitID=track->iTrTrackPar(1,FIT,1);
     float LONGCUT[4][10]={  9. , 8. , 8. , 8. , 8. , 8. , 8. , 9.  , 0. , 0.  , 
                            12. , 8. , 8. , 8. , 8. , 8. , 8. , 12. , 0. , 0.  , 
@@ -86,6 +88,7 @@ bool goldenTRD(AMSEventR* ev)
             TRDclustersontrack++;}
 
     TrTrackR* track=ev->pTrTrack(0);
+    if(!track) return false;
     int fitID=track->iTrTrackPar(1,FIT,1);
     bool golden=false;
     TrdHTrackR* trd_track;
