@@ -60,7 +60,7 @@ std::vector<SubSelection<AMSEventR *> *> GetListOfPreselections()
     return preselectionCuts;
 }
 
-bool GeoSelection(AMSEventR * event)
+bool Preselection(AMSEventR * event)
 {
     bool selection = true;
     std::vector<SubSelection<AMSEventR *> *> cuts =  GetListOfPreselections();

@@ -10,6 +10,7 @@ struct DataCorr;
 // Structure for geometric/geographic/geomagnetic data
 struct DataGeo
 {
+    int EventNumber;
     int U_time, zonageo;
     float Latitude, ThetaS, PhiS;
     float Rcutoff;
@@ -28,10 +29,11 @@ struct DataMC
 };
 
 // Structure for the detector response
-struct DataPresel: public DataGeo, public DataMC
+struct DataPresel: public DataMC
 {
+    int EventNumber;
+
     int Trig_Num;
-    int Ev_Num;
     float CaricaTOF, CaricaTRD, CaricaTrack;
     float ProbQ, Qbest;
     std::vector<float> * Endep;
