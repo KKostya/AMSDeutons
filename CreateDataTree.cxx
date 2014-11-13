@@ -88,6 +88,12 @@ int main(int argc, char * argv[])
 
         data.Rcutoff = ev->pParticle(0)->Cutoff;
 
+        // Counts
+        data.NAnticluster      = ev->NAntiCluster();
+        data.NTRDSegments      = ev->NTrdSegment();
+        data.NTofClusters      = ev->NTofCluster();
+        data.NTofClustersusati = ev->pBeta(0)->NTofCluster();
+
         // Charge
         ChargeR * carica= ev->pCharge(0);
         data.CaricaTOF   = getSubCharge (carica,"AMSChargeTOF");         
@@ -97,23 +103,24 @@ int main(int argc, char * argv[])
         data.ProbQ = carica->getProb(0);
         data.Qbest = carica->Charge();
 
-        // Energy dependence
+        // TOF energy deposit
         for(int j=0; j<4; j++) data.Endep[j] = 0;
         for(int j=0; j<ev->NTofCluster(); j++)
             Endep[(ev->pTofCluster(j)->Layer)-1]=ev->pTofCluster(j)->Edep;
 
-        // Counts
-        data.NAnticluster      = ev->NAntiCluster();
-        data.NTRDSegments      = ev->NTrdSegment();
-        data.NTofClusters      = ev->NTofCluster();
-        data.NTofClustersusati = ev->pBeta(0)->NTofCluster();
-
+        // Tracker stuff
         TrTrackR * Tr = ev->pTrTrack(0);
         int fitID1 = Tr->iTrTrackPar(1,1,1);
         int fitID2 = Tr->iTrTrackPar(1,2,1);
         int fitID3 = Tr->iTrTrackPar(1,3,1);
 
+        data.Rup      = Tr->GetRigidity(fitID1);
+        data.Rdown    = Tr->GetRigidity(fitID2);
+        data.R        = Tr->GetRigidity(fitID3);
+        data.Chisquare= Tr->GetChisq(fitID3);
 
+
+    
     }
 }
 
