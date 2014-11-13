@@ -20,6 +20,14 @@
 
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
 
+inline float getSubCharge(ChargeR * charge,const char * name)
+{
+    ChargeSubDR * subcharge = charge->getSubD(name);
+    if(subcharge) return -1;
+    return subcharge->Q;
+}
+
+
 int main(int argc, char * argv[])
 {
     if(argc < 2) return 1;
@@ -74,13 +82,25 @@ int main(int argc, char * argv[])
         /////////////////////////////////
         //       Minbias + Golden      //
         /////////////////////////////////
-        bool minBias = MinBias(ev);
-        bool  golden =  Golden(ev);
-        bool 
+        bool   minBias =      MinBias(ev);
+        bool    golden =       Golden(ev);
+        bool preselect = Preselection(ev);
 
+        data.Rcutoff = ev->pParticle(0)->Cutoff;
 
-        if(ev->pParticle(0)) data.Rcutoff = ev->pParticle(0)->Cutoff;
-         
+        // Charge
+        ChargeR * carica= ev->pCharge(0);
+        data.CaricaTOF   = getSubCharge (carica,"AMSChargeTOF");         
+        data.CaricaTRD   = getSubCharge (carica,"AMSChargeTRD");
+        data.CaricaTrack = getSubCharge (carica,"AMSChargeTrackerInner");
+
+        data.ProbQ = carica->getProb(0);
+        data.Qbest = carica->Charge();
+
+        // Energy dependence
+        for(int j=0; j<4; j++) Endep[j]=0;
+        for(int j=0; j<ev->NTofCluster(); j++)
+            Endep[(ev->pTofCluster(j)->Layer)-1]=ev->pTofCluster(j)->Edep;
 
     }
 }

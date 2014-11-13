@@ -41,6 +41,14 @@ bool betaNotCrazy(AMSEventR *ev)
     return ev->pParticle(0)->pBeta()->Beta < 8;
 }
 
+template<int FIT>
+bool fitExists(AMSEventR *ev)
+{
+    TrTrackR * track = ev->pTrTrack(0);
+    int fitID = track->iTrTrackPar(1,FIT,1);
+    return track->ParExists(fitID);
+}
+
 /////////////////////////////////////////////
 //////////////// Utils //////////////////////
 /////////////////////////////////////////////
@@ -57,6 +65,9 @@ std::vector<SubSelection<AMSEventR *> *> GetListOfPreselections()
     preselectionCuts.push_back(new SubSelection<AMSEventR *>( chargeOne    , "Charge == 1"));
     preselectionCuts.push_back(new SubSelection<AMSEventR *>( downGoing    , "Beta > 0"));
     preselectionCuts.push_back(new SubSelection<AMSEventR *>( betaNotCrazy , "Beta < 8"));
+    preselectionCuts.push_back(new SubSelection<AMSEventR *>( fitExists<1> , "FitID1 exists"));
+    preselectionCuts.push_back(new SubSelection<AMSEventR *>( fitExists<2> , "FitID2 exists"));
+    preselectionCuts.push_back(new SubSelection<AMSEventR *>( fitExists<3> , "FitID3 exists"));
     return preselectionCuts;
 }
 

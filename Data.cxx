@@ -23,10 +23,12 @@ DataMC::DataMC(TTree * tree)
 }
 
 DataPresel::DataPresel(TTree * tree):
-    DataGeo(tree), DataMC(tree) // superconstructor calls
+    
+    DataMC(tree) // superconstructor calls
 {
+
+    tree->Branch("Ev_Num"            , &EventNumber       );
     tree->Branch("Trig_Num"          , &Trig_Num          );
-    tree->Branch("Ev_Num"            , &Ev_Num            );
     tree->Branch("CaricaTOF"         , &CaricaTOF         );
     tree->Branch("CaricaTRD"         , &CaricaTRD         );
     tree->Branch("CaricaTrack"       , &CaricaTrack       );
