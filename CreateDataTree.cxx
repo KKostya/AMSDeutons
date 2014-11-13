@@ -91,6 +91,7 @@ int main(int argc, char * argv[])
         // Counts
         data.NAnticluster      = ev->NAntiCluster();
         data.NTRDSegments      = ev->NTrdSegment();
+        data.NTRDclusters      = ev->NTrdSegment();
         data.NTofClusters      = ev->NTofCluster();
         data.NTofClustersusati = ev->pBeta(0)->NTofCluster();
 
@@ -103,11 +104,6 @@ int main(int argc, char * argv[])
         data.ProbQ = carica->getProb(0);
         data.Qbest = carica->Charge();
 
-        // TOF energy deposit
-        for(int j=0; j<4; j++) data.Endep[j] = 0;
-        for(int j=0; j<ev->NTofCluster(); j++)
-            Endep[(ev->pTofCluster(j)->Layer)-1]=ev->pTofCluster(j)->Edep;
-
         // Tracker stuff
         TrTrackR * Tr = ev->pTrTrack(0);
         int fitID1 = Tr->iTrTrackPar(1,1,1);
@@ -118,9 +114,34 @@ int main(int argc, char * argv[])
         data.Rdown    = Tr->GetRigidity(fitID2);
         data.R        = Tr->GetRigidity(fitID3);
         data.Chisquare= Tr->GetChisq(fitID3);
-
-
     
+        // TOF energy deposit
+        for(int j=0; j<4; j++) data.Endep[j] = 0;
+        for(int j=0; j<ev->NTofCluster(); j++)
+        Endep[(ev->pTofCluster(j)->Layer)-1]=ev->pTofCluster(j)->Edep;
+
+            //Edep TRD
+        Data.EdepTRD=0;
+        NTRDclusters=0;
+        for(int j=0;j<ev->pTrdTrack(0)->NTrdSegment();j++) {
+            for(int i=0;i<ev->pTrdTrack(0)->pTrdSegment(j)->NTrdCluster();i++) {
+                    EdepTRD=EdepTRD+ev->pTrdTrack(0)->pTrdSegment(j)->pTrdCluster(i)->EDep;
+                    NTRDclusters++;
+                }
+            }
+
+            //Edep Tracker
+            endepostatrack=0;	
+            NTrackHits=Tr->NTrRecHit();	
+            clusterTrack[1000];
+            for(int i=0; i<Tr->NTrRecHit();i++){
+                TrRecHitR *hit=ev->pTrTrack(0)->pTrRecHit (i);
+                clusterTrack[i]=hit->Sum();
+                endepostatrack=endepostatrack+hit->Sum();
+            }
+ 
+
+
     }
 }
 

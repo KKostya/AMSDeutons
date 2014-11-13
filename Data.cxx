@@ -26,7 +26,6 @@ DataPresel::DataPresel(TTree * tree):
     Endep(4), chiq(6), R_(6), ResiduiX(6), ResiduiY(6),
     DataMC(tree) // superconstructor calls
 {
-
     tree->Branch("Ev_Num"            , &EventNumber       );
     tree->Branch("Trig_Num"          , &Trig_Num          );
     tree->Branch("CaricaTOF"         , &CaricaTOF         );
@@ -34,28 +33,28 @@ DataPresel::DataPresel(TTree * tree):
     tree->Branch("CaricaTrack"       , &CaricaTrack       );
     tree->Branch("ProbQ"             , &ProbQ             );
     tree->Branch("Qbest"             , &Qbest             );
-    tree->Branch("Endep"             , &Endep             );
-    tree->Branch("layernonusati"     , &layernonusati     );
     tree->Branch("NAnticluster"      , &NAnticluster      );
-    tree->Branch("NTRDSegments"      , &NTRDSegments      );
     tree->Branch("NTofClusters"      , &NTofClusters      );
     tree->Branch("NTofClustersusati" , &NTofClustersusati );
-    tree->Branch("Rup"               , &Rup               );
-    tree->Branch("Rdown"             , &Rdown             );
-    tree->Branch("R"                 , &R                 );
+    tree->Branch("Endep"             , &Endep             );
     tree->Branch("Chisquare"         , &Chisquare         );
     tree->Branch("ResiduiX"          , &ResiduiX          );
     tree->Branch("ResiduiY"          , &ResiduiY          );
-    tree->Branch("chiq"              , &chiq              );
+    tree->Branch("NTrackHits"        , &NTrackHits        );
+    tree->Branch("Rup"               , &Rup               );
+    tree->Branch("Rdown"             , &Rdown             );
+    tree->Branch("R"                 , &R                 );
     tree->Branch("R_"                , &R_                );
+    tree->Branch("chiq"              , &chiq              );
+    tree->Branch("layernonusati"     , &layernonusati     );
+    tree->Branch("endepostatrack"    , &endepostatrack    );
+    tree->Branch("clusterTrack"      , &clusterTrack      );
     tree->Branch("Beta"              , &Beta              );
     tree->Branch("Betacorr"          , &Betacorr          );
     tree->Branch("BetaRICH"          , &BetaRICH          );
-    tree->Branch("TRDclusters"       , &TRDclusters       );
-    tree->Branch("NTRDclusters"      , &NTRDclusters      );
-    tree->Branch("endepostatrack"    , &endepostatrack    );
-    tree->Branch("NTrackHits"        , &NTrackHits        );
-    tree->Branch("clusterTrack"      , &clusterTrack      );
     tree->Branch("EdepTRD"           , &EdepTRD           );
+    tree->Branch("TRDclusters"       , &TRDclusters       );
+    tree->Branch("NTRDSegments"      , &NTRDSegments      );
+    tree->Branch("NTRDclusters"      , &NTRDclusters      );
     tree->Branch("Massa"             , &Massa             );
 }
