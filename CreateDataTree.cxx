@@ -98,9 +98,21 @@ int main(int argc, char * argv[])
         data.Qbest = carica->Charge();
 
         // Energy dependence
-        for(int j=0; j<4; j++) Endep[j]=0;
+        for(int j=0; j<4; j++) data.Endep[j] = 0;
         for(int j=0; j<ev->NTofCluster(); j++)
             Endep[(ev->pTofCluster(j)->Layer)-1]=ev->pTofCluster(j)->Edep;
+
+        // Counts
+        data.NAnticluster      = ev->NAntiCluster();
+        data.NTRDSegments      = ev->NTrdSegment();
+        data.NTofClusters      = ev->NTofCluster();
+        data.NTofClustersusati = ev->pBeta(0)->NTofCluster();
+
+        TrTrackR * Tr = ev->pTrTrack(0);
+        int fitID1 = Tr->iTrTrackPar(1,1,1);
+        int fitID2 = Tr->iTrTrackPar(1,2,1);
+        int fitID3 = Tr->iTrTrackPar(1,3,1);
+
 
     }
 }

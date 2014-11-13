@@ -23,7 +23,7 @@ DataMC::DataMC(TTree * tree)
 }
 
 DataPresel::DataPresel(TTree * tree):
-    
+    Endep(4), chiq(6), R_(6), ResiduiX(6), ResiduiY(6),
     DataMC(tree) // superconstructor calls
 {
 
