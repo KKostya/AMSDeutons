@@ -30,14 +30,21 @@ inline float getSubCharge(ChargeR * charge,const char * name)
 
 int main(int argc, char * argv[])
 {
-    if(argc < 2) return 1;
+
+    //Processing input options
+    int c;
+    char * outFname = NULL;
+    char *  inFname = NULL;
+    while((c = getopt(argc, argv, "o:")) != -1) if(c == 'o') outFname = optarg;
+    if(!outFname) outFname = "ntuple.root"
+    if (optind < argc) inFname = argv[optind++]; else return 1;
 
     // Opening input file
     AMSChain  * ch = new AMSChain;
-    ch->Add(argv[1]);
+    ch->Add(inFname);
 
     // Creating an output
-    TFile * File = new TFile("ntuple.root", "RECREATE");
+    TFile * File = new TFile(outFname, "RECREATE");
     TTree * outTree = new TTree("data","data");
     DataPresel data(outTree);
 
@@ -80,7 +87,7 @@ int main(int argc, char * argv[])
         bool   minBias =      MinBias(ev);
         bool    golden =       Golden(ev);
         bool preselect = Preselection(ev);
-        bool giovacchini = RICHSelection(ev); 
+        bool giovacchiniRICH = RICHSelection(ev); 
 
         data.Rcutoff = ev->pParticle(0)->Cutoff;
 
@@ -144,14 +151,12 @@ int main(int argc, char * argv[])
         //TRD
         data.EdepTRD      = 0;
         data.NTRDclusters = 0;
-        data.clusterusati = 0;
         for(int j = 0; j < ev->pTrdTrack(0)->NTrdSegment(); j++) 
         {
-            data.NTRDclusters++;
             TrdSegmentR * trdSegment = ev->pTrdTrack(0)->pTrdSegment(j);
             for(int i = 0;i < trdSegment->NTrdCluster(); i++) 
             {
-                data.clusterusati++;;
+                data.NTRDclusters++;
                 data.EdepTRD += trdSegment->pTrdCluster(i)->EDep;
             }
         }
@@ -172,19 +177,17 @@ int main(int argc, char * argv[])
         // Beta and RICH
         data.Betacorr=0;
         if(particella->pBetaH()) data.Beta = particella->pBetaH()->GetBeta();
-        if (Beta>=1)  Betacorr=Beta/(2*Beta-1);
-            else Betacorr=Beta;
-            BetaRICH=-1;
-            if (giovacchiniRICH(ev)) {
+        if(Beta>=1) data.Betacorr = data.Beta/(2*data.Beta-1);
+        else data.Betacorr = data.Beta;
+
+        data.BetaRICH = -1;
+        if (giovacchiniRICH) {
                 BetaRICH=ev->pRichRing(0)->getBeta();
                 Betacorr=BetaRICH;
             }
 
         // Mass
         data.Massa = pow(fabs(pow(fabs(R)*pow((1-pow(Betacorr,2)),0.5)/Betacorr,2)),0.5);
-
-
-
     }
 }
 
