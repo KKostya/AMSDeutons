@@ -33,9 +33,13 @@ int main(int argc, char * argv[])
 
     //Processing input options
     int c;
+    int entries = 0;
     char * outFname = NULL;
     char *  inFname = NULL;
-    while((c = getopt(argc, argv, "o:")) != -1) if(c == 'o') outFname = optarg;
+    while((c = getopt(argc, argv, "on:")) != -1) {
+        if(c == 'o') outFname = optarg;
+        if(c == 'n') entries = atoi(optarg);
+    }
     if(!outFname) outFname = "ntuple.root"
     if (optind < argc) inFname = argv[optind++]; else return 1;
 
@@ -57,7 +61,7 @@ int main(int argc, char * argv[])
     /////////////////////////////////////////////////////////////////
     // Event loop
     /////////////////////////////////////////////////////////////////
-    int entries = ch->GetEntries();
+    if(entries == 0) entries = ch->GetEntries();
     for(int ii=0;ii<entries;ii++)
     { 
         AMSEventR * ev = ch->GetEvent();
@@ -181,10 +185,11 @@ int main(int argc, char * argv[])
         else data.Betacorr = data.Beta;
 
         data.BetaRICH = -1;
-        if (giovacchiniRICH) {
-                BetaRICH=ev->pRichRing(0)->getBeta();
-                Betacorr=BetaRICH;
-            }
+        if (giovacchiniRICH) 
+        {
+            data.BetaRICH = ev->pRichRing(0)->getBeta();
+            data.Betacorr = data.BetaRICH;
+        }
 
         // Mass
         data.Massa = pow(fabs(pow(fabs(R)*pow((1-pow(Betacorr,2)),0.5)/Betacorr,2)),0.5);
