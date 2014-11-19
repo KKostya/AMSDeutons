@@ -1,3 +1,6 @@
+#ifndef __SUBSELECTION_HPP__
+#define __SUBSELECTION_HPP__
+
 #include <string>
 
 template<typename T>
@@ -19,4 +22,4 @@ public:
     }
 };
 
-
+#endif

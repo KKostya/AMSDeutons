@@ -1,5 +1,5 @@
 // std includes
-#include <math>
+#include <cmath>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -16,6 +16,8 @@
 #include "Selections/Geo.h"
 #include "Selections/Golden.h"
 #include "Selections/MinBias.h"
+#include "Selections/Preselect.h"
+#include "Selections/RICH.h"
 #include "Data.h"
 
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
@@ -40,7 +42,7 @@ int main(int argc, char * argv[])
         if(c == 'o') outFname = optarg;
         if(c == 'n') entries = atoi(optarg);
     }
-    if(!outFname) outFname = "ntuple.root"
+    if(!outFname) outFname = "ntuple.root";
     if (optind < argc) inFname = argv[optind++]; else return 1;
 
     // Opening input file
@@ -49,9 +51,12 @@ int main(int argc, char * argv[])
 
     // Creating an output
     TFile * File = new TFile(outFname, "RECREATE");
+
     TTree * outTree = new TTree("data","data");
     DataPresel data(outTree);
 
+    TTree * geoTree = new TTree("dataigeo","datageo");
+    DataGeo datageo(geoTree);
 
     // Preparing work data
     double tempozona[11] = {0,0,0,0,0,0,0,0,0,0,0};
@@ -73,48 +78,58 @@ int main(int argc, char * argv[])
         // Geometry/Geography/SAA e.t.c//
         if (!GeoSelection(ev)) continue;
 
-        data.ThetaS   = ev->fHeader.ThetaS;
-        data.PhiS     = ev->fHeader.PhiS;
-        data.U_time   = ev->UTime();
-        data.Livetime = ev->LiveTime();
-        data.Latitude = fabs(ev->fHeader.ThetaM);
+        datageo.ThetaS   = ev->fHeader.ThetaS;
+        datageo.PhiS     = ev->fHeader.PhiS;
+        datageo.U_time   = ev->UTime();
+        datageo.Livetime = ev->LiveTime();
+        datageo.Latitude = fabs(ev->fHeader.ThetaM);
+
+
+        if(ev->pParticle(0))
+            datageo.Rcutoff = ev->pParticle(0)->Cutoff;
+        else
+            datageo.Rcutoff = -1;
 
         for(int i=0;i<12;i++){
             double geo= geomag[i]  ;
             double geo2=/*(i+1)/(double)10*/geomag[i+1];
             if(fabs(ev->fHeader.ThetaM)>geo && fabs(ev->fHeader.ThetaM)<geo2) 
-                data.zonageo = i;
+                datageo.zonageo = i;
             else 
                 tempozona[i]=ev->UTime();
         }
 
-        bool   minBias =      MinBias(ev);
-        bool    golden =       Golden(ev);
-        bool preselect = Preselection(ev);
+        bool   minBias       = MinBias(ev);
+        bool    golden       = Golden<0,3>(ev);
+        bool preselect       = Preselection(ev);
         bool giovacchiniRICH = RICHSelection(ev); 
 
-        data.Rcutoff = ev->pParticle(0)->Cutoff;
+
+        ChargeR *   charge   = ev->pCharge(0);
+        TrTrackR *  track    = ev->pTrTrack(0);
+        TrTrackR *  particle    = ev->pTrTrack(0);
+        
+
+        data.Rcutoff = particle->Cutoff;
 
         // Charge
-        ChargeR * carica= ev->pCharge(0);
-        data.CaricaTOF   = getSubCharge (carica,"AMSChargeTOF");         
-        data.CaricaTRD   = getSubCharge (carica,"AMSChargeTRD");
-        data.CaricaTrack = getSubCharge (carica,"AMSChargeTrackerInner");
+        data.CaricaTOF   = getSubCharge (charge,"AMSChargeTOF");         
+        data.CaricaTRD   = getSubCharge (charge,"AMSChargeTRD");
+        data.CaricaTrack = getSubCharge (charge,"AMSChargeTrackerInner");
 
-        data.ProbQ = carica->getProb(0);
-        data.Qbest = carica->Charge();
+        data.ProbQ = charge->getProb(0);
+        data.Qbest = charge->Charge();
 
         // Tracker stuff
-        TrTrackR * Tr = ev->pTrTrack(0);
-        int fitID1 = Tr->iTrTrackPar(1,1,1);
-        int fitID2 = Tr->iTrTrackPar(1,2,1);
-        int fitID3 = Tr->iTrTrackPar(1,3,1);
-        TrTrackPar parametri = Tr->gTrTrackPar(fitID3);
+        int fitID1 = track->iTrTrackPar(1,1,1);
+        int fitID2 = track->iTrTrackPar(1,2,1);
+        int fitID3 = track->iTrTrackPar(1,3,1);
+        TrTrackPar parametri = track->gTrTrackPar(fitID3);
 
-        data.Rup      = Tr->GetRigidity(fitID1);
-        data.Rdown    = Tr->GetRigidity(fitID2);
-        data.R        = Tr->GetRigidity(fitID3);
-        data.Chisquare= Tr->GetChisq(fitID3);
+        data.Rup      = track->GetRigidity(fitID1);
+        data.Rdown    = track->GetRigidity(fitID2);
+        data.R        = track->GetRigidity(fitID3);
+        data.Chisquare= track->GetChisq(fitID3);
 
         int fit[6];
         fit[0] = 0x78211;  //  1111000 0010 0001 0001
@@ -126,29 +141,29 @@ int main(int argc, char * argv[])
 
         for(int nFit=0; nFit<6; nFit++)
         {
-            chiq[nFit] = Tr->FitT(fit[nFit],-1);
-            R_[nFit]   = Tr->GetRigidity(fit[nFit]);
+            data.chiq[nFit] = track->FitT(fit[nFit],-1);
+            data.R_[nFit]   = track->GetRigidity(fit[nFit]);
         }
 
         data.layernonusati = 0;
         for (int layer=2;layer<9;layer++) 
         {
             if(!parametri.TestHitLayerJ(layer)) data.layernonusati++;
-            ResiduiX[layer-2]=-999999;
-            ResiduiY[layer-2]=-999999;
-            if(!Tr->TestHitLayerJ(layer)) continue;
-            AMSPoint Residual_point = Tr->GetResidualJ(layer,fitID3);
-            if(Tr->TestHitLayerJHasXY(layer))
+            data.ResiduiX[layer-2]=-999999;
+            data.ResiduiY[layer-2]=-999999;
+            if(!track->TestHitLayerJ(layer)) continue;
+            AMSPtracknt Residual_point = track->GetResidualJ(layer,fitID3);
+            if(track->TestHitLayerJHasXY(layer))
             {
-                ResiduiX[layer-2] = Residual_point.x();
-                ResiduiY[layer-2] = Residual_point.y();
+                data.ResiduiX[layer-2] = Residual_point.x();
+                data.ResiduiY[layer-2] = Residual_point.y();
             }
         }
 
         //Edep Tracker
         data.endepostatrack = 0;   
-        for(int i=0; i<Tr->NTrRecHit();i++){
-            TrRecHitR *hit=ev->pTrTrack(0)->pTrRecHit(i);
+        for(int i=0; i<track->NTrRecHit();i++){
+            TrRecHitR *hit=track->pTrRecHit(i);
             data.endepostatrack += hit->Sum();
         }
 
@@ -175,13 +190,13 @@ int main(int argc, char * argv[])
         data.NTRDSegments      = ev->NTrdSegment();
         data.NTRDclusters      = ev->NTrdSegment();
         data.NTofClusters      = ev->NTofCluster();
-        data.NTrackHits        = Tr->NTrRecHit(); 
+        data.NTrackHits        = track->NTrRecHit(); 
         data.NTofClustersusati = ev->pBeta(0)->NTofCluster();
 
         // Beta and RICH
         data.Betacorr=0;
-        if(particella->pBetaH()) data.Beta = particella->pBetaH()->GetBeta();
-        if(Beta>=1) data.Betacorr = data.Beta/(2*data.Beta-1);
+        if(particle->pBetaH()) data.Beta = particle->pBetaH()->GetBeta();
+        if(data.Beta>=1) data.Betacorr = data.Beta/(2*data.Beta-1);
         else data.Betacorr = data.Beta;
 
         data.BetaRICH = -1;
@@ -192,7 +207,7 @@ int main(int argc, char * argv[])
         }
 
         // Mass
-        data.Massa = pow(fabs(pow(fabs(R)*pow((1-pow(Betacorr,2)),0.5)/Betacorr,2)),0.5);
+        data.Massa = pow(fabs(pow(fabs(data.R)*pow((1-pow(data.Betacorr,2)),0.5)/data.Betacorr,2)),0.5);
     }
 }
 

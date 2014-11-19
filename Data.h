@@ -14,7 +14,6 @@ struct DataGeo
     int U_time, zonageo;
     float Latitude, ThetaS, PhiS;
     float Rcutoff;
-    float Unbias;
     float Livetime;
 
     DataGeo(TTree * tree); // Constructor
@@ -34,10 +33,12 @@ struct DataPresel: public DataMC
     int EventNumber;
 
     int Trig_Num;
+    float Unbias;
     float CaricaTOF, CaricaTRD, CaricaTrack;
     float ProbQ, Qbest;
     std::vector<float> * Endep;
     int layernonusati;
+    float Rcutoff;
     int NAnticluster;    
     int NTRDSegments;     
     int NTofClusters;     
@@ -46,8 +47,8 @@ struct DataPresel: public DataMC
     int NTrackHits;
     double Rup, Rdown, R;
     float Chisquare;
-    std::vector<double> * ResiduiX;
-    std::vector<double> * ResiduiY;         
+    std::vector<float> * ResiduiX;
+    std::vector<float> * ResiduiY;         
     std::vector<float> * chiq;
     std::vector<float> * R_;
     float Beta, Betacorr, BetaRICH;

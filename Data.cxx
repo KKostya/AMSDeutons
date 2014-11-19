@@ -12,7 +12,6 @@ DataGeo::DataGeo(TTree * tree)
     tree->Branch("Livetime"          , &Livetime          );
     tree->Branch("ThetaS"            , &ThetaS            );
     tree->Branch("PhiS"              , &PhiS              );
-    tree->Branch("Unbias"            , &Unbias            );
 }
 
 DataMC::DataMC(TTree * tree)
@@ -23,17 +22,24 @@ DataMC::DataMC(TTree * tree)
 }
 
 DataPresel::DataPresel(TTree * tree):
-    Endep(4), chiq(6), R_(6), ResiduiX(6), ResiduiY(6),
-    DataMC(tree) // superconstructor calls
+    ResiduiX( new std::vector<float>(6)), 
+    ResiduiY( new std::vector<float>(6)), 
+        chiq( new std::vector<float>(6)), 
+          R_( new std::vector<float>(6)), 
+       Endep( new std::vector<float>(4)), 
+    DataMC(tree) // superconstructor call
 {
     tree->Branch("Ev_Num"            , &EventNumber       );
     tree->Branch("Trig_Num"          , &Trig_Num          );
     tree->Branch("CaricaTOF"         , &CaricaTOF         );
     tree->Branch("CaricaTRD"         , &CaricaTRD         );
     tree->Branch("CaricaTrack"       , &CaricaTrack       );
+    tree->Branch("Unbias"            , &Unbias            );
+
     tree->Branch("ProbQ"             , &ProbQ             );
     tree->Branch("Qbest"             , &Qbest             );
     tree->Branch("NAnticluster"      , &NAnticluster      );
+    tree->Branch("Rcutoff"           , &Rcutoff           );
     tree->Branch("NTofClusters"      , &NTofClusters      );
     tree->Branch("NTofClustersusati" , &NTofClustersusati );
     tree->Branch("Endep"             , &Endep             );
