@@ -77,10 +77,10 @@ int main(int argc, char * argv[])
                 tempozona[i]=ev->UTime();
         }
 
-        //       Minbias + Golden      //
         bool   minBias =      MinBias(ev);
         bool    golden =       Golden(ev);
         bool preselect = Preselection(ev);
+        bool giovacchini = RICHSelection(ev); 
 
         data.Rcutoff = ev->pParticle(0)->Cutoff;
 
@@ -105,23 +105,13 @@ int main(int argc, char * argv[])
         data.R        = Tr->GetRigidity(fitID3);
         data.Chisquare= Tr->GetChisq(fitID3);
 
-        float  chiq[6];
         int fit[6];
-        double R_[6];
-
-        fit[0]=0x200+0x10+0x1+0x8000+0x10000+0x20000+0x40000;
-        fit[1]=0x200+0x10+0x1+0x1000+0x2000+0x20000+0x40000;
-        fit[2]=0x200+0x10+0x1+0x4000+0x8000+0x1000+0x2000;
-        fit[3]=0x200+0x10+0x1+0x4000+0x8000+0x10000;
-        fit[4]=0x200+0x10+0x1+0x4000+0x8000+0x10000+0x20000+0x2000+0x1000;
-        fit[5]=0x200+0x10+0x1+0x4000+0x8000+0x10000+0x20000+0x40000+0x2000;
-
-        fitt[0] = 0x78211;  //  1111000001000010001
-        fitt[1] = 0x63211;  //  1100011001000010001
-        fitt[2] = 0x0f211;  //  0001111001000010001
-        fitt[3] = 0x1c211;  //  0011100001000010001
-        fitt[4] = 0x3f211;  //  0111111001000010001
-        fitt[5] = 0x7e211;  //  1111110001000010001
+        fit[0] = 0x78211;  //  1111000 0010 0001 0001
+        fit[1] = 0x63211;  //  1100011 0010 0001 0001
+        fit[2] = 0x0f211;  //  0001111 0010 0001 0001
+        fit[3] = 0x1c211;  //  0011100 0010 0001 0001
+        fit[4] = 0x3f211;  //  0111111 0010 0001 0001
+        fit[5] = 0x7e211;  //  1111110 0010 0001 0001
 
         for(int nFit=0; nFit<6; nFit++)
         {
@@ -129,31 +119,20 @@ int main(int argc, char * argv[])
             R_[nFit]   = Tr->GetRigidity(fit[nFit]);
         }
 
-        for (int layer=2;layer<9;layer++) {
+        data.layernonusati = 0;
+        for (int layer=2;layer<9;layer++) 
+        {
+            if(!parametri.TestHitLayerJ(layer)) data.layernonusati++;
             ResiduiX[layer-2]=-999999;
             ResiduiY[layer-2]=-999999;
+            if(!Tr->TestHitLayerJ(layer)) continue;
+            AMSPoint Residual_point = Tr->GetResidualJ(layer,fitID3);
+            if(Tr->TestHitLayerJHasXY(layer))
+            {
+                ResiduiX[layer-2] = Residual_point.x();
+                ResiduiY[layer-2] = Residual_point.y();
+            }
         }
-        for(int layer=2;layer<9;layer++)  {
-            if( ! Tr->TestHitLayerJ(layer)) continue;
-            AMSPoint Residual_point=Tr->GetResidualJ(layer,fitID3);
-            if(Tr->TestHitLayerJHasXY(layer) )
-                ResiduiX[layer-2]=Residual_point.x();
-            ResiduiY[layer-2]=Residual_point.y();
-        }
-
-
-
-
-
-
-
-
-
-
-        // Unused layers
-        data.layernonusati = 0;
-        for(int layer=2; layer<9; layer++)
-            if(!parametri.TestHitLayerJ(layer)) layernonusati++;
 
         //Edep Tracker
         data.endepostatrack = 0;   
@@ -162,25 +141,20 @@ int main(int argc, char * argv[])
             data.endepostatrack += hit->Sum();
         }
 
-        //Edep TRD
+        //TRD
         data.EdepTRD      = 0;
         data.NTRDclusters = 0;
+        data.clusterusati = 0;
         for(int j = 0; j < ev->pTrdTrack(0)->NTrdSegment(); j++) 
         {
+            data.NTRDclusters++;
             TrdSegmentR * trdSegment = ev->pTrdTrack(0)->pTrdSegment(j);
             for(int i = 0;i < trdSegment->NTrdCluster(); i++) 
             {
+                data.clusterusati++;;
                 data.EdepTRD += trdSegment->pTrdCluster(i)->EDep;
-                data.NTRDclusters++;
             }
         }
-
-        int clusterusati=0;
-        for(int j=0;j<ev->pTrdTrack(0)->NTrdSegment();j++) {
-            for(int i=0;i<ev->pTrdTrack(0)->pTrdSegment(j)->NTrdCluster();i++) {
-                clusterusati++;	
-            }
-
 
         // TOF energy deposit
         for(int j=0; j<4; j++) data.Endep[j] = 0;
@@ -195,8 +169,20 @@ int main(int argc, char * argv[])
         data.NTrackHits        = Tr->NTrRecHit(); 
         data.NTofClustersusati = ev->pBeta(0)->NTofCluster();
 
+        // Beta and RICH
+        data.Betacorr=0;
+        if(particella->pBetaH()) data.Beta = particella->pBetaH()->GetBeta();
+        if (Beta>=1)  Betacorr=Beta/(2*Beta-1);
+            else Betacorr=Beta;
+            BetaRICH=-1;
+            if (giovacchiniRICH(ev)) {
+                BetaRICH=ev->pRichRing(0)->getBeta();
+                Betacorr=BetaRICH;
+            }
+
         // Mass
         data.Massa = pow(fabs(pow(fabs(R)*pow((1-pow(Betacorr,2)),0.5)/Betacorr,2)),0.5);
+
 
 
     }

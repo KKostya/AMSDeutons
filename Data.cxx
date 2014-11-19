@@ -48,6 +48,8 @@ DataPresel::DataPresel(TTree * tree):
     tree->Branch("chiq"              , &chiq              );
     tree->Branch("layernonusati"     , &layernonusati     );
     tree->Branch("endepostatrack"    , &endepostatrack    );
+    tree->Branch("ResiduiX"          , &ResiduiX          );
+    tree->Branch("ResiduiY"          , &ResiduiY          );
     tree->Branch("clusterTrack"      , &clusterTrack      );
     tree->Branch("Beta"              , &Beta              );
     tree->Branch("Betacorr"          , &Betacorr          );
