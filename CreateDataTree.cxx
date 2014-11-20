@@ -154,10 +154,8 @@ int main(int argc, char * argv[])
             if(!track->TestHitLayerJ(layer)) continue;
             AMSPoint Residual_point = track->GetResidualJ(layer,fitID3);
             if(track->TestHitLayerJHasXY(layer))
-            {
                 data.ResiduiX[layer-2] = Residual_point.x();
-                data.ResiduiY[layer-2] = Residual_point.y();
-            }
+            data.ResiduiY[layer-2] = Residual_point.y(); // Theres always an Y hit
         }
 
         //Edep Tracker
@@ -208,6 +206,9 @@ int main(int argc, char * argv[])
 
         // Mass
         data.Massa = pow(fabs(pow(fabs(data.R)*pow((1-pow(data.Betacorr,2)),0.5)/data.Betacorr,2)),0.5);
+
+        outTree->Fill();
+        if(ii%10000==0) cut_stuff->AutoSave();
     }
 }
 
