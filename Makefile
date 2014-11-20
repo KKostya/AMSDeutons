@@ -2,12 +2,16 @@ ROOTINC=`root-config --cflags`
 ROOTLIB=`root-config --libs`
 AMSINC=-I$(AMSSRC)/include
 
+ntuplesData: Data.o CreateDataTree.o Selections
+	g++ -o $@ $(AMSLIBso) $(ROOTLIB) Data.o CreateDataTree.o  Selections/selections.a
+
+Selections:
+	make --directory=$@
+
 Data.o: Data.cxx Data.h
+CreateDataTree.o: CreateDataTree.cxx  Data.h 
 
 %.o: %.cxx
 	g++ -o $@ -c $< $(ROOTINC) $(AMSINC)
 
-
-maindatatree: selezioni.o maindatatree.o
-	g++ -o maindatatree $(AMSLIBso) `root-config --libs` selezioni.o maindatatree.o 
-
+.PHONY: Selections

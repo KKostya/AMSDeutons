@@ -22,11 +22,11 @@ DataMC::DataMC(TTree * tree)
 }
 
 DataPresel::DataPresel(TTree * tree):
-    ResiduiX( new std::vector<float>(6)), 
-    ResiduiY( new std::vector<float>(6)), 
-        chiq( new std::vector<float>(6)), 
-          R_( new std::vector<float>(6)), 
-       Endep( new std::vector<float>(4)), 
+    ResiduiX(6), 
+    ResiduiY(6), 
+        chiq(6), 
+          R_(6), 
+       Endep(4), 
     DataMC(tree) // superconstructor call
 {
     tree->Branch("Ev_Num"            , &EventNumber       );

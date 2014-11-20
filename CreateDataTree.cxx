@@ -107,7 +107,7 @@ int main(int argc, char * argv[])
 
         ChargeR *   charge   = ev->pCharge(0);
         TrTrackR *  track    = ev->pTrTrack(0);
-        TrTrackR *  particle    = ev->pTrTrack(0);
+        ParticleR *  particle    = ev->pParticle(0);
         
 
         data.Rcutoff = particle->Cutoff;
@@ -152,7 +152,7 @@ int main(int argc, char * argv[])
             data.ResiduiX[layer-2]=-999999;
             data.ResiduiY[layer-2]=-999999;
             if(!track->TestHitLayerJ(layer)) continue;
-            AMSPtracknt Residual_point = track->GetResidualJ(layer,fitID3);
+            AMSPoint Residual_point = track->GetResidualJ(layer,fitID3);
             if(track->TestHitLayerJHasXY(layer))
             {
                 data.ResiduiX[layer-2] = Residual_point.x();

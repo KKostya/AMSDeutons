@@ -36,7 +36,7 @@ struct DataPresel: public DataMC
     float Unbias;
     float CaricaTOF, CaricaTRD, CaricaTrack;
     float ProbQ, Qbest;
-    std::vector<float> * Endep;
+    std::vector<float>  Endep;
     int layernonusati;
     float Rcutoff;
     int NAnticluster;    
@@ -47,10 +47,10 @@ struct DataPresel: public DataMC
     int NTrackHits;
     double Rup, Rdown, R;
     float Chisquare;
-    std::vector<float> * ResiduiX;
-    std::vector<float> * ResiduiY;         
-    std::vector<float> * chiq;
-    std::vector<float> * R_;
+    std::vector<float>  ResiduiX;
+    std::vector<float>  ResiduiY;         
+    std::vector<float>  chiq;
+    std::vector<float>  R_;
     float Beta, Betacorr, BetaRICH;
     float EdepTRD, endepostatrack;
     std::vector<float> * TRDclusters;
