@@ -45,6 +45,7 @@ template<int FIT>
 bool fitExists(AMSEventR *ev)
 {
     TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return false;
     int fitID = track->iTrTrackPar(1,FIT,1);
     return track->ParExists(fitID);
 }
@@ -77,7 +78,10 @@ bool Preselection(AMSEventR * event)
     std::vector<SubSelection<AMSEventR *> *> cuts =  GetListOfPreselections();
 
     for (int i=0; i<cuts.size(); i++) 
-        selection &= (!cuts[i]->Test(event));
+    {
+//        std::cout << cuts[i]->GetName() << std::endl;
+        selection &= cuts[i]->Test(event);
+    }
     return selection;
 }   
 

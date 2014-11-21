@@ -24,9 +24,19 @@ double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
 
 inline float getSubCharge(ChargeR * charge,const char * name)
 {
+    if(!charge) return -1;
     ChargeSubDR * subcharge = charge->getSubD(name);
-    if(subcharge) return -1;
+    if(!subcharge) return -1;
     return subcharge->Q;
+}
+
+
+template<typename T> 
+void PrintSelections(const T & sels)
+{
+    typename T::const_iterator i;
+    for(i = sels.begin(); i != sels.end(); ++i)
+        std::cout << (*i)->GetName() << ": " << (*i)->GetNSelected() << std::endl;
 }
 
 
@@ -36,21 +46,24 @@ int main(int argc, char * argv[])
     //Processing input options
     int c;
     int entries = 0;
-    char * outFname = NULL;
-    char *  inFname = NULL;
-    while((c = getopt(argc, argv, "on:")) != -1) {
-        if(c == 'o') outFname = optarg;
+    std::string outFname;
+    std::string  inFname;
+    while((c = getopt(argc, argv, "o:n:")) != -1) {
+        if(c == 'o') outFname = std::string(optarg);
         if(c == 'n') entries = atoi(optarg);
     }
-    if(!outFname) outFname = "ntuple.root";
-    if (optind < argc) inFname = argv[optind++]; else return 1;
+    if(outFname.empty()) outFname = std::string("ntuple.root");
+    if (optind < argc) inFname = std::string(argv[optind++]); else return 1;
+
+    std::cout << "Input file: " << inFname << std::endl;
+    std::cout << "Output file: " << outFname << std::endl;
 
     // Opening input file
     AMSChain  * ch = new AMSChain;
-    ch->Add(inFname);
+    ch->Add(inFname.c_str());
 
     // Creating an output
-    TFile * File = new TFile(outFname, "RECREATE");
+    TFile * File = new TFile(outFname.c_str(), "RECREATE");
 
     TTree * outTree = new TTree("data","data");
     DataPresel data(outTree);
@@ -67,13 +80,15 @@ int main(int argc, char * argv[])
     // Event loop
     /////////////////////////////////////////////////////////////////
     if(entries == 0) entries = ch->GetEntries();
+    std::cout << "\n Strating processing " << entries << " events.\n" << std::endl;
     for(int ii=0;ii<entries;ii++)
     { 
         AMSEventR * ev = ch->GetEvent();
 
         // Trigger part
         Level1R * trig = ev->pLevel1(0);
-        if((trig->PhysBPatt&1) == 1) data.Unbias=1; else data.Unbias=0;
+        if(trig && ((trig->PhysBPatt&1) == 1)) data.Unbias=1; else data.Unbias=0;
+
 
         // Geometry/Geography/SAA e.t.c//
         if (!GeoSelection(ev)) continue;
@@ -98,12 +113,14 @@ int main(int argc, char * argv[])
             else 
                 tempozona[i]=ev->UTime();
         }
-
+    
         bool   minBias       = MinBias(ev);
         bool    golden       = Golden<0,3>(ev);
         bool preselect       = Preselection(ev);
         bool giovacchiniRICH = RICHSelection(ev); 
 
+
+        if(!(minBias && golden && preselect) ) continue;
 
         ChargeR *   charge   = ev->pCharge(0);
         TrTrackR *  track    = ev->pTrTrack(0);
@@ -208,7 +225,16 @@ int main(int argc, char * argv[])
         data.Massa = pow(fabs(pow(fabs(data.R)*pow((1-pow(data.Betacorr,2)),0.5)/data.Betacorr,2)),0.5);
 
         outTree->Fill();
-        if(ii%10000==0) cut_stuff->AutoSave();
+        if(ii%10000==0) outTree->AutoSave();
     }
+    File->Write();
+    File->Close();
+
+
+    std::cout << " *************** Selection stats *****************" << std::endl;
+    PrintSelections(GetGeoSelectionsList());
+    PrintSelections(GetMinBiasList());
+    PrintSelections(GetGoldenList<0,3>());
+    PrintSelections(GetListOfPreselections());
 }
 

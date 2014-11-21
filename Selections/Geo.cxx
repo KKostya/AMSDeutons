@@ -24,7 +24,7 @@ bool  runtypeCut(AMSEventR * ev){ return  ev->fHeader.RunType > 61442; }
 /////////////////////////////////////////////
 
 std::vector<SubSelection<AMSEventR *> *> geoCuts;
-std::vector<SubSelection<AMSEventR *> *> GetListOfSelections()
+std::vector<SubSelection<AMSEventR *> *> GetGeoSelectionsList()
 {
     if(geoCuts.size() > 0) return geoCuts;
     geoCuts.push_back(new SubSelection<AMSEventR*>(notInSaaCut, "Not in SAA"       ));
@@ -36,10 +36,10 @@ std::vector<SubSelection<AMSEventR *> *> GetListOfSelections()
 bool GeoSelection(AMSEventR * event)
 {
     bool selection = true;
-    std::vector<SubSelection<AMSEventR *> *> cuts =  GetListOfSelections();
+    std::vector<SubSelection<AMSEventR *> *> cuts =  GetGeoSelectionsList();
 
     for (int i=0; i<cuts.size(); i++) 
-        selection &= (!cuts[i]->Test(event));
+        selection &= cuts[i]->Test(event);
     return selection;
 }   
 

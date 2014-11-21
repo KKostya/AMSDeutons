@@ -56,12 +56,10 @@ DataPresel::DataPresel(TTree * tree):
     tree->Branch("endepostatrack"    , &endepostatrack    );
     tree->Branch("ResiduiX"          , &ResiduiX          );
     tree->Branch("ResiduiY"          , &ResiduiY          );
-    tree->Branch("clusterTrack"      , &clusterTrack      );
     tree->Branch("Beta"              , &Beta              );
     tree->Branch("Betacorr"          , &Betacorr          );
     tree->Branch("BetaRICH"          , &BetaRICH          );
     tree->Branch("EdepTRD"           , &EdepTRD           );
-    tree->Branch("TRDclusters"       , &TRDclusters       );
     tree->Branch("NTRDSegments"      , &NTRDSegments      );
     tree->Branch("NTRDclusters"      , &NTRDclusters      );
     tree->Branch("Massa"             , &Massa             );

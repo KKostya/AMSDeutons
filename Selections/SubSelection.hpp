@@ -17,7 +17,7 @@ public:
     bool Test(T in)
     { 
         bool result = eval(in);
-        if(!result) nSelected += 1;
+        if(result) nSelected += 1;
         return result;
     }
 };

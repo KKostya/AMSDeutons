@@ -53,8 +53,6 @@ struct DataPresel: public DataMC
     std::vector<float>  R_;
     float Beta, Betacorr, BetaRICH;
     float EdepTRD, endepostatrack;
-    std::vector<float> * TRDclusters;
-    std::vector<float> * clusterTrack;
     float Massa;
 
     DataPresel(TTree * tree); // Constructor

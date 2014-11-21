@@ -86,7 +86,7 @@ bool RICHSelection(AMSEventR * event)
     std::vector<SubSelection<AMSEventR *> *> cuts =  GetRICHSelectionsList();
 
     for (int i=0; i<cuts.size(); i++) 
-        selection &= (!cuts[i]->Test(event));
+        selection &= cuts[i]->Test(event);
     return selection;
 }   
 
