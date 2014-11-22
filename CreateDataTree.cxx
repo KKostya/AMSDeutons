@@ -66,7 +66,8 @@ int main(int argc, char * argv[])
     TFile * File = new TFile(outFname.c_str(), "RECREATE");
 
     TTree * outTree = new TTree("data","data");
-    DataPresel data(outTree);
+    DataPresel  * pdata = new DataPresel(outTree); // I was forced to do it -- free() exception on destruction otherwise
+    DataPresel &data = *pdata;
 
     TTree * geoTree = new TTree("dataigeo","datageo");
     DataGeo datageo(geoTree);
@@ -113,6 +114,9 @@ int main(int argc, char * argv[])
             else 
                 tempozona[i]=ev->UTime();
         }
+        geoTree->Fill();
+
+    
     
         bool   minBias       = MinBias(ev);
         bool    golden       = Golden<0,3>(ev);
@@ -228,13 +232,13 @@ int main(int argc, char * argv[])
         if(ii%10000==0) outTree->AutoSave();
     }
     File->Write();
-    File->Close();
-
 
     std::cout << " *************** Selection stats *****************" << std::endl;
     PrintSelections(GetGeoSelectionsList());
     PrintSelections(GetMinBiasList());
     PrintSelections(GetGoldenList<0,3>());
     PrintSelections(GetListOfPreselections());
+
+    //delete File;
 }
 

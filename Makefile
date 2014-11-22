@@ -1,3 +1,4 @@
+CFLAGS=
 ROOTINC=`root-config --cflags`
 ROOTLIB=`root-config --libs`
 AMSINC=-I$(AMSSRC)/include
@@ -12,6 +13,6 @@ Data.o: Data.cxx Data.h
 CreateDataTree.o: CreateDataTree.cxx  Data.h 
 
 %.o: %.cxx
-	g++ -o $@ -c $< $(ROOTINC) $(AMSINC)
+	g++ $(CFLAGS) -o $@ -c $< $(ROOTINC) $(AMSINC)
 
 .PHONY: Selections

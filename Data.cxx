@@ -42,20 +42,13 @@ DataPresel::DataPresel(TTree * tree):
     tree->Branch("Rcutoff"           , &Rcutoff           );
     tree->Branch("NTofClusters"      , &NTofClusters      );
     tree->Branch("NTofClustersusati" , &NTofClustersusati );
-    tree->Branch("Endep"             , &Endep             );
     tree->Branch("Chisquare"         , &Chisquare         );
-    tree->Branch("ResiduiX"          , &ResiduiX          );
-    tree->Branch("ResiduiY"          , &ResiduiY          );
     tree->Branch("NTrackHits"        , &NTrackHits        );
     tree->Branch("Rup"               , &Rup               );
     tree->Branch("Rdown"             , &Rdown             );
     tree->Branch("R"                 , &R                 );
-    tree->Branch("R_"                , &R_                );
-    tree->Branch("chiq"              , &chiq              );
     tree->Branch("layernonusati"     , &layernonusati     );
     tree->Branch("endepostatrack"    , &endepostatrack    );
-    tree->Branch("ResiduiX"          , &ResiduiX          );
-    tree->Branch("ResiduiY"          , &ResiduiY          );
     tree->Branch("Beta"              , &Beta              );
     tree->Branch("Betacorr"          , &Betacorr          );
     tree->Branch("BetaRICH"          , &BetaRICH          );
@@ -63,4 +56,10 @@ DataPresel::DataPresel(TTree * tree):
     tree->Branch("NTRDSegments"      , &NTRDSegments      );
     tree->Branch("NTRDclusters"      , &NTRDclusters      );
     tree->Branch("Massa"             , &Massa             );
+
+    tree->Branch("R_"                , &R_                );
+    tree->Branch("chiq"              , &chiq              );
+    tree->Branch("ResiduiX"          , &ResiduiX          );
+    tree->Branch("ResiduiY"          , &ResiduiY          );
+    tree->Branch("Endep"             , &Endep             );
 }
