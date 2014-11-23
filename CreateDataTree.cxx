@@ -132,6 +132,8 @@ int main(int argc, char * argv[])
         
 
         data.Rcutoff = particle->Cutoff;
+        data.EventNumber = ev->fHeader.Event;
+        data.RunNumber = ev->fHeader.Run;
 
         // Charge
         data.CaricaTOF   = getSubCharge (charge,"AMSChargeTOF");         

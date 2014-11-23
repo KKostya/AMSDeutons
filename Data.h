@@ -30,7 +30,8 @@ struct DataMC
 // Structure for the detector response
 struct DataPresel: public DataMC
 {
-    int EventNumber;
+    unsigned int RunNumber;
+    unsigned int EventNumber;
 
     int Trig_Num;
     float Unbias;
@@ -44,13 +45,15 @@ struct DataPresel: public DataMC
     int NTofClustersusati;
     int NTRDclusters;
     int NTrackHits;
+
     double Rup, Rdown, R;
     float Chisquare;
+
+    std::vector<float>  R_;
     std::vector<float>  Endep;
     std::vector<float>  ResiduiX;
     std::vector<float>  ResiduiY;         
     std::vector<float>  chiq;
-    std::vector<float>  R_;
     float Beta, Betacorr, BetaRICH;
     float EdepTRD, endepostatrack;
     float Massa;
