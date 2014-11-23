@@ -26,13 +26,8 @@ bool minimumbiasTOF(AMSEventR *ev)
     {
         TofClusterR * cluster = ev->pTofCluster(ic);
         if(!cluster) continue;
-
-        // 2DO. Rewrite.
-        for(int i=7;i<13;i++)
-            if((cluster->Status>>i)&1==1) continue;
-        if((cluster->Status>>2)&1==1) continue;
-        if((cluster->Status>>4)&1==1) continue;
-
+        
+        if(cluster->Status & 0x1f94) continue; // 0b1111110010100
         goodlayer[cluster->Layer-1]=true;
     }
     
