@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <fstream>
 
 // AMS includes
 #ifndef _PGTRACK_
@@ -27,37 +28,8 @@ bool unbiased(AMSEventR * ev)
     return trig && ((trig->PhysBPatt&1) == 1);
 }
 
-
-
-int main(int argc, char * argv[])
+std::vector<std::pair<std::string, CutFunction> > GetSelections()
 {
-
-    //Processing input options
-    int c;
-    int entries = 0;
-    std::string outFname;
-    std::string  inFname;
-    while((c = getopt(argc, argv, "o:n:")) != -1) {
-        if(c == 'o') outFname = std::string(optarg);
-        if(c == 'n') entries = atoi(optarg);
-    }
-    if(outFname.empty()) outFname = std::string("ntuple.root");
-    if (optind < argc) inFname = std::string(argv[optind++]); else return 1;
-
-    std::cout << "Input file: " << inFname << std::endl;
-    std::cout << "Output file: " << outFname << std::endl;
-
-    // Opening input file
-    AMSChain  * ch = new AMSChain;
-    ch->Add(inFname.c_str());
-
-    // Preparing work data
-    double tempozona[11] = {0,0,0,0,0,0,0,0,0,0,0};
-    int contasecondi[11] = {0,0,0,0,0,0,0,0,0,0,0};
-    int contaeventi = 0;
-
-    // 
-
     std::vector<std::pair<std::string, CutFunction> > selections;
 
     selections.push_back(std::make_pair("unbias", notFirstTwo));
@@ -93,17 +65,106 @@ int main(int argc, char * argv[])
     selections.push_back(std::make_pair("atleastFiveHits", atleastFiveHits));
     selections.push_back(std::make_pair("betaDisp", betaDisp));
     selections.push_back(std::make_pair("counts5", counts5));
+    return selections;
+}
+
+typedef void (*DataLogger)(AMSEventR *, std::ostream & output);
+
+void Run   (AMSEventR * ev, std::ostream & output){ output <<  ev->fHeader.Run;   }
+void Event (AMSEventR * ev, std::ostream & output){ output <<  ev->fHeader.Event; }
+void UTime (AMSEventR * ev, std::ostream & output){ output <<  ev->UTime();       }
+void ThetaM(AMSEventR * ev, std::ostream & output){ output <<  ev->fHeader.ThetaM;}
+
+void R(AMSEventR * ev, std::ostream & output)
+{
+    TrTrackR  * track    = ev->pTrTrack(0);
+    if(track) output << track->GetRigidity( track->iTrTrackPar(1,3,1)); else output << 0;
+}
+
+void Beta(AMSEventR * ev, std::ostream & output)
+{
+    ParticleR * particle = ev->pParticle(0);
+    if(particle && particle->pBetaH()) output << particle->pBetaH()->GetBeta(); else output << 0;
+}
+
+void BetaRICH(AMSEventR * ev, std::ostream & output)
+{
+    if(ev->pRichRing(0)) output << ev->pRichRing(0)->getBeta(); else output << 0;
+}
+
+std::vector<std::pair<std::string, DataLogger> > GetDataLoggers()
+{
+    std::vector<std::pair<std::string, DataLogger> > datalog;
+
+    datalog.push_back(std::make_pair("Run",      Run      ));
+    datalog.push_back(std::make_pair("Event",    Event    ));
+    datalog.push_back(std::make_pair("UTime",    UTime    ));
+    datalog.push_back(std::make_pair("ThetaM",   ThetaM   ));
+    datalog.push_back(std::make_pair("R",        R        ));
+    datalog.push_back(std::make_pair("Beta",     Beta     ));
+    datalog.push_back(std::make_pair("BetaRICH", BetaRICH ));
+
+    return datalog;
+}
+
+int main(int argc, char * argv[])
+{
+    //Processing input options
+    int c;
+    int entries = 0;
+    std::string  inFname;
+    std::streambuf * buf = std::cout.rdbuf();
+    std::ofstream of;
+    while((c = getopt(argc, argv, "o:n:")) != -1) {
+        if(c == 'o') { of.open(optarg); buf = of.rdbuf(); }
+        if(c == 'n') entries = atoi(optarg);
+    }
+    if (optind < argc) inFname = std::string(argv[optind++]); else return 1;
+
+    std::ostream output(buf);
+
+    std::cout << "Input file: " << inFname << std::endl;
+
+    // Opening input file
+    AMSChain  * ch = new AMSChain;
+    ch->Add(inFname.c_str());
+
+    //Populating the lists
+    std::vector<std::pair<std::string, DataLogger> >  datas      = GetDataLoggers(); 
+    std::vector<std::pair<std::string, CutFunction> > selections = GetSelections(); 
+
+    // Printing the header
+    std::vector<std::pair<std::string, DataLogger> >::iterator data;
+    for (data = datas.begin(); data != datas.end(); ++data)
+        output << (*data).first << ',';
+
+    std::vector<std::pair<std::string, CutFunction> >::iterator selection;
+    for (selection = selections.begin(); selection != selections.end()-1; ++selection)
+        output << (*selection).first << ',';
+    output << (*selection).first;
+
+    output << '\n';
+
      
     /////////////////////////////////////////////////////////////////
     // Event loop
     /////////////////////////////////////////////////////////////////
     if(entries == 0) entries = ch->GetEntries();
     std::cout << "\n Strating processing " << entries << " events.\n" << std::endl;
+    
     for(int ii=0;ii<entries;ii++)
     {
-        unsigned int RunNumber;
-        unsigned int EventNumber;
         AMSEventR * ev = ch->GetEvent();
+
+
+        for (data = datas.begin(); data != datas.end(); ++data) 
+        { (*data).second(ev,output); output << ','; }
+
+        for (selection = selections.begin(); selection != selections.end()-1; ++selection)
+            output << (*selection).second(ev) << ',';
+        output << (*selection).second(ev) << '\n';
+
+        if (ii % 10000 == 0) output.flush(); 
     }
 }
 
