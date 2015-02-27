@@ -92,6 +92,9 @@ void BetaRICH(AMSEventR * ev, std::ostream & output)
     if(ev->pRichRing(0)) output << ev->pRichRing(0)->getBeta(); else output << 0;
 }
 
+void LiveTime(AMSEventR * ev, std::ostream & output){output << ev->LiveTime();}
+void fStatus(AMSEventR * ev, std::ostream & output){output << ev->fStatus;}
+
 std::vector<std::pair<std::string, DataLogger> > GetDataLoggers()
 {
     std::vector<std::pair<std::string, DataLogger> > datalog;
@@ -99,7 +102,9 @@ std::vector<std::pair<std::string, DataLogger> > GetDataLoggers()
     datalog.push_back(std::make_pair("Run",      Run      ));
     datalog.push_back(std::make_pair("Event",    Event    ));
     datalog.push_back(std::make_pair("UTime",    UTime    ));
+    datalog.push_back(std::make_pair("LiveTime", LiveTime ));
     datalog.push_back(std::make_pair("ThetaM",   ThetaM   ));
+    datalog.push_back(std::make_pair("fStatus",  fStatus  ));
     datalog.push_back(std::make_pair("R",        R        ));
     datalog.push_back(std::make_pair("Beta",     Beta     ));
     datalog.push_back(std::make_pair("BetaRICH", BetaRICH ));

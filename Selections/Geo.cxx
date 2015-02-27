@@ -18,7 +18,7 @@
 bool notFirstTwo(AMSEventR * ev){ 
     return (ev->UTime() != ev->fHeader.Run) && (ev->UTime()!=ev->fHeader.Run+1);
 }
-bool notInSaaCut(AMSEventR * ev){ return saa(ev->fHeader.ThetaS, ev->fHeader.PhiS); }
+bool notInSaaCut(AMSEventR * ev){ return saa(ev->fHeader.PhiS, ev->fHeader.ThetaS); }
 bool   zenithCut(AMSEventR * ev){ return  ev->fHeader.Zenith() <= 25;  }
 bool  runtypeCut(AMSEventR * ev){ return  ev->fHeader.RunType > 61442; }
 
