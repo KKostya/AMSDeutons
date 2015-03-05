@@ -76,28 +76,3 @@ bool minimumbiasTRACKER(AMSEventR *pev)
     }
     return false;
 }
-
-/////////////////////////////////////////////
-//////////////// Utils //////////////////////
-/////////////////////////////////////////////
-
-std::vector<SubSelection<AMSEventR *> *> minBiasCuts;
-std::vector<SubSelection<AMSEventR *> *> GetMinBiasList()
-{
-    if(minBiasCuts.size() > 0) return minBiasCuts;
-    minBiasCuts.push_back(new SubSelection<AMSEventR*>(minimumbiasTOF     , "Minbias TOF"     ));
-    minBiasCuts.push_back(new SubSelection<AMSEventR*>(minimumbiasTRIGG   , "Minbias TRIGG"   ));
-    minBiasCuts.push_back(new SubSelection<AMSEventR*>(minimumbiasTRD     , "Minbias TRD"     ));
-    minBiasCuts.push_back(new SubSelection<AMSEventR*>(minimumbiasTRACKER , "Minbias TRACKER" ));
-    return minBiasCuts;
-}
-
-bool MinBias(AMSEventR * event)
-{
-    bool selection = true;
-    std::vector<SubSelection<AMSEventR *> *> cuts =  GetMinBiasList();
-
-    for (int i=0; i<cuts.size(); i++) 
-        selection &= cuts[i]->Test(event);
-    return selection;
-}

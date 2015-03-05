@@ -28,45 +28,6 @@ bool unbiased(AMSEventR * ev)
     return trig && ((trig->PhysBPatt&1) == 1);
 }
 
-std::vector<std::pair<std::string, CutFunction> > GetSelections()
-{
-    std::vector<std::pair<std::string, CutFunction> > selections;
-
-    selections.push_back(std::make_pair("unbias", notFirstTwo));
-
-    selections.push_back(std::make_pair("notFirstTwo", notFirstTwo));
-    selections.push_back(std::make_pair("notInSaaCut", notInSaaCut));
-    selections.push_back(std::make_pair("zenithCut",   zenithCut));
-    selections.push_back(std::make_pair("runtypeCut",  runtypeCut));
-
-    selections.push_back(std::make_pair("minimumbiasTOF", minimumbiasTOF));
-    selections.push_back(std::make_pair("minimumbiasTRIGG", minimumbiasTRIGG));
-    selections.push_back(std::make_pair("minimumbiasTRD", minimumbiasTRD));
-    selections.push_back(std::make_pair("minimumbiasTRACKER", minimumbiasTRACKER));
-
-    selections.push_back(std::make_pair("goldenTOF", goldenTOF<0,3>));
-    selections.push_back(std::make_pair("goldenTRD", goldenTRD<0,3>));
-    selections.push_back(std::make_pair("goldenTRACKER", goldenTRACKER<0,3>));
-
-    selections.push_back(std::make_pair("aParticle", aParticle));
-    selections.push_back(std::make_pair("aTrack", aTrack));
-    selections.push_back(std::make_pair("aTRDTrack", aTRDTrack));
-    selections.push_back(std::make_pair("oneParticle", oneParticle));
-    selections.push_back(std::make_pair("oneTrack", oneTrack));
-    selections.push_back(std::make_pair("chargeOne", chargeOne));
-    selections.push_back(std::make_pair("downGoing", downGoing));
-    selections.push_back(std::make_pair("betaNotCrazy", betaNotCrazy));
-
-    selections.push_back(std::make_pair("aRing", aRing));
-    selections.push_back(std::make_pair("oneRing", oneRing));
-    selections.push_back(std::make_pair("noNaF", noNaF));
-    selections.push_back(std::make_pair("photFracG04", photFracG04));
-    selections.push_back(std::make_pair("photFracL2", photFracL2));
-    selections.push_back(std::make_pair("atleastFiveHits", atleastFiveHits));
-    selections.push_back(std::make_pair("betaDisp", betaDisp));
-    selections.push_back(std::make_pair("counts5", counts5));
-    return selections;
-}
 
 typedef void (*DataLogger)(AMSEventR *, std::ostream & output);
 

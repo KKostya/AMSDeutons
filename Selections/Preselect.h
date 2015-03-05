@@ -1,6 +1,3 @@
-#include <string>
-#include "SubSelection.hpp"
-
 bool aParticle   (AMSEventR * ); 
 bool aTrack      (AMSEventR * ); 
 bool aTRDTrack   (AMSEventR * ); 
@@ -12,6 +9,3 @@ bool betaNotCrazy(AMSEventR * );
 
 template <int N>
 bool fitExists(AMSEventR * ); 
-
-std::vector<SubSelection<AMSEventR *> *> GetListOfPreselections();
-bool Preselection(AMSEventR *data);
