@@ -35,10 +35,11 @@ int main(void)
     factory->AddVariable("layernonusati", 'F');
     factory->AddVariable("NTofUsed := NTofClusters - NTofClustersusati", 'I');
     factory->AddVariable("diffR := abs(Rup-Rdown)/R", 'F');
+    factory->AddVariable("TOF_Up_Down := abs(Endep[2]+Endep[3]-Endep[0]-Endep[1])", 'F');
 
     //Preselection cuts
-    std::string signalCut = "!(1/Massa < 0.6 && Betacorr<0.75)";
-    std::string backgnCut = "1/Massa > 0.6 && Betacorr<0.75";
+    std::string signalCut = "Betacorr<0.75&& (1/Massa>0.6&&1/Massa<1.2)";
+    std::string backgnCut = "Betacorr<0.75&&!(1/Massa>0.6&&1/Massa<1.2)";
 
     factory->AddTree(mc,"Signal"    ,1,signalCut.c_str());
     factory->AddTree(mc,"Background",1,backgnCut.c_str());
@@ -46,8 +47,8 @@ int main(void)
     // Preparing
     std::string preselection = "IsPrescaled==0";
     std::string inputparams(
-        "nTrain_Signal=10000:"
-        "nTrain_Background=3000:" 
+        "nTrain_Signal=2400:"
+        "nTrain_Background=700:" 
         "SplitMode=Random:"
         "NormMode=NumEvents:"
         "!V"
