@@ -1,3 +1,7 @@
+likelihood: QualityLikelihoodTrain.cpp
+	g++ -o likelihood  QualityLikelihoodTrain.cpp `root-config --cflags --libs` -lTMVA
+
+
 plots.pdf:
 	rm -rf plots
 	root -l -b -q "plottingScripts/variables.C(\"QualityLikelihood.root\")"
