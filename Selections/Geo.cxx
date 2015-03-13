@@ -18,32 +18,7 @@
 bool notFirstTwo(AMSEventR * ev){ 
     return (ev->UTime() != ev->fHeader.Run) && (ev->UTime()!=ev->fHeader.Run+1);
 }
-bool notInSaaCut(AMSEventR * ev){ return saa(ev->fHeader.ThetaS, ev->fHeader.PhiS); }
+bool notInSaaCut(AMSEventR * ev){ return saa(ev->fHeader.PhiS, ev->fHeader.ThetaS); }
 bool   zenithCut(AMSEventR * ev){ return  ev->fHeader.Zenith() <= 25;  }
 bool  runtypeCut(AMSEventR * ev){ return  ev->fHeader.RunType > 61442; }
-
-/////////////////////////////////////////////
-//////////////// Utils //////////////////////
-/////////////////////////////////////////////
-
-std::vector<SubSelection<AMSEventR *> *> geoCuts;
-std::vector<SubSelection<AMSEventR *> *> GetGeoSelectionsList()
-{
-    if(geoCuts.size() > 0) return geoCuts;
-    geoCuts.push_back(new SubSelection<AMSEventR*>(notInSaaCut, "Not in SAA"       ));
-    geoCuts.push_back(new SubSelection<AMSEventR*>(zenithCut,   "Zenith in 25 deg" ));
-    geoCuts.push_back(new SubSelection<AMSEventR*>(runtypeCut,  "Proper RunType"   ));
-    geoCuts.push_back(new SubSelection<AMSEventR*>(notFirstTwo, "Not first two in a run"       ));
-    return geoCuts;
-}
-
-bool GeoSelection(AMSEventR * event)
-{
-    bool selection = true;
-    std::vector<SubSelection<AMSEventR *> *> cuts =  GetGeoSelectionsList();
-
-    for (int i=0; i<cuts.size(); i++) 
-        selection &= cuts[i]->Test(event);
-    return selection;
-}   
 

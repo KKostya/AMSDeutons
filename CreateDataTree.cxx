@@ -69,6 +69,7 @@ int main(int argc, char * argv[])
     DataPresel  * pdata = new DataPresel(outTree); // I was forced to do it -- free() exception on destruction otherwise
     DataPresel &data = *pdata;
 
+
     TTree * geoTree = new TTree("dataigeo","datageo");
     DataGeo datageo(geoTree);
 
@@ -241,6 +242,5 @@ int main(int argc, char * argv[])
     PrintSelections(GetGoldenList<0,3>());
     PrintSelections(GetListOfPreselections());
 
-    //delete File;
 }
 

@@ -12,15 +12,59 @@
 
 bool    aRing(AMSEventR * ev) { return ev->NRichRing() >= 1; }
 bool  oneRing(AMSEventR * ev) { return ev->NRichRing() == 1; }
-bool    noNaF(AMSEventR * ev) { 
-    if(!ev->pRichRing(0)) return false;
-    return !ev->pRichRing(0)->IsNaF(); 
+
+
+float cut_prob=0.01;                        //  Kolmogorov test probability 
+float cut_pmt=3;                            //  number of pmts
+float cut_collovertotal=0.4;                //  ring photoelctrons / total photoelectrons in the event 
+float cut_chargeconsistency=10;             //  hit/PMT charge consistency test
+float cut_betaconsistency[2]={0.01,0.005};  //  beta_lip vs beta_ciemat consistency ([0]=NaF, [1]=aerogel) 
+float cut_expphe[2]={1,2};                  //  expected number of photoelectrons   ([0]=NaF, [1]=aerogel)
+float cut_aerogelexternalborder=3500.;      //  aerogel external border (r**2)
+float cut_aerogel_nafborder[2]={17.,19.};   //  aerogel/NaF border                  ([0]=NaF, [1]=aerogel)
+
+inline RichRingR * R(AMSEventR * ev){ return ev->pRichRing(0); }
+
+bool     noNaF(AMSEventR * ev) { return R(ev) && R(ev)->IsNaF(); } 
+bool ringGood (AMSEventR * ev) { return R(ev) && R(ev)->IsGood(); }
+bool ringClean(AMSEventR * ev) { return R(ev) && R(ev)->IsClean(); }
+bool ringProb (AMSEventR * ev) { return R(ev) && R(ev)->getProb() >= cut_prob; }
+bool ringPMTs (AMSEventR * ev) { return R(ev) && R(ev)->getPMTs() >= cut_pmt; }
+
+bool ringChargeConsistency (AMSEventR * ev) 
+{ return R(ev) && R(ev)->getPMTChargeConsistency() <= cut_chargeconsistency; }
+
+bool ringPhotoElectrons (AMSEventR * ev) 
+{ 
+    RichRingR * ring = R(ev); if(!ring ) return false;
+    float totPhEl = RichHitR::getCollectedPhotoElectrons();
+    return R(ev)->getPhotoElectrons()/totPhEl >= cut_collovertotal;
 }
 
+bool ringExpPhe (AMSEventR * ev) 
+{ return R(ev) && R(ev)->getExpectedPhotoelectrons() >= cut_expphe[0]; }
+
+bool ringBetaCons (AMSEventR * ev) 
+{ return R(ev) && R(ev)->getBetaConsistency() <= cut_betaconsistency[0]; }
+
+bool ringNaFBorder (AMSEventR * ev) 
+{
+    RichRingR * ring = R(ev); if(!ring ) return false;
+    float x=rich->getTrackEmissionPoint()[0];
+    float y=rich->getTrackEmissionPoint()[1];
+    return max(abs(x),abs(y)) <= cut_aerogel_nafborder[0];
+}
+
+///////////////////////////////////
+// Old selections
+///////////////////////////////////
+
+bool ringHits (AMSEventR * ev) { return R(ev) && R(ev)->getHits() >= 5; }
+
 bool photFracG04(AMSEventR * ev) { 
-    RichRingR * anello= ev->pRichRing(0);
-    if(!anello) return false;
-    return anello->getExpectedPhotoelectrons()/anello->getPhotoElectrons()>0.4; 
+    RichRingR * ring= ev->pRichRing(0);
+    if(!ring) return false;
+    return ring->getExpectedPhotoelectrons()/anello->getPhotoElectrons()>0.4; 
 }
 
 bool photFracL2(AMSEventR * ev) { 
@@ -29,10 +73,6 @@ bool photFracL2(AMSEventR * ev) {
     return anello->getExpectedPhotoelectrons()/anello->getPhotoElectrons()<2; 
 }
 
-bool atleastFiveHits(AMSEventR * ev) { 
-    if(!ev->pRichRing(0)) return false;
-    return ev->pRichRing(0)->getHits() >= 5; 
-}
 
 bool betaDisp(AMSEventR * ev) { 
     RichRingR * anello= ev->pRichRing(0);
@@ -60,33 +100,4 @@ bool counts5(AMSEventR * ev) {
     }
     return totali-usate-hotspots < 5;
 }
-
-/////////////////////////////////////////////
-//////////////// Utils //////////////////////
-/////////////////////////////////////////////
-
-std::vector<SubSelection<AMSEventR *> *> richCuts;
-std::vector<SubSelection<AMSEventR *> *> GetRICHSelectionsList()
-{
-    if(richCuts.size() > 0) return richCuts;
-    richCuts.push_back(new SubSelection<AMSEventR*>(aRing,       "Not in SAA"       ));
-    richCuts.push_back(new SubSelection<AMSEventR*>(oneRing,     "Zenith in 25 deg" ));
-    richCuts.push_back(new SubSelection<AMSEventR*>(noNaF,       "Proper RunType"   ));
-    richCuts.push_back(new SubSelection<AMSEventR*>(photFracG04, "Proper RunType"   ));
-    richCuts.push_back(new SubSelection<AMSEventR*>(photFracL2,  "Proper RunType"   ));
-    richCuts.push_back(new SubSelection<AMSEventR*>(atleastFiveHits,  "Proper RunType" ));
-    richCuts.push_back(new SubSelection<AMSEventR*>(betaDisp,    "Proper RunType"   ));
-    richCuts.push_back(new SubSelection<AMSEventR*>(counts5,     "Proper RunType"   ));
-    return richCuts;
-}
-
-bool RICHSelection(AMSEventR * event)
-{
-    bool selection = true;
-    std::vector<SubSelection<AMSEventR *> *> cuts =  GetRICHSelectionsList();
-
-    for (int i=0; i<cuts.size(); i++) 
-        selection &= cuts[i]->Test(event);
-    return selection;
-}   
 

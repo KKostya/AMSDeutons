@@ -1,5 +1,4 @@
-#include <string>
-#include "SubSelection.hpp"
-
-std::vector<SubSelection<AMSEventR *> *> GetMinBiasList();
-bool MinBias(AMSEventR *data);
+bool minimumbiasTOF     (AMSEventR * );
+bool minimumbiasTRIGG   (AMSEventR * );
+bool minimumbiasTRD     (AMSEventR * );
+bool minimumbiasTRACKER (AMSEventR * );

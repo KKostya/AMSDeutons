@@ -118,32 +118,6 @@ bool goldenTRD(AMSEventR* ev)
     return golden;
 }
 
-/////////////////////////////////////////////
-//////////////// Utils //////////////////////
-/////////////////////////////////////////////
-
-std::vector<SubSelection<AMSEventR *> *> goldenCuts;
-
-template <int SEVERITY, int FIT>
-std::vector<SubSelection<AMSEventR *> *> GetGoldenList()
-{
-    if(goldenCuts.size() > 0) return goldenCuts;
-    goldenCuts.push_back(new SubSelection<AMSEventR*>(goldenTOF<SEVERITY, FIT>     , "Golden TOF"     ));
-    goldenCuts.push_back(new SubSelection<AMSEventR*>(goldenTRD<SEVERITY, FIT>     , "Golden TRD"     ));
-    goldenCuts.push_back(new SubSelection<AMSEventR*>(goldenTRACKER<SEVERITY, FIT> , "Golden TRACKER" ));
-    return goldenCuts;
-}
-
-template <int SEVERITY, int FIT>
-bool Golden(AMSEventR * event)
-{
-    bool selection = true;
-    std::vector<SubSelection<AMSEventR *> *> cuts =  GetGoldenList<SEVERITY,FIT>();
-
-    for (int i=0; i<cuts.size(); i++) 
-        selection &= cuts[i]->Test(event);
-    return selection;
-}
 
 /////////////////////////////////////////
 /////////// Instantiation ///////////////

@@ -5,11 +5,12 @@ CFLAGS=
 selections.a: Geo.o Golden.o MinBias.o Preselect.o RICH.o
 	ar rvs $@ $?
 
-Geo.o: Geo.cxx  Geo.h SubSelection.hpp
-Golden.o: Golden.cxx  Golden.h  SubSelection.hpp
-MinBias.o: MinBias.cxx  MinBias.h SubSelection.hpp
-Preselect.o: Preselect.cxx Preselect.h SubSelection.hpp
-RICH.o: RICH.cxx RICH.h SubSelection.hpp
+Geo.o: Geo.cxx  Geo.h
+Golden.o: Golden.cxx  Golden.h
+MinBias.o: MinBias.cxx  MinBias.h
+Preselect.o: Preselect.cxx Preselect.h
+RICH.o: RICH.cxx RICH.h
+SelectionLists.o:  SelectionLists.cxx SelectionLists.hpp
 
 %.o: %.cxx
 	g++ $(CFLAGS) -o $@ -c $< $(ROOTINC) $(AMSINC)
