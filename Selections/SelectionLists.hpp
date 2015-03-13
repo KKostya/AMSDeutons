@@ -1,7 +1,7 @@
-
+#include<vector>
 
 typedef bool (*CutFunction)(AMSEventR *);
-typedef bool std::vector<std::pair<std::string, CutFunction> > SelectionList;
+typedef std::vector<std::pair<std::string, CutFunction> > SelectionList;
 
 void AddGeoSelections(SelectionList & selections);
 void AddGoldenSelections(SelectionList & selections);

@@ -1,4 +1,8 @@
+#include <amschain.h>
+#include "SelectionLists.hpp"
+
 #include "Geo.h"
+#include "Preselect.h"
 #include "Golden.h"
 #include "MinBias.h"
 #include "RICH.h"
@@ -46,7 +50,7 @@ void AddOldRICHSelections(SelectionList & selections)
     selections.push_back(std::make_pair("noNaF", noNaF));
     selections.push_back(std::make_pair("photFracG04", photFracG04));
     selections.push_back(std::make_pair("photFracL2", photFracL2));
-    selections.push_back(std::make_pair("atleastFiveHits", atleastFiveHits));
+    // selections.push_back(std::make_pair("atleastFiveHits", atleastFiveHits)); ?? check
     selections.push_back(std::make_pair("betaDisp", betaDisp));
     selections.push_back(std::make_pair("counts5", counts5));
 }
@@ -57,14 +61,14 @@ void AddRICHSelections(SelectionList & selections)
     selections.push_back(std::make_pair("oneRing", oneRing));
     selections.push_back(std::make_pair("noNaF", noNaF));
 
-    selections.push_back(std::make_pair("ringGood",  ringGood  );
-    selections.push_back(std::make_pair("ringClean", ringClean );
-    selections.push_back(std::make_pair("ringProb",  ringProb   );
-    selections.push_back(std::make_pair("ringPMTs",  ringPMTs   );
+    selections.push_back(std::make_pair("ringGood",  ringGood  ));
+    selections.push_back(std::make_pair("ringClean", ringClean ));
+    selections.push_back(std::make_pair("ringProb",  ringProb   ));
+    selections.push_back(std::make_pair("ringPMTs",  ringPMTs   ));
 
-    selections.push_back(std::make_pair("ringChargeConsistency", ringChargeConsistency );
-    selections.push_back(std::make_pair("ringPhotoElectrons",    ringPhotoElectrons    );
-    selections.push_back(std::make_pair("ringExpPhe",            ringExpPhe            );
-    selections.push_back(std::make_pair("ringBetaCons",          ringBetaCons          );
-    selections.push_back(std::make_pair("ringNaFBorder",         ringNaFBorder         );
+    selections.push_back(std::make_pair("ringChargeConsistency", ringChargeConsistency ));
+    selections.push_back(std::make_pair("ringPhotoElectrons",    ringPhotoElectrons    ));
+    selections.push_back(std::make_pair("ringExpPhe",            ringExpPhe            ));
+    selections.push_back(std::make_pair("ringBetaCons",          ringBetaCons          ));
+    selections.push_back(std::make_pair("ringNaFBorder",         ringNaFBorder         ));
 }
