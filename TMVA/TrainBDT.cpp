@@ -26,8 +26,8 @@ int main(void)
     );
 
     //Creating the factory
-    TFile *   ldFile = new TFile("QualityLikelihood.root","RECREATE");
-    TMVA::Factory * factory = new TMVA::Factory("QualityLikelihood", ldFile, options.c_str());
+    TFile *   ldFile = new TFile("QualityBDT.root","RECREATE");
+    TMVA::Factory * factory = new TMVA::Factory("QualityBDT", ldFile, options.c_str());
 
     //Preparing variables 
     factory->AddVariable("NAnticluster", 'I');
@@ -38,8 +38,8 @@ int main(void)
     factory->AddVariable("TOF_Up_Down := TMath::Abs(Endep[2]+Endep[3]-Endep[0]-Endep[1])", 'F');
 
     //Preselection cuts
-    std::string signalCut = "Betacorr<0.75&&Betacorr>0.5&&Massa_gen<2&&Massa_gen>1.5&&(1/Massa)<0.75";
-    std::string backgnCut = "Betacorr<0.75&&Betacorr>0.5&&Massa_gen<1&&Massa_gen>0.5&&(1/Massa)<0.75";
+    std::string signalCut = "Betacorr<0.75&&Betacorr>0.5&&Massa_gen<2&&Massa_gen>1.5&&(1/Massa)<0.6";
+    std::string backgnCut = "Betacorr<0.75&&Betacorr>0.5&&Massa_gen<1&&Massa_gen>0.5&&(1/Massa)<0.6";
 	
     factory->AddTree(mc,"Signal"    ,1,signalCut.c_str());
     factory->AddTree(mc,"Background",1,backgnCut.c_str());
@@ -47,10 +47,6 @@ int main(void)
     // Preparing
     std::string preselection = "";
     std::string inputparams(
-        "nTrain_Signal=0:"
-        "nTrain_Background=0:"
-	    "nTest_Signal=1000:"
-     	"nTest_Background=1000:" 
         "SplitMode=Random:"
         "NormMode=NumEvents:"
         "!V"
@@ -58,9 +54,12 @@ int main(void)
     factory->PrepareTrainingAndTestTree(preselection.c_str(),inputparams.c_str());
 
     // Training
-    std::string trainparams ="!H:!V";
-    
+    std::string trainparams ="!H:!V:MaxDepth=8";
+    factory->BookMethod(TMVA::Types::kBDT, "BDT", trainparams.c_str());
+
+    trainparams ="!H:!V";
     factory->BookMethod(TMVA::Types::kLikelihood, "Likelihood", trainparams.c_str());
+
 
     factory->TrainAllMethods();
     factory->TestAllMethods();
