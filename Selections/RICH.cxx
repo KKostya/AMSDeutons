@@ -50,8 +50,8 @@ bool ringBetaCons (AMSEventR * ev)
 bool ringNaFBorder (AMSEventR * ev) 
 {
     RichRingR * ring = R(ev); if(!ring ) return false;
-    float x=rich->getTrackEmissionPoint()[0];
-    float y=rich->getTrackEmissionPoint()[1];
+    float x=ring->getTrackEmissionPoint()[0];
+    float y=ring->getTrackEmissionPoint()[1];
     return max(abs(x),abs(y)) <= cut_aerogel_nafborder[0];
 }
 
@@ -64,7 +64,7 @@ bool ringHits (AMSEventR * ev) { return R(ev) && R(ev)->getHits() >= 5; }
 bool photFracG04(AMSEventR * ev) { 
     RichRingR * ring= ev->pRichRing(0);
     if(!ring) return false;
-    return ring->getExpectedPhotoelectrons()/anello->getPhotoElectrons()>0.4; 
+    return ring->getExpectedPhotoelectrons()/ring->getPhotoElectrons()>0.4; 
 }
 
 bool photFracL2(AMSEventR * ev) { 

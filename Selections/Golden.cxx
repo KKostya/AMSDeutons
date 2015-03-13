@@ -123,8 +123,9 @@ bool goldenTRD(AMSEventR* ev)
 /////////// Instantiation ///////////////
 /////////////////////////////////////////
 
-template std::vector<SubSelection<AMSEventR *> *> GetGoldenList<0,3>();
-template bool Golden<0,3>(AMSEventR *data);
+template bool goldenTRACKER<0,3>(AMSEventR *data);
+template bool goldenTOF<0,3>(AMSEventR *data);
+template bool goldenTRD<0,3>(AMSEventR *data);
  
 
 

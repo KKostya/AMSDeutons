@@ -2,7 +2,7 @@ ROOTINC=`root-config --cflags`
 AMSINC=-I$(AMSSRC)/include
 CFLAGS=
 
-selections.a: Geo.o Golden.o MinBias.o Preselect.o RICH.o
+selections.a: Geo.o Golden.o MinBias.o Preselect.o RICH.o SelectionLists.o
 	ar rvs $@ $?
 
 Geo.o: Geo.cxx  Geo.h
