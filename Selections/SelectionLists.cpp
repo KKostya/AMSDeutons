@@ -1,6 +1,7 @@
 #include "Geo.h"
 #include "Golden.h"
 #include "MinBias.h"
+#include "RICH.h"
 
 void AddGeoSelections(SelectionList & selections)
 {

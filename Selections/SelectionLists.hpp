@@ -1,3 +1,5 @@
+
+
 typedef bool (*CutFunction)(AMSEventR *);
 typedef bool std::vector<std::pair<std::string, CutFunction> > SelectionList;
 
