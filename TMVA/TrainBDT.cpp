@@ -2,17 +2,28 @@
 // Compile it with:
 //
 //  g++ -o likelihood  QualityLikelihoodTrain.cpp `root-config --cflags --libs` -lTMVA
-//
-//
 
 
 #include <TFile.h>
 #include <TMVA/Factory.h>
 
-int main(void)
+
+int main(int argc, char * argv[])
 {
+    //Processing input options
+    int c;
+    std::string outFname;
+    std::string  inFname;
+    while((c = getopt(argc, argv, "o:")) != -1) {
+        if(c == 'o') outFname = std::string(optarg);
+    }
+    if (optind < argc) inFname = std::string(argv[optind++]); else return 1;
+
+    if( inFname.empty())  inFname = std::string("/home/AMS/fdimicco/fdimicco/MAIN/sommaMC/sommaMC_old.root");
+    if(outFname.empty()) outFname = std::string("QualityBDT.root");
+
     // Open  input files, get the trees
-    TFile * mcFile = new TFile("/home/AMS/fdimicco/fdimicco/MAIN/sommaMC/sommaMC_old.root");
+    TFile * mcFile = new TFile(inFname.c_str());
     TTree * mc = (TTree*)mcFile->Get("grandezze_tagli");
 
     // Preparing options for the TMVA::Factory
@@ -26,7 +37,7 @@ int main(void)
     );
 
     //Creating the factory
-    TFile *   ldFile = new TFile("QualityBDT.root","RECREATE");
+    TFile *   ldFile = new TFile(outFname.c_str(),"RECREATE");
     TMVA::Factory * factory = new TMVA::Factory("QualityBDT", ldFile, options.c_str());
 
     //Preparing variables 
