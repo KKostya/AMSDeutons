@@ -13,11 +13,7 @@
 #include <amschain.h>
 
 // local includes
-#include "Selections/Geo.h"
-#include "Selections/Golden.h"
-#include "Selections/MinBias.h"
-#include "Selections/Preselect.h"
-#include "Selections/RICH.h"
+#include "Selections/SelectionLists.hpp"
 #include "Data.h"
 
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
@@ -29,16 +25,6 @@ inline float getSubCharge(ChargeR * charge,const char * name)
     if(!subcharge) return -1;
     return subcharge->Q;
 }
-
-
-template<typename T> 
-void PrintSelections(const T & sels)
-{
-    typename T::const_iterator i;
-    for(i = sels.begin(); i != sels.end(); ++i)
-        std::cout << (*i)->GetName() << ": " << (*i)->GetNSelected() << std::endl;
-}
-
 
 int main(int argc, char * argv[])
 {
@@ -77,6 +63,28 @@ int main(int argc, char * argv[])
     double tempozona[11] = {0,0,0,0,0,0,0,0,0,0,0};
     int contasecondi[11] = {0,0,0,0,0,0,0,0,0,0,0};
     int contaeventi = 0;
+
+    /////////////////////////////////////////////////////////////////
+    // Creating selections arrays
+    /////////////////////////////////////////////////////////////////
+    SelectionList geoSelections;
+    AddGeoSelections    (geoSelections);
+
+    SelectionList selections;
+    AddGoldenSelections (selections);
+    AddMinBiasSelections(selections);
+    AddPreSelections    (selections);
+
+    SelectionList richSelections;
+    AddRICHSelections   (richSelections);
+
+    std::map<std::string, std::pair<long,long> > counts;
+    for(int nsel=0; nsel<geoSelections.size(); nsel++)
+        counts[geoSelections[nsel].first] = std::make_pair(0,0);
+    for(int nsel=0; nsel<selections.size(); nsel++)
+        counts[selections[nsel].first] = std::make_pair(0,0);
+    for(int nsel=0; nsel<richSelections.size(); nsel++)
+        counts[richSelections[nsel].first] = std::make_pair(0,0);
     
     /////////////////////////////////////////////////////////////////
     // Event loop
@@ -85,15 +93,24 @@ int main(int argc, char * argv[])
     std::cout << "\n Strating processing " << entries << " events.\n" << std::endl;
     for(int ii=0;ii<entries;ii++)
     { 
+        bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
 
         // Trigger part
         Level1R * trig = ev->pLevel1(0);
         if(trig && ((trig->PhysBPatt&1) == 1)) data.Unbias=1; else data.Unbias=0;
-
-
-        // Geometry/Geography/SAA e.t.c//
-        if (!GeoSelection(ev)) continue;
+       
+        // Looping over geometric/geomagnetinc selections 
+        for(int nsel=0; nsel<geoSelections.size(); nsel++)
+        {
+            std::string name = geoSelections[nsel].first;
+            bool thisPasses = geoSelections[nsel].second(ev);
+            eventPasses = eventPasses && thisPasses;
+            if(thisPasses) counts[name].first++;
+            if(eventPasses) counts[name].second++;
+        }
+        // If doesn't pass Geometry/Geography/SAA e.t.c then skip event
+        if (!eventPasses) continue;
 
         datageo.ThetaS   = ev->fHeader.ThetaS;
         datageo.PhiS     = ev->fHeader.PhiS;
@@ -117,21 +134,21 @@ int main(int argc, char * argv[])
         }
         geoTree->Fill();
 
-    
-    
-        bool   minBias       = MinBias(ev);
-        bool    golden       = Golden<0,3>(ev);
-        bool preselect       = Preselection(ev);
-        bool giovacchiniRICH = RICHSelection(ev); 
-
-
-        if(!(minBias && golden && preselect) ) continue;
+        // Looping over selections 
+        for(int nsel=0; nsel<selections.size(); nsel++)
+        {
+            std::string name = selections[nsel].first;
+            bool thisPasses = selections[nsel].second(ev);
+            eventPasses = eventPasses && thisPasses;
+            if(thisPasses) counts[name].first++;
+            if(eventPasses) counts[name].second++;
+        }
+        if(!eventPasses) continue;
 
         ChargeR *   charge   = ev->pCharge(0);
         TrTrackR *  track    = ev->pTrTrack(0);
         ParticleR *  particle    = ev->pParticle(0);
         
-
         data.Rcutoff = particle->Cutoff;
         data.EventNumber = ev->fHeader.Event;
         data.RunNumber = ev->fHeader.Run;
@@ -222,7 +239,18 @@ int main(int argc, char * argv[])
         else data.Betacorr = data.Beta;
 
         data.BetaRICH = -1;
-        if (giovacchiniRICH) 
+
+        // Looping over roch selections 
+        for(int nsel=0; nsel<richSelections.size(); nsel++)
+        {
+            std::string name = richSelections[nsel].first;
+            bool thisPasses = richSelections[nsel].second(ev);
+            eventPasses = eventPasses && thisPasses;
+            if(thisPasses) counts[name].first++;
+            if(eventPasses) counts[name].second++;
+        }
+
+        if (eventPasses) 
         {
             data.BetaRICH = ev->pRichRing(0)->getBeta();
             data.Betacorr = data.BetaRICH;
@@ -236,11 +264,21 @@ int main(int argc, char * argv[])
     }
     File->Write();
 
-    std::cout << " *************** Selection stats *****************" << std::endl;
-    PrintSelections(GetGeoSelectionsList());
-    PrintSelections(GetMinBiasList());
-    PrintSelections(GetGoldenList<0,3>());
-    PrintSelections(GetListOfPreselections());
-
+    //Printing all the selection counts
+    for(int nsel=0; nsel<geoSelections.size(); nsel++)
+    {
+        std::string name = geoSelections[nsel].first;
+        std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
+    }
+    for(int nsel=0; nsel<selections.size(); nsel++)
+    {
+        std::string name = selections[nsel].first;
+        std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
+    }
+    for(int nsel=0; nsel<richSelections.size(); nsel++)
+    {
+        std::string name = richSelections[nsel].first;
+        std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
+    }
 }
 
