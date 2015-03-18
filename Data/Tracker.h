@@ -1,6 +1,15 @@
+int NTrackHits(AMSEventR * ev);
 
-void Run   (AMSEventR * ev, std::ostream & output){ output <<  ev->fHeader.Run;   }
-void Event (AMSEventR * ev, std::ostream & output){ output <<  ev->fHeader.Event; }
-void UTime (AMSEventR * ev, std::ostream & output){ output <<  ev->UTime();       }
-void ThetaM(AMSEventR * ev, std::ostream & output){ output <<  ev->fHeader.ThetaM;}
+double Rup  (AMSEventR * ev);
+double Rdown(AMSEventR * ev);
+double R    (AMSEventR * ev);
+double Chisquare(AMSEventR * ev);
 
+std::vector<double> R_(AMSEventR * ev);
+std::vector<double> chiq(AMSEventR * ev);
+
+std::vector<double> ResiduiX(AMSEventR * ev);
+std::vector<double> ResiduiY(AMSEventR * ev);
+int unusedLayers(AMSEventR * ev);
+
+double EdepTrack(AMSEventR * ev);
