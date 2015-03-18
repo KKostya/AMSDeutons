@@ -9,6 +9,12 @@ selTable: SelectionsTable.o Selections
 ntuplesData: Data.o CreateDataTree.o Selections
 	g++ -o $@ $(AMSLIBso) $(ROOTLIB) Data.o CreateDataTree.o  Selections/selections.a
 
+ntupleData: ntupleData.o Data Selections
+	g++ -o $@ $(AMSLIBso) $(ROOTLIB) ntupleData.o Data/data.a  Selections/selections.a
+
+Data:
+	make --directory=$@
+
 Selections:
 	make --directory=$@
 

@@ -78,14 +78,6 @@ int main(int argc, char * argv[])
     SelectionList richSelections;
     AddRICHSelections   (richSelections);
 
-    std::map<std::string, std::pair<long,long> > counts;
-    for(int nsel=0; nsel<geoSelections.size(); nsel++)
-        counts[geoSelections[nsel].first] = std::make_pair(0,0);
-    for(int nsel=0; nsel<selections.size(); nsel++)
-        counts[selections[nsel].first] = std::make_pair(0,0);
-    for(int nsel=0; nsel<richSelections.size(); nsel++)
-        counts[richSelections[nsel].first] = std::make_pair(0,0);
-    
     /////////////////////////////////////////////////////////////////
     // Event loop
     /////////////////////////////////////////////////////////////////
@@ -102,13 +94,8 @@ int main(int argc, char * argv[])
        
         // Looping over geometric/geomagnetinc selections 
         for(int nsel=0; nsel<geoSelections.size(); nsel++)
-        {
-            std::string name = geoSelections[nsel].first;
-            bool thisPasses = geoSelections[nsel].second(ev);
-            eventPasses = eventPasses && thisPasses;
-            if(thisPasses) counts[name].first++;
-            if(eventPasses) counts[name].second++;
-        }
+            eventPasses = eventPasses && geoSelections[nsel].second(ev);
+       
         // If doesn't pass Geometry/Geography/SAA e.t.c then skip event
         if (!eventPasses) continue;
 
@@ -134,15 +121,10 @@ int main(int argc, char * argv[])
         }
         geoTree->Fill();
 
-        // Looping over selections 
+        // Looping over preselections 
         for(int nsel=0; nsel<selections.size(); nsel++)
-        {
-            std::string name = selections[nsel].first;
-            bool thisPasses = selections[nsel].second(ev);
-            eventPasses = eventPasses && thisPasses;
-            if(thisPasses) counts[name].first++;
-            if(eventPasses) counts[name].second++;
-        }
+            eventPasses = eventPasses && selections[nsel].second(ev);
+        // If doesn't pass preselections e.t.c then skip event
         if(!eventPasses) continue;
 
         ChargeR *   charge   = ev->pCharge(0);
@@ -240,15 +222,9 @@ int main(int argc, char * argv[])
 
         data.BetaRICH = -1;
 
-        // Looping over roch selections 
+        // Looping over RICH selections 
         for(int nsel=0; nsel<richSelections.size(); nsel++)
-        {
-            std::string name = richSelections[nsel].first;
-            bool thisPasses = richSelections[nsel].second(ev);
-            eventPasses = eventPasses && thisPasses;
-            if(thisPasses) counts[name].first++;
-            if(eventPasses) counts[name].second++;
-        }
+            eventPasses = eventPasses && richSelections[nsel].second(ev);
 
         if (eventPasses) 
         {
@@ -263,22 +239,5 @@ int main(int argc, char * argv[])
         if(ii%10000==0) outTree->AutoSave();
     }
     File->Write();
-
-    //Printing all the selection counts
-    for(int nsel=0; nsel<geoSelections.size(); nsel++)
-    {
-        std::string name = geoSelections[nsel].first;
-        std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
-    }
-    for(int nsel=0; nsel<selections.size(); nsel++)
-    {
-        std::string name = selections[nsel].first;
-        std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
-    }
-    for(int nsel=0; nsel<richSelections.size(); nsel++)
-    {
-        std::string name = richSelections[nsel].first;
-        std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
-    }
 }
 

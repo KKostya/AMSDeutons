@@ -22,3 +22,4 @@ bool notInSaaCut(AMSEventR * ev){ return saa(ev->fHeader.PhiS, ev->fHeader.Theta
 bool   zenithCut(AMSEventR * ev){ return  ev->fHeader.Zenith() <= 25;  }
 bool  runtypeCut(AMSEventR * ev){ return  ev->fHeader.RunType > 61442; }
 
+
