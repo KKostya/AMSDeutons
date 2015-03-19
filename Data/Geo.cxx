@@ -1,5 +1,4 @@
-// AMS includes
-#ifndef _PGTRACK_
+// AMS includes #ifndef _PGTRACK_
 #define _PGTRACK_
 #include "TrTrack.h"
 #endif
@@ -19,4 +18,11 @@ double Rcutoff  (AMSEventR * ev ){
     return ev->pParticle(0)->Cutoff;
 }
 
+int Unbias(AMSEventR * ev) {
+    Level1R * trig = ev->pLevel1(0);
+    if(trig && ((trig->PhysBPatt&1) == 1)) return 1; 
+    return 0;
+}
+
+unsigned long long fStatus(AMSEventR * ev) { return ev->fStatus; }
 

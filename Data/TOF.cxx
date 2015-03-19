@@ -1,3 +1,13 @@
+// AMS includes
+#ifndef _PGTRACK_
+#define _PGTRACK_
+#include "TrTrack.h"
+#endif
+#include <amschain.h>
+
+// Local includes
+#include "TOF.h"
+
 
 int NTofClusters(AMSEventR * ev)    { return ev->NTofCluster(); }
 int NTofClustersUsed(AMSEventR * ev){ return ev->pBeta(0)->NTofCluster(); }
@@ -12,4 +22,12 @@ std::vector<double> EdepTOF(AMSEventR * ev)
     return ret;
 }
 
+double Beta(AMSEventR * ev)
+{
+    double beta = 0;
+    ParticleR * particle = ev->pParticle(0);
+    if(particle->pBetaH()) data.Beta = particle->pBetaH()->GetBeta();
+    if(beta>=1) return beta/(2*beta-1); // WTF
+    return beta;
+}
 

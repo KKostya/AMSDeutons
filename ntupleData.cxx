@@ -15,6 +15,8 @@
 // local includes
 #include "Selections/SelectionLists.hpp"
 #include "Data/RootWriter.hpp"
+#include "Data/TOF.h"
+#include "Data/Tracker.h"
 
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
 
@@ -36,7 +38,6 @@ bool DoSelection( AMSEventR * ev,
 
 int main(int argc, char * argv[])
 {
-
     //Processing input options
     int c;
     int entries = 0;
@@ -56,23 +57,29 @@ int main(int argc, char * argv[])
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
 
-    // Creating an output
+    // Creating  output trees
     TFile * File = new TFile(outFname.c_str(), "RECREATE");
     TTree * outTree = new TTree("data","data");
-    TTree * geoTree = new TTree("dataigeo","datageo");
+    TTree * geoTree = new TTree("geodata","geodata");
 
     /////////////////////////////////////////////////////////////////
     // Preparing data writer arrays 
     /////////////////////////////////////////////////////////////////
+    
+    ROOTDataList geodata;
+    AddProvenanceVariables(geodata, outTree);
+    AddGeoVariables(geodata, geoTree);
+
     ROOTDataList data;
     AddProvenanceVariables(data, outTree);
-    AddGeoVariables(data, outTree);
     AddTrackerVariables(data, outTree);
-     
-    // Preparing work data
-    double tempozona[11] = {0,0,0,0,0,0,0,0,0,0,0};
-    int contasecondi[11] = {0,0,0,0,0,0,0,0,0,0,0};
-    int contaeventi = 0;
+    AddTRDVariables(data, outTree);
+    AddTOFVariables(data, outTree);
+    
+    double BetaRICH, BetaCorr, Mass; 
+    outTree->Branch("BetaRICH", &BetaRICH);
+    outTree->Branch("BetaCorr", &BetaCorr);
+    outTree->Branch("Mass",     &Mass);
 
     /////////////////////////////////////////////////////////////////
     // Creating selections arrays
@@ -106,42 +113,31 @@ int main(int argc, char * argv[])
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
 
-        // Trigger part
-        //Level1R * trig = ev->pLevel1(0);
-        //if(trig && ((trig->PhysBPatt&1) == 1)) data.Unbias=1; else data.Unbias=0;
-       
         // Looping over geometric/geomagnetinc selections 
         eventPasses = DoSelection(ev, geoSelections, counts, eventPasses);
         // If doesn't pass Geometry/Geography/SAA e.t.c then skip event
         if (!eventPasses) continue;
-
-        //for(int i=0;i<12;i++){
-        //    double geo= geomag[i]  ;
-        //    double geo2=/*(i+1)/(double)10*/geomag[i+1];
-        //    if(fabs(ev->fHeader.ThetaM)>geo && fabs(ev->fHeader.ThetaM)<geo2) 
-        //        datageo.zonageo = i;
-        //    else 
-        //        tempozona[i]=ev->UTime();
-        //}
-        //geoTree->Fill();
+        // Record the exposure data in the geodata tree
+        for(int idat=0; idat<geodata.size(); idat++) geodata[idat](ev);
+        geoTree->Fill();
 
         // Looping over selections 
         eventPasses = DoSelection(ev, selections, counts, eventPasses);
         if(!eventPasses) continue;
-
-        // That records the data
+        // Record most of the data
         for(int idat=0; idat<data.size(); idat++) data[idat](ev);
 
-//        // Looping over rich selections 
-//        eventPasses = DoSelection(ev, richSelections, counts, eventPasses);
-//        if (eventPasses) 
-//        {
-//            data.BetaRICH = ev->pRichRing(0)->getBeta();
-//            data.Betacorr = data.BetaRICH;
-//        }
-//
-//        // Mass
-//        data.Massa = pow(fabs(pow(fabs(data.R)*pow((1-pow(data.Betacorr,2)),0.5)/data.Betacorr,2)),0.5);
+        // Doing RICH selections / getting beta
+        BetaCorr = BetaTOF(ev);
+        BetaRICH = -1;
+        eventPasses = DoSelection(ev, richSelections, counts, eventPasses);
+        if (eventPasses) 
+        {
+            BetaRICH = ev->pRichRing(0)->getBeta();
+            Betacorr = BetaRICH;
+        }
+        // Mass
+        mass = pow(fabs(pow(fabs(R(ev))*pow((1-pow(Betacorr,2)),0.5)/Betacorr,2)),0.5);
 
         outTree->Fill();
         if(ii%10000==0) outTree->AutoSave();

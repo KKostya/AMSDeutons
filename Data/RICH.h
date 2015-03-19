@@ -1,0 +1,1 @@
+double BetaRICH(AMSEventR * ev );

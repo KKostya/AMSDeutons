@@ -49,6 +49,9 @@ void AddGeoVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<double, Livetime>("Livetime", tree));
     data.push_back(Wrap<double, Latitude>("Latitude", tree));
     data.push_back(Wrap<double, Rcutoff >("Rcutoff" , tree));
+    data.push_back(Wrap<int   , Unbias  >("Unbias"  , tree));
+
+    data.push_back(Wrap<unsigned long long, fStatus>("fStatus", tree));
 }
 
 void AddTrackerVariables(ROOTDataList & data, TTree * tree)
@@ -66,20 +69,18 @@ void AddTrackerVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<double             , EdepTrack   >("EdepTrack"   , tree));
 }
 
-
-void AddTrackerVariables(ROOTDataList & data, TTree * tree)
+void AddTRDVariables(ROOTDataList & data, TTree * tree)
 {
-    data.push_back(Wrap<int                , NTrackHits  >("NTrackHits"  , tree));
-    data.push_back(Wrap<double             , Rup         >("Rup"         , tree));
-    data.push_back(Wrap<double             , Rdown       >("Rdown"       , tree));
-    data.push_back(Wrap<double             , R           >("R"           , tree));
-    data.push_back(Wrap<double             , Chisquare   >("Chisquare"   , tree));
-    data.push_back(Wrap<std::vector<double>, R_          >("R_"          , tree));
-    data.push_back(Wrap<std::vector<double>, chiq        >("chiq"        , tree));
-    data.push_back(Wrap<std::vector<double>, ResiduiX    >("ResiduiX"    , tree));
-    data.push_back(Wrap<std::vector<double>, ResiduiY    >("ResiduiY"    , tree));
-    data.push_back(Wrap<int                , unusedLayers>("unusedLayers", tree));
-    data.push_back(Wrap<double             , EdepTrack   >("EdepTrack"   , tree));
+    data.push_back(Wrap<int    , NTRDclusters>("NTRDclusters", tree));
+    data.push_back(Wrap<double , EdepTRD     >("EdepTRD"     , tree));
+}
+
+void AddTOFVariables(ROOTDataList & data, TTree * tree)
+{
+    data.push_back(Wrap<int                , NTofClusters    >("NTofClusters"    , tree));    
+    data.push_back(Wrap<int                , NTofClustersUsed>("NTofClustersUsed", tree));
+    data.push_back(Wrap<std::vector<double>, EdepTOF         >("EdepTOF"         , tree));
+    data.push_back(Wrap<double             , BetaTOF         >("BetaTOF"         , tree));
 }
 
 
