@@ -46,7 +46,11 @@ std::vector<double> R_(AMSEventR * ev)
     std::vector<double> ret;
     TrTrackR * track = ev->pTrTrack(0);
     for(int i=0; i<sizeof(fit)/sizeof(fit[0]); i++)
+    {
+        track->FitT(fit[i],-1);
         ret.push_back(track->GetRigidity(fit[i]));
+    }
+    std::cout << "\n"; 
     return ret;
 }
 std::vector<double> chiq(AMSEventR * ev) 

@@ -12,6 +12,10 @@
 
 
 /////////////////////// Lol I'm crazzy!!! ////////////////////
+// ROOTWrapper is a metafunction that takes a return type T
+// and a function pointer F. It creates another function "wrapped"
+// that returns void and a variable of type T that gets the return 
+// value of F. 
 template <typename T, T (*F)(AMSEventR *)> 
 struct ROOTWrapper
 {
@@ -20,7 +24,9 @@ struct ROOTWrapper
 };
 template <typename T, T (*F)(AMSEventR *)> 
 T ROOTWrapper<T,F>::var; // <-- here is your memory for ROOT
-
+//
+// 
+//
 template <typename T, T (*F)(AMSEventR *)> 
 void (*Wrap(const std::string & name,TTree * tree)) (AMSEventR *){
     tree->Branch(name.c_str(), &ROOTWrapper<T, F>::var);
@@ -59,6 +65,23 @@ void AddTrackerVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<int                , unusedLayers>("unusedLayers", tree));
     data.push_back(Wrap<double             , EdepTrack   >("EdepTrack"   , tree));
 }
+
+
+void AddTrackerVariables(ROOTDataList & data, TTree * tree)
+{
+    data.push_back(Wrap<int                , NTrackHits  >("NTrackHits"  , tree));
+    data.push_back(Wrap<double             , Rup         >("Rup"         , tree));
+    data.push_back(Wrap<double             , Rdown       >("Rdown"       , tree));
+    data.push_back(Wrap<double             , R           >("R"           , tree));
+    data.push_back(Wrap<double             , Chisquare   >("Chisquare"   , tree));
+    data.push_back(Wrap<std::vector<double>, R_          >("R_"          , tree));
+    data.push_back(Wrap<std::vector<double>, chiq        >("chiq"        , tree));
+    data.push_back(Wrap<std::vector<double>, ResiduiX    >("ResiduiX"    , tree));
+    data.push_back(Wrap<std::vector<double>, ResiduiY    >("ResiduiY"    , tree));
+    data.push_back(Wrap<int                , unusedLayers>("unusedLayers", tree));
+    data.push_back(Wrap<double             , EdepTrack   >("EdepTrack"   , tree));
+}
+
 
 
 

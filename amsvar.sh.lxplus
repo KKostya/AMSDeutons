@@ -59,10 +59,10 @@ export G4DPMJET2_5DATA=$AMSBASE/shared/newgeant4/data/DPMJET/GlauberData
 export AMSP=1
 export G4AMS=1
 export PGTRACK=1
-export AMSSRC=/afs/cern.ch/ams/Offline/vdev
+export AMSSRC=/afs/cern.ch/ams/Offline/vdev/
 export AMSGeoDir=$AMSSRC/display/ams02/
 export CVS_RSH=ssh
-export AMSWD=/afs/cern.ch/ams/Offline/vdev
+export AMSWD=/afs/cern.ch/ams/Offline/vdev/
 
 
 

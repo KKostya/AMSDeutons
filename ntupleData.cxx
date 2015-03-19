@@ -20,7 +20,7 @@ double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
 
 bool DoSelection( AMSEventR * ev,
     SelectionList & selections,
-    std::map<std::string, std::pair<long,long> > counts,
+    std::map<std::string, std::pair<long,long> > & counts,
     bool eventPasses)
 {
     for(int nsel=0; nsel<selections.size(); nsel++)
