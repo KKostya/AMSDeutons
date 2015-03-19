@@ -1,4 +1,5 @@
 // AMS includes #ifndef _PGTRACK_
+#ifndef _PGTRACK_
 #define _PGTRACK_
 #include "TrTrack.h"
 #endif

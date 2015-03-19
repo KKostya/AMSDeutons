@@ -134,10 +134,10 @@ int main(int argc, char * argv[])
         if (eventPasses) 
         {
             BetaRICH = ev->pRichRing(0)->getBeta();
-            Betacorr = BetaRICH;
+            BetaCorr = BetaRICH;
         }
         // Mass
-        mass = pow(fabs(pow(fabs(R(ev))*pow((1-pow(Betacorr,2)),0.5)/Betacorr,2)),0.5);
+        Mass = pow(fabs(pow(fabs(R(ev))*pow((1-pow(BetaCorr,2)),0.5)/BetaCorr,2)),0.5);
 
         outTree->Fill();
         if(ii%10000==0) outTree->AutoSave();
