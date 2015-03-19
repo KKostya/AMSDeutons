@@ -23,33 +23,33 @@ float cut_expphe[2]={1,2};                  //  expected number of photoelectron
 float cut_aerogelexternalborder=3500.;      //  aerogel external border (r**2)
 float cut_aerogel_nafborder[2]={17.,19.};   //  aerogel/NaF border                  ([0]=NaF, [1]=aerogel)
 
-inline RichRingR * R(AMSEventR * ev){ return ev->pRichRing(0); }
+RichRingR * Ring(AMSEventR * ev)  { return ev->pRichRing(0); }
 
-bool     noNaF(AMSEventR * ev) { return R(ev) && R(ev)->IsNaF(); } 
-bool ringGood (AMSEventR * ev) { return R(ev) && R(ev)->IsGood(); }
-bool ringClean(AMSEventR * ev) { return R(ev) && R(ev)->IsClean(); }
-bool ringProb (AMSEventR * ev) { return R(ev) && R(ev)->getProb() >= cut_prob; }
-bool ringPMTs (AMSEventR * ev) { return R(ev) && R(ev)->getPMTs() >= cut_pmt; }
+bool     noNaF(AMSEventR * ev) { return Ring(ev) && !Ring(ev)->IsNaF(); } 
+bool ringGood (AMSEventR * ev) { return Ring(ev) && Ring(ev)->IsGood(); }
+bool ringClean(AMSEventR * ev) { return Ring(ev) && Ring(ev)->IsClean(); }
+bool ringProb (AMSEventR * ev) { return Ring(ev) && Ring(ev)->getProb() >= cut_prob; }
+bool ringPMTs (AMSEventR * ev) { return Ring(ev) && Ring(ev)->getPMTs() >= cut_pmt; }
 
 bool ringChargeConsistency (AMSEventR * ev) 
-{ return R(ev) && R(ev)->getPMTChargeConsistency() <= cut_chargeconsistency; }
+{ return Ring(ev) && Ring(ev)->getPMTChargeConsistency() <= cut_chargeconsistency; }
 
 bool ringPhotoElectrons (AMSEventR * ev) 
 { 
-    RichRingR * ring = R(ev); if(!ring ) return false;
+    RichRingR * ring = Ring(ev); if(!ring ) return false;
     float totPhEl = RichHitR::getCollectedPhotoElectrons();
-    return R(ev)->getPhotoElectrons()/totPhEl >= cut_collovertotal;
+    return Ring(ev)->getPhotoElectrons()/totPhEl >= cut_collovertotal;
 }
 
 bool ringExpPhe (AMSEventR * ev) 
-{ return R(ev) && R(ev)->getExpectedPhotoelectrons() >= cut_expphe[0]; }
+{ return Ring(ev) && Ring(ev)->getExpectedPhotoelectrons() >= cut_expphe[0]; }
 
 bool ringBetaCons (AMSEventR * ev) 
-{ return R(ev) && R(ev)->getBetaConsistency() <= cut_betaconsistency[0]; }
+{ return Ring(ev) && Ring(ev)->getBetaConsistency() <= cut_betaconsistency[0]; }
 
 bool ringNaFBorder (AMSEventR * ev) 
 {
-    RichRingR * ring = R(ev); if(!ring ) return false;
+    RichRingR * ring = Ring(ev); if(!ring ) return false;
     float x=ring->getTrackEmissionPoint()[0];
     float y=ring->getTrackEmissionPoint()[1];
     return max(abs(x),abs(y)) <= cut_aerogel_nafborder[0];
@@ -59,7 +59,7 @@ bool ringNaFBorder (AMSEventR * ev)
 // Old selections
 ///////////////////////////////////
 
-bool ringHits (AMSEventR * ev) { return R(ev) && R(ev)->getHits() >= 5; }
+bool ringHits (AMSEventR * ev) { return Ring(ev) && Ring(ev)->getHits() >= 5; }
 
 bool photFracG04(AMSEventR * ev) { 
     RichRingR * ring= ev->pRichRing(0);
