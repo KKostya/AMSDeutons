@@ -9,6 +9,8 @@
 #include "Provenance.h"
 #include "Geo.h"
 #include "Tracker.h"
+#include "TOF.h"
+#include "TRD.h"
 
 
 /////////////////////// Lol I'm crazzy!!! ////////////////////

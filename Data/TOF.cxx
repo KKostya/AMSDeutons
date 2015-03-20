@@ -22,11 +22,11 @@ std::vector<double> EdepTOF(AMSEventR * ev)
     return ret;
 }
 
-double Beta(AMSEventR * ev)
+double BetaTOF(AMSEventR * ev)
 {
     double beta = 0;
     ParticleR * particle = ev->pParticle(0);
-    if(particle->pBetaH()) data.Beta = particle->pBetaH()->GetBeta();
+    if(particle->pBetaH()) beta = particle->pBetaH()->GetBeta();
     if(beta>=1) return beta/(2*beta-1); // WTF
     return beta;
 }
