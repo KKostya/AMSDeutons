@@ -4,6 +4,9 @@
 #include <string>
 #include <iostream>
 
+#include "TClonesArray.h"
+#include "TParameter.h"
+
 // AMS includes
 #ifndef _PGTRACK_
 #define _PGTRACK_
@@ -36,6 +39,32 @@ bool DoSelection( AMSEventR * ev,
     return eventPasses;
 }
 
+
+// Extract run tag from filename
+void addRunTag( std::map< std::string, long int > &runTag, std::string inFname ){
+    std::string runTagStr;
+    std::string relativeFileName;
+    long int aRunTag = 0;
+    
+    size_t pos = inFname.find_last_of('/');
+    if(pos == std::string::npos){
+	relativeFileName = inFname;
+    }else{
+	relativeFileName = inFname.substr(pos+1, inFname.length());
+    }
+
+    runTagStr = relativeFileName.substr(0,10);
+    //    atoi( runTagStr );
+    {
+	std::stringstream ss;
+	ss << runTagStr;
+	ss >> aRunTag;
+    }
+    //    std::cout << runTagStr << " -> " << aRunTag << std::endl;
+    runTag[ runTagStr ] = aRunTag;
+}
+
+
 int main(int argc, char * argv[])
 {
     //Processing input options
@@ -43,6 +72,7 @@ int main(int argc, char * argv[])
     int entries = 0;
     std::string outFname;
     std::string  inFname;
+
     while((c = getopt(argc, argv, "o:n:")) != -1) {
         if(c == 'o') outFname = std::string(optarg);
         if(c == 'n') entries = atoi(optarg);
@@ -53,9 +83,15 @@ int main(int argc, char * argv[])
     std::cout << "Input file: " << inFname << std::endl;
     std::cout << "Output file: " << outFname << std::endl;
 
+    std::map< std::string, long int> runTag;
+    
     // Opening input file
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
+
+    addRunTag(runTag, inFname);
+    addRunTag(runTag, " ~/eos/ams/Data/AMS02/2014/ISS.B800/pass5/8988159992.00000001.root");
+
 
     // Creating  output trees
     TFile * File = new TFile(outFname.c_str(), "RECREATE");
@@ -109,7 +145,7 @@ int main(int argc, char * argv[])
     if(entries == 0) entries = ch->GetEntries();
     std::cout << "\n Starting processing " << entries << " events.\n" << std::endl;
     for(int ii=0;ii<entries;ii++)
-    { 
+	{ 
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
 
@@ -142,6 +178,19 @@ int main(int argc, char * argv[])
         outTree->Fill();
         if(ii%10000==0) outTree->AutoSave();
     }
+
+    // File->mkdir("runTags");
+    // File->cd("runTags");
+    // TClonesArray runTagArray("TParameter<long int>", runTag.size());
+    // int count = 0;
+    // for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
+    // 	runTagArray[ count++ ] = new TParameter<long int>( it -> first.c_str(), it->second );
+
+    // 	std::cout << "it -> first : " << it -> first << std::endl;
+    // 	std::cout << "it -> second  : " << it -> second  << std::endl;
+    // }
+    // runTagArray.Write("runTag");
+    
     File->Write();
 
     //Printing all the selection counts
@@ -160,5 +209,7 @@ int main(int argc, char * argv[])
         std::string name = richSelections[nsel].first;
         std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
     }
+
+
 }
 
