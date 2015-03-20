@@ -10,7 +10,6 @@
 
 double ThetaS   (AMSEventR * ev ){ return  ev->fHeader.ThetaS;       }
 double PhiS     (AMSEventR * ev ){ return  ev->fHeader.PhiS;         }
-double U_time   (AMSEventR * ev ){ return  ev->UTime();              }
 double Livetime (AMSEventR * ev ){ return  ev->LiveTime();           }
 double Latitude (AMSEventR * ev ){ return  fabs(ev->fHeader.ThetaM); }
 

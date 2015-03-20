@@ -11,6 +11,7 @@
 #include "Tracker.h"
 #include "TOF.h"
 #include "TRD.h"
+#include "SelectionStatus.h"
 
 
 /////////////////////// Lol I'm crazzy!!! ////////////////////
@@ -47,7 +48,6 @@ void AddGeoVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<double, ThetaS  >("ThetaS"  , tree));
     data.push_back(Wrap<double, PhiS    >("PhiS"    , tree));
-    data.push_back(Wrap<double, U_time  >("U_time"  , tree));
     data.push_back(Wrap<double, Livetime>("Livetime", tree));
     data.push_back(Wrap<double, Latitude>("Latitude", tree));
     data.push_back(Wrap<double, Rcutoff >("Rcutoff" , tree));
@@ -85,6 +85,8 @@ void AddTOFVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<double             , BetaTOF         >("BetaTOF"         , tree));
 }
 
-
-
+void AddSelectionVariables(ROOTDataList & data, TTree * tree)
+{
+    data.push_back(Wrap<unsigned long long , selStatus       >("selStatus"       , tree));
+}
 

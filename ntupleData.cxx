@@ -59,16 +59,16 @@ int main(int argc, char * argv[])
 
     // Creating  output trees
     TFile * File = new TFile(outFname.c_str(), "RECREATE");
+    TTree * effTree = new TTree("selections","selections");
     TTree * outTree = new TTree("data","data");
-    TTree * geoTree = new TTree("geodata","geodata");
 
     /////////////////////////////////////////////////////////////////
     // Preparing data writer arrays 
     /////////////////////////////////////////////////////////////////
-    
-    ROOTDataList geodata;
-    AddProvenanceVariables(geodata, outTree);
-    AddGeoVariables(geodata, geoTree);
+    ROOTDataList effdata;
+    AddProvenanceVariables(effdata, effTree);
+    AddGeoVariables       (effdata, effTree);
+    AddSelectionVariables (effdata, effTree);
 
     ROOTDataList data;
     AddProvenanceVariables(data, outTree);
@@ -112,13 +112,14 @@ int main(int argc, char * argv[])
     { 
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
+        // Compute and write selection status table
+        for(int idat=0; idat<effdata.size(); idat++) effdata[idat](ev);
+        effTree->Fill();
+
         // Looping over geometric/geomagnetinc selections 
         eventPasses = DoSelection(ev, geoSelections, counts, eventPasses);
         // If doesn't pass Geometry/Geography/SAA e.t.c then skip event
         if (!eventPasses) continue;
-        // Record the exposure data in the geodata tree
-        for(int idat=0; idat<geodata.size(); idat++) geodata[idat](ev);
-        geoTree->Fill();
 
         // Looping over selections 
         eventPasses = DoSelection(ev, selections, counts, eventPasses);
@@ -126,7 +127,7 @@ int main(int argc, char * argv[])
         // Record most of the data
         for(int idat=0; idat<data.size(); idat++) data[idat](ev);
 
-        // Doing RICH selections / getting beta
+        // Doing RICH selections / updating beta
         BetaCorr = BetaTOF(ev);
         BetaRICH = -1;
         eventPasses = DoSelection(ev, richSelections, counts, eventPasses);

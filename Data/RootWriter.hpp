@@ -8,3 +8,5 @@ void AddGeoVariables(ROOTDataList & data, TTree * tree);
 void AddTrackerVariables(ROOTDataList & data, TTree * tree);
 void AddTRDVariables(ROOTDataList & data, TTree * tree);
 void AddTOFVariables(ROOTDataList & data, TTree * tree);
+
+void AddSelectionVariables(ROOTDataList & data, TTree * tree);
