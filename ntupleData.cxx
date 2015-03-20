@@ -112,7 +112,6 @@ int main(int argc, char * argv[])
     { 
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
-
         // Looping over geometric/geomagnetinc selections 
         eventPasses = DoSelection(ev, geoSelections, counts, eventPasses);
         // If doesn't pass Geometry/Geography/SAA e.t.c then skip event

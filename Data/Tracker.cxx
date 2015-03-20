@@ -50,7 +50,6 @@ std::vector<double> R_(AMSEventR * ev)
         track->FitT(fit[i],-1);
         ret.push_back(track->GetRigidity(fit[i]));
     }
-    std::cout << "\n"; 
     return ret;
 }
 std::vector<double> chiq(AMSEventR * ev) 

@@ -70,5 +70,5 @@ void AddRICHSelections(SelectionList & selections)
     selections.push_back(std::make_pair("ringPhotoElectrons",    ringPhotoElectrons    ));
     selections.push_back(std::make_pair("ringExpPhe",            ringExpPhe            ));
     selections.push_back(std::make_pair("ringBetaCons",          ringBetaCons          ));
-    selections.push_back(std::make_pair("ringNaFBorder",         ringNaFBorder         ));
+    selections.push_back(std::make_pair("ringNoNaFBorder",       ringNoNaFBorder       ));
 }

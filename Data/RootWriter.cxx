@@ -40,7 +40,7 @@ void AddProvenanceVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<unsigned int, Run  >("Run",   tree));
     data.push_back(Wrap<unsigned int, Event>("Event", tree));
-    data.push_back(Wrap<time_t,       UTime>("UTime", tree));
+    data.push_back(Wrap<unsigned int, UTime>("UTime", tree));
 }
 
 void AddGeoVariables(ROOTDataList & data, TTree * tree)

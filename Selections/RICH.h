@@ -15,7 +15,7 @@ bool ringChargeConsistency (AMSEventR * ev);
 bool ringPhotoElectrons    (AMSEventR * ev);
 bool ringExpPhe            (AMSEventR * ev);
 bool ringBetaCons          (AMSEventR * ev);
-bool ringNaFBorder         (AMSEventR * ev);
+bool ringNoNaFBorder       (AMSEventR * ev);
 
 ///////////////////////////////////
 // Old selections

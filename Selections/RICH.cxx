@@ -47,12 +47,12 @@ bool ringExpPhe (AMSEventR * ev)
 bool ringBetaCons (AMSEventR * ev) 
 { return Ring(ev) && Ring(ev)->getBetaConsistency() <= cut_betaconsistency[0]; }
 
-bool ringNaFBorder (AMSEventR * ev) 
+bool ringNoNaFBorder (AMSEventR * ev) 
 {
     RichRingR * ring = Ring(ev); if(!ring ) return false;
     float x=ring->getTrackEmissionPoint()[0];
     float y=ring->getTrackEmissionPoint()[1];
-    return max(abs(x),abs(y)) <= cut_aerogel_nafborder[0];
+    return !(max(abs(x),abs(y)) <= cut_aerogel_nafborder[0]);
 }
 
 ///////////////////////////////////
