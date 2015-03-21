@@ -4,8 +4,9 @@
 #include <string>
 #include <iostream>
 
-#include "TClonesArray.h"
-#include "TParameter.h"
+// ROOT includes
+#include "TObjString.h"
+#include "TMacro.h"
 
 // AMS includes
 #ifndef _PGTRACK_
@@ -20,8 +21,11 @@
 #include "Data/RootWriter.hpp"
 #include "Data/TOF.h"
 #include "Data/Tracker.h"
+#include "rootUtils.hpp"
 
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
+
+extern const char *gitversion;
 
 bool DoSelection( AMSEventR * ev,
     SelectionList & selections,
@@ -42,28 +46,35 @@ bool DoSelection( AMSEventR * ev,
 
 // Extract run tag from filename
 void addRunTag( std::map< std::string, long int > &runTag, std::string inFname ){
-    std::string runTagStr;
-    std::string relativeFileName;
-    long int aRunTag = 0;
-    
-    size_t pos = inFname.find_last_of('/');
-    if(pos == std::string::npos){
-	relativeFileName = inFname;
-    }else{
-	relativeFileName = inFname.substr(pos+1, inFname.length());
-    }
-
-    runTagStr = relativeFileName.substr(0,10);
-    //    atoi( runTagStr );
-    {
-	std::stringstream ss;
-	ss << runTagStr;
-	ss >> aRunTag;
-    }
-    //    std::cout << runTagStr << " -> " << aRunTag << std::endl;
-    runTag[ runTagStr ] = aRunTag;
+    std::string runTagStr = (rootUtils::getFileName(inFname)).substr(0,10);
+    runTag[ runTagStr ] = rootUtils::stringTo<long int>(runTagStr);
 }
 
+
+void registerSrcFilesInRootuple(){
+    std::vector <std::string > files = rootUtils::getFilesInDir(".");
+    std::vector <std::string > dataFiles = rootUtils::getFilesInDir("Data");
+    std::vector <std::string > selectionFiles = rootUtils::getFilesInDir("Selection");
+
+    files.insert(files.end(), dataFiles.begin(), dataFiles.end());
+    files.insert(files.end(), selectionFiles.begin(), selectionFiles.end());
+    
+    TDirectory *srcDir = gFile -> mkdir("infos/srcFiles");
+    gFile -> cd("infos/srcFiles");
+    std::cout << "listing" << std::endl;
+    srcDir -> ls();
+
+    for(int i = 0; i < files.size(); i++){
+	string extension = rootUtils::getExtension( files[i] );
+	if( extension == "cpp" || extension == "hpp" || extension == "h" || extension == "c" || extension == "C" || extension == "cxx" || extension == "hxx"){
+	    TMacro m( files[i].c_str() );
+	    m.Write( rootUtils::getFileName(files[i]).c_str() );
+	    std::cout << "files[i] : " << files[i] << std::endl;
+	}
+    }
+  
+    gFile -> cd();
+}
 
 int main(int argc, char * argv[])
 {
@@ -179,17 +190,25 @@ int main(int argc, char * argv[])
         if(ii%10000==0) outTree->AutoSave();
     }
 
-    // File->mkdir("runTags");
-    // File->cd("runTags");
-    // TClonesArray runTagArray("TParameter<long int>", runTag.size());
-    // int count = 0;
-    // for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
-    // 	runTagArray[ count++ ] = new TParameter<long int>( it -> first.c_str(), it->second );
+    std::string runTagListStr;
+    for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
+    	std::cout << "it -> first : " << it -> first << std::endl;
+    	std::cout << "it -> second  : " << it -> second  << std::endl;
+	runTagListStr += it -> first;
+	runTagListStr += " ";
+    }
 
-    // 	std::cout << "it -> first : " << it -> first << std::endl;
-    // 	std::cout << "it -> second  : " << it -> second  << std::endl;
+    File->mkdir("infos");
+    File->cd("infos");
+    TObjString runTagList( runTagListStr.c_str() );
+    runTagList.Write("runTag");
+
+    TObjString gitVersion(gitversion);
+    gitVersion.Write("gitVersion");
+    registerSrcFilesInRootuple();
+    // SaveFiles(){
+	
     // }
-    // runTagArray.Write("runTag");
     
     File->Write();
 
@@ -212,4 +231,3 @@ int main(int argc, char * argv[])
 
 
 }
-
