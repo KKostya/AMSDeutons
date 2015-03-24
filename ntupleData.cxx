@@ -198,13 +198,13 @@ int main(int argc, char * argv[])
     TObjString runTagList( runTagListStr.c_str() );
     runTagList.Write("runTag");
 
-    TObjString gitVersion(gitversion);
-    gitVersion.Write("gitVersion");
-    registerSrcFilesInRootuple();
- 
     TObjString selectionBits(GetSelectionNames().c_str());
     selectionBits.Write("selectionBits");
 
+    TObjString gitVersion(gitversion);
+    gitVersion.Write("gitVersion");
+    registerSrcFilesInRootuple(); 
+ 
     File->Write();
 
     //Printing all the selection counts
