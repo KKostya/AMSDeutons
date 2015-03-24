@@ -1,3 +1,5 @@
+#include <sstream> 
+
 // AMS includes #ifndef _PGTRACK_
 #ifndef _PGTRACK_
 #define _PGTRACK_
@@ -20,11 +22,6 @@ SelectionList GetSelectionList()
     }
     return selections;
 }
-
-
-
-
-
 unsigned long long selStatus(AMSEventR * ev)
 {
     SelectionList selections = GetSelectionList();
@@ -38,7 +35,10 @@ unsigned long long selStatus(AMSEventR * ev)
 std::string GetSelectionNames()
 {
     SelectionList selections = GetSelectionList();
-    
-    for(int nsel=0; nsel<selections.size(); nsel++)
-        selections[nsel].name
+   
+    std::stringstream ss;
+    ss << selections[0].name;
+    for(int nsel=1; nsel<selections.size(); nsel++)
+        ss << "," << selections[nsel].name
+    return ss.str();
 }
