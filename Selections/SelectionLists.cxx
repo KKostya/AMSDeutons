@@ -72,5 +72,5 @@ void AddRICHSelections(SelectionList & selections)
     selections.push_back( SelectionItem("ringPhotoElectrons",    ringPhotoElectrons    ));
     selections.push_back( SelectionItem("ringExpPhe",            ringExpPhe            ));
     selections.push_back( SelectionItem("ringBetaCons",          ringBetaCons          ));
-    selections.push_back( SelectionItem("ringNaFBorder",         ringNaFBorder         ));
+    selections.push_back( SelectionItem("ringNoNaFBorder",         ringNoNaFBorder         ));
 }
