@@ -1,6 +1,8 @@
 ROOTINC=`root-config --cflags`
 AMSINC=-I$(AMSSRC)/include
-CFLAGS=
+CFLAGS= -g
+
+all: data.a
 
 data.a: Geo.o Provenance.o Tracker.o RootWriter.o TRD.o TOF.o SelectionStatus.o
 	ar rvs $@ $?
@@ -12,6 +14,9 @@ TRD.o: TRD.cxx  TRD.h
 TOF.o: TOF.cxx  TOF.h
 SelectionStatus.o: SelectionStatus.cxx  SelectionStatus.h
 RootWriter.o:  RootWriter.cxx RootWriter.hpp Geo.o Provenance.o Tracker.o TRD.o TOF.o
+
+clean:
+	rm -f *.o *.a
 
 %.o: %.cxx
 	g++ $(CFLAGS) -o $@ -c $< $(ROOTINC) $(AMSINC)

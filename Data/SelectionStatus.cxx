@@ -22,7 +22,7 @@ unsigned long long selStatus(AMSEventR * ev)
 
     unsigned long long ret = 0;
     for(int nsel=0; nsel<selections.size(); nsel++)
-        if(selections[nsel].second(ev)) 
+        if(selections[nsel].cutFunction(ev)) 
             ret += 1 << nsel;
     return ret;
 }
