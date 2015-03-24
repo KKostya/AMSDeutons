@@ -11,6 +11,7 @@
 #include "Tracker.h"
 #include "TOF.h"
 #include "TRD.h"
+#include "MC.h"
 #include "SelectionStatus.h"
 
 
@@ -91,7 +92,7 @@ void AddTOFVariables(ROOTDataList & data, TTree * tree)
 void AddMCVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap< double            , GenMomentum >("GenMomentum", tree ));
-    data.push_back(Wrap< double            , GenParID    >("GenParID",    tree ));
+    data.push_back(Wrap< int               , GenParID    >("GenParID",    tree ));
     data.push_back(Wrap< std::vector<float>, GenCoo      >("GenCoo",      tree ));
     data.push_back(Wrap< std::vector<float>, GenDir      >("GenDir",      tree ));
 }
