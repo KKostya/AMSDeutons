@@ -40,20 +40,21 @@ void AddProvenanceVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<unsigned int, Run  >("Run",   tree));
     data.push_back(Wrap<unsigned int, Event>("Event", tree));
-    data.push_back(Wrap<time_t,       UTime>("UTime", tree));
+    data.push_back(Wrap<unsigned int, UTime>("UTime", tree));
 }
 
 void AddGeoVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<double, ThetaS  >("ThetaS"  , tree));
     data.push_back(Wrap<double, PhiS    >("PhiS"    , tree));
-    data.push_back(Wrap<double, U_time  >("U_time"  , tree));
     data.push_back(Wrap<double, Livetime>("Livetime", tree));
     data.push_back(Wrap<double, Latitude>("Latitude", tree));
     data.push_back(Wrap<double, Rcutoff >("Rcutoff" , tree));
     data.push_back(Wrap<int   , Unbias  >("Unbias"  , tree));
+    data.push_back(Wrap<unsigned int, UTime>("UTime", tree));
 
     data.push_back(Wrap<unsigned long long, fStatus>("fStatus", tree));
+
 }
 
 void AddTrackerVariables(ROOTDataList & data, TTree * tree)
