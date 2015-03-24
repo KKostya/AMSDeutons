@@ -8,8 +8,7 @@
 #include "../Selections/SelectionLists.hpp"
 
 SelectionList selections;
-
-unsigned long long selStatus(AMSEventR * ev)
+SelectionList GetSelectionList()
 {
     if(selections.size() == 0)
     {
@@ -19,10 +18,27 @@ unsigned long long selStatus(AMSEventR * ev)
         AddPreSelections    (selections);
         AddRICHSelections   (selections);
     }
+    return selections;
+}
 
+
+
+
+
+unsigned long long selStatus(AMSEventR * ev)
+{
+    SelectionList selections = GetSelectionList();
     unsigned long long ret = 0;
     for(int nsel=0; nsel<selections.size(); nsel++)
         if(selections[nsel].cutFunction(ev)) 
             ret += 1 << nsel;
     return ret;
+}
+
+std::string GetSelectionNames()
+{
+    SelectionList selections = GetSelectionList();
+    
+    for(int nsel=0; nsel<selections.size(); nsel++)
+        selections[nsel].name
 }

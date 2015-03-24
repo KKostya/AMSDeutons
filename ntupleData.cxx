@@ -97,7 +97,7 @@ int main(int argc, char * argv[])
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
 
-    //    addRunTag(runTag, inFname);
+    addRunTag(runTag, inFname);
 
     // Creating  output trees
     TFile * File = new TFile(outFname.c_str(), "RECREATE");
@@ -186,21 +186,29 @@ int main(int argc, char * argv[])
         if(ii%10000==0) outTree->AutoSave();
     }
 
-    // std::string runTagListStr;
-    // for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
-    // 	runTagListStr += it -> first;
-    // 	runTagListStr += " ";
-    // }
+    std::string runTagListStr;
+    for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
+    	runTagListStr += it -> first;
+    	runTagListStr += " ";
+    }
 
-    // File->mkdir("infos");
-    // File->cd("infos");
-    // TObjString runTagList( runTagListStr.c_str() );
-    // runTagList.Write("runTag");
+    File->mkdir("infos");
+    File->cd("infos");
+    TObjString runTagList( runTagListStr.c_str() );
+    runTagList.Write("runTag");
 
-    // TObjString gitVersion(gitversion);
-    // gitVersion.Write("gitVersion");
-    // registerSrcFilesInRootuple();
+    TObjString gitVersion(gitversion);
+    gitVersion.Write("gitVersion");
+    registerSrcFilesInRootuple();
+ 
+    TObjString gitVersion(gitversion);
+    gitVersion.Write("gitVersion");
+    registerSrcFilesInRootuple();
 
+    for(int nsel=0; nsel<geoSelections.size(); nsel++)
+    for(int nsel=0; nsel<selections.size(); nsel++)
+    for(int nsel=0; nsel<richSelections.size(); nsel++)
+ 
     File->Write();
 
     //Printing all the selection counts
