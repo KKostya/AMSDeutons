@@ -1,4 +1,4 @@
-CFLAGS=
+CFLAGS= -g
 ROOTINC=`root-config --cflags`
 ROOTLIB=`root-config --libs`
 AMSINC=-I$(AMSSRC)/include
@@ -29,6 +29,8 @@ gitversion.c: .git/HEAD .git/index
 	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
 
 clean:
-	rm -f *.o *.a ntupleData ntuplesData 
+	rm -f *.o *.a ntupleData ntuplesData
+	make --directory=Data clean
+	make --directory=Selections clean
 
 .PHONY: Selections

@@ -34,8 +34,8 @@ bool DoSelection( AMSEventR * ev,
 {
     for(int nsel=0; nsel<selections.size(); nsel++)
     {
-        std::string name = selections[nsel].first;
-        bool thisPasses = selections[nsel].second(ev);
+        std::string name = selections[nsel].name;
+        bool thisPasses = selections[nsel].cutFunction(ev);
         eventPasses = eventPasses && thisPasses;
         if(thisPasses) counts[name].first++;
         if(eventPasses) counts[name].second++;
@@ -61,15 +61,12 @@ void registerSrcFilesInRootuple(){
     
     TDirectory *srcDir = gFile -> mkdir("infos/srcFiles");
     gFile -> cd("infos/srcFiles");
-    std::cout << "listing" << std::endl;
-    srcDir -> ls();
 
     for(int i = 0; i < files.size(); i++){
 	string extension = rootUtils::getExtension( files[i] );
 	if( extension == "cpp" || extension == "hpp" || extension == "h" || extension == "c" || extension == "C" || extension == "cxx" || extension == "hxx"){
 	    TMacro m( files[i].c_str() );
 	    m.Write( rootUtils::getFileName(files[i]).c_str() );
-	    std::cout << "files[i] : " << files[i] << std::endl;
 	}
     }
   
@@ -100,9 +97,7 @@ int main(int argc, char * argv[])
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
 
-    addRunTag(runTag, inFname);
-    addRunTag(runTag, " ~/eos/ams/Data/AMS02/2014/ISS.B800/pass5/8988159992.00000001.root");
-
+    //    addRunTag(runTag, inFname);
 
     // Creating  output trees
     TFile * File = new TFile(outFname.c_str(), "RECREATE");
@@ -144,11 +139,11 @@ int main(int argc, char * argv[])
 
     std::map<std::string, std::pair<long,long> > counts;
     for(int nsel=0; nsel<geoSelections.size(); nsel++)
-        counts[geoSelections[nsel].first] = std::make_pair(0,0);
+        counts[geoSelections[nsel].name] = std::make_pair(0,0);
     for(int nsel=0; nsel<selections.size(); nsel++)
-        counts[selections[nsel].first] = std::make_pair(0,0);
+        counts[selections[nsel].name] = std::make_pair(0,0);
     for(int nsel=0; nsel<richSelections.size(); nsel++)
-        counts[richSelections[nsel].first] = std::make_pair(0,0);
+        counts[richSelections[nsel].name] = std::make_pair(0,0);
     
     /////////////////////////////////////////////////////////////////
     // Event loop
@@ -156,7 +151,8 @@ int main(int argc, char * argv[])
     if(entries == 0) entries = ch->GetEntries();
     std::cout << "\n Starting processing " << entries << " events.\n" << std::endl;
     for(int ii=0;ii<entries;ii++)
-	{ 
+	{
+	    if( ii%10000 == 0 ) std::cout << "Entry : " << ii << std::endl;
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
 
@@ -190,42 +186,37 @@ int main(int argc, char * argv[])
         if(ii%10000==0) outTree->AutoSave();
     }
 
-    std::string runTagListStr;
-    for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
-    	std::cout << "it -> first : " << it -> first << std::endl;
-    	std::cout << "it -> second  : " << it -> second  << std::endl;
-	runTagListStr += it -> first;
-	runTagListStr += " ";
-    }
-
-    File->mkdir("infos");
-    File->cd("infos");
-    TObjString runTagList( runTagListStr.c_str() );
-    runTagList.Write("runTag");
-
-    TObjString gitVersion(gitversion);
-    gitVersion.Write("gitVersion");
-    registerSrcFilesInRootuple();
-    // SaveFiles(){
-	
+    // std::string runTagListStr;
+    // for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
+    // 	runTagListStr += it -> first;
+    // 	runTagListStr += " ";
     // }
-    
+
+    // File->mkdir("infos");
+    // File->cd("infos");
+    // TObjString runTagList( runTagListStr.c_str() );
+    // runTagList.Write("runTag");
+
+    // TObjString gitVersion(gitversion);
+    // gitVersion.Write("gitVersion");
+    // registerSrcFilesInRootuple();
+
     File->Write();
 
     //Printing all the selection counts
     for(int nsel=0; nsel<geoSelections.size(); nsel++)
     {
-        std::string name = geoSelections[nsel].first;
+        std::string name = geoSelections[nsel].name;
         std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
     }
     for(int nsel=0; nsel<selections.size(); nsel++)
     {
-        std::string name = selections[nsel].first;
+        std::string name = selections[nsel].name;
         std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
     }
     for(int nsel=0; nsel<richSelections.size(); nsel++)
     {
-        std::string name = richSelections[nsel].first;
+        std::string name = richSelections[nsel].name;
         std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
     }
 
