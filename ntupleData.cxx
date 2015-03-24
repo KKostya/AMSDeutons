@@ -21,6 +21,7 @@
 #include "Data/RootWriter.hpp"
 #include "Data/TOF.h"
 #include "Data/Tracker.h"
+#include "Data/SelectionStatus.h"
 #include "rootUtils.hpp"
 
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
@@ -201,14 +202,9 @@ int main(int argc, char * argv[])
     gitVersion.Write("gitVersion");
     registerSrcFilesInRootuple();
  
-    TObjString gitVersion(gitversion);
-    gitVersion.Write("gitVersion");
-    registerSrcFilesInRootuple();
+    TObjString selectionBits(GetSelectionNames().c_str());
+    selectionBits.Write("selectionBits");
 
-    for(int nsel=0; nsel<geoSelections.size(); nsel++)
-    for(int nsel=0; nsel<selections.size(); nsel++)
-    for(int nsel=0; nsel<richSelections.size(); nsel++)
- 
     File->Write();
 
     //Printing all the selection counts

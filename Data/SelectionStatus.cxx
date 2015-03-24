@@ -39,6 +39,6 @@ std::string GetSelectionNames()
     std::stringstream ss;
     ss << selections[0].name;
     for(int nsel=1; nsel<selections.size(); nsel++)
-        ss << "," << selections[nsel].name
+        ss << "," << selections[nsel].name;
     return ss.str();
 }
