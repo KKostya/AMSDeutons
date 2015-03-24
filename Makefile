@@ -3,8 +3,8 @@ ROOTINC=`root-config --cflags`
 ROOTLIB=`root-config --libs`
 AMSINC=-I$(AMSSRC)/include
 
-ntupleData: ntupleData.o Data Selections gitversion.c rootUtils.o
-	g++ -o $@ $(AMSLIBso) $(ROOTLIB) ntupleData.o Data/data.a  Selections/selections.a rootUtils.o
+ntupleData: ntupleData.o Data Selections gitversion.c rootUtils.o gitversion.c
+	g++ -o $@ $(AMSLIBso) $(ROOTLIB) ntupleData.o Data/data.a  Selections/selections.a rootUtils.o gitversion.c
 
 selTable: SelectionsTable.o Selections rootUtils.o
 	g++ -o $@ $(AMSLIBso) $(ROOTLIB) SelectionsTable.o  Selections/selections.a rootUtils.o
