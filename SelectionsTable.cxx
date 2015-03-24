@@ -116,7 +116,7 @@ int main(int argc, char * argv[])
     // Event loop
     /////////////////////////////////////////////////////////////////
     if(entries == 0) entries = ch->GetEntries();
-    std::cout << "\n Strating processing " << entries << " events.\n" << std::endl;
+    std::cout << "\n Starting processing " << entries << " events.\n" << std::endl;
     
     for(int ii=0;ii<entries;ii++)
     {

@@ -1,6 +1,6 @@
 ROOTINC=`root-config --cflags`
 AMSINC=-I$(AMSSRC)/include
-CFLAGS=
+CFLAGS= -g
 
 selections.a: Geo.o Golden.o MinBias.o Preselect.o RICH.o SelectionLists.o
 	ar rvs $@ $?
@@ -11,6 +11,9 @@ MinBias.o: MinBias.cxx  MinBias.h
 Preselect.o: Preselect.cxx Preselect.h
 RICH.o: RICH.cxx RICH.h
 SelectionLists.o:  SelectionLists.cxx SelectionLists.hpp
+
+clean:
+	rm -rf *.o *.a
 
 %.o: %.cxx
 	g++ $(CFLAGS) -o $@ -c $< $(ROOTINC) $(AMSINC)
