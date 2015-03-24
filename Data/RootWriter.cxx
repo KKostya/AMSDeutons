@@ -88,6 +88,14 @@ void AddTOFVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<double             , BetaTOF         >("BetaTOF"         , tree));
 }
 
+void AddMCVariables(ROOTDataList & data, TTree * tree)
+{
+    data.push_back(Wrap< double            , GenMomentum >("GenMomentum", tree ));
+    data.push_back(Wrap< double            , GenParID    >("GenParID",    tree ));
+    data.push_back(Wrap< std::vector<float>, GenCoo      >("GenCoo",      tree ));
+    data.push_back(Wrap< std::vector<float>, GenDir      >("GenDir",      tree ));
+}
+
 void AddSelectionVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<unsigned long long , selStatus       >("selStatus"       , tree));
