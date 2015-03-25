@@ -5,7 +5,6 @@ ADDCLASS=
 
 CLASSES = $(ADDCLASS) $(ADDCLASS:include/%.h=src/%.cpp)
 
-BIN    =$(EXEC:%=bin/%)
 SRC    =$(EXEC:%=./%.cpp)
 OBJECTS=$(EXEC:%=./%.o)
 
@@ -31,9 +30,9 @@ ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 #$*  Name of current dependency without extension.
 
 
-all :$(BIN)
+all :$(EXEC)
 
-$(BIN) : $(OBJECTS) $(CLASSES)
+$(EXEC) : $(OBJECTS) $(CLASSES)
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(ROOTLIBS) $(LIBS) $(AMSSTATICLIBS)
 
 
