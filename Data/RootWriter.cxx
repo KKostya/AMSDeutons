@@ -38,6 +38,9 @@ void (*Wrap(const std::string & name,TTree * tree)) (AMSEventR *){
 }
 ///////////////////// end of craziness here //////////////////
 
+/////////////////////////////////////////////////////////////
+///////////////////// Variables for TTree selections /////////
+/////////////////////////////////////////////////////////////
 void AddProvenanceVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<unsigned int, Run  >("Run",   tree));
@@ -60,6 +63,15 @@ void AddGeoVariables(ROOTDataList & data, TTree * tree)
 
 }
 
+void AddSelectionVariables(ROOTDataList & data, TTree * tree)
+{
+    data.push_back(Wrap<unsigned long long , selStatus >("selStatus" , tree));
+    data.push_back(Wrap<double             , R         >("R"         , tree));
+}
+
+/////////////////////////////////////////////////////////////
+///////////////////// Variables for TTree data /////////////
+/////////////////////////////////////////////////////////////
 void AddTrackerVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<int                , NTrackHits  >("NTrackHits"  , tree));
@@ -97,8 +109,4 @@ void AddMCVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap< std::vector<float>, GenDir      >("GenDir",      tree ));
 }
 
-void AddSelectionVariables(ROOTDataList & data, TTree * tree)
-{
-    data.push_back(Wrap<unsigned long long , selStatus       >("selStatus"       , tree));
-}
 
