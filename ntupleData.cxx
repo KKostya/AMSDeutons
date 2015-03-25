@@ -98,6 +98,8 @@ int main(int argc, char * argv[])
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
 
+
+
     addRunTag(runTag, inFname);
 
     // Creating  output trees
@@ -123,6 +125,15 @@ int main(int argc, char * argv[])
     outTree->Branch("BetaRICH", &BetaRICH);
     outTree->Branch("BetaCorr", &BetaCorr);
     outTree->Branch("Mass",     &Mass);
+
+    ch->GetEvent(0);
+    if(AMSEventR::Head() && AMSEventR::Head()->nMCEventg() > 0)
+    {
+        std::cout << "MC detected, adding MC variables \n";
+        AddMCVariables	  (effdata, effTree);
+        AddMCVariables	  (effdata, outTree);
+    }
+    ch->Rewind();
 
     /////////////////////////////////////////////////////////////////
     // Creating selections arrays
@@ -152,8 +163,8 @@ int main(int argc, char * argv[])
     if(entries == 0) entries = ch->GetEntries();
     std::cout << "\n Starting processing " << entries << " events.\n" << std::endl;
     for(int ii=0;ii<entries;ii++)
-	{
-	    if( ii%10000 == 0 ) std::cout << "Entry : " << ii << std::endl;
+    {
+        if( ii%10000 == 0 ) std::cout << "Entry : " << ii << std::endl;
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
         // Compute and write selection status table
