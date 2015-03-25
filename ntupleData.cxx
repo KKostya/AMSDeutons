@@ -22,7 +22,7 @@
 #include "Data/TOF.h"
 #include "Data/Tracker.h"
 #include "Data/SelectionStatus.h"
-#include "rootUtils.hpp"
+#include "utils/rootUtils.hpp"
 
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
 
@@ -219,6 +219,8 @@ int main(int argc, char * argv[])
     File->Write();
 
     //Printing all the selection counts
+    std::cout << "\n\n\n";
+
     for(int nsel=0; nsel<geoSelections.size(); nsel++)
     {
         std::string name = geoSelections[nsel].name;
@@ -234,6 +236,4 @@ int main(int argc, char * argv[])
         std::string name = richSelections[nsel].name;
         std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
     }
-
-
 }

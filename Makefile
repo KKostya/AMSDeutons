@@ -3,16 +3,19 @@ ROOTINC=`root-config --cflags`
 ROOTLIB=`root-config --libs`
 AMSINC=-I$(AMSSRC)/include
 
-ntupleData: ntupleData.o Data Selections gitversion.c rootUtils.o gitversion.c
-	g++ -o $@ $(AMSLIBso) $(ROOTLIB) ntupleData.o Data/data.a  Selections/selections.a rootUtils.o gitversion.c
+ntupleData: ntupleData.o Data Selections gitversion.c utils gitversion.c
+	g++ -o $@ $(AMSLIBso) $(ROOTLIB) ntupleData.o Data/data.a  Selections/selections.a utils/utils.a gitversion.c
 
-selTable: SelectionsTable.o Selections rootUtils.o
-	g++ -o $@ $(AMSLIBso) $(ROOTLIB) SelectionsTable.o  Selections/selections.a rootUtils.o
+selTable: SelectionsTable.o Selections 
+	g++ -o $@ $(AMSLIBso) $(ROOTLIB) SelectionsTable.o  Selections/selections.a 
 
 Data:
 	make --directory=$@
 
 Selections:
+	make --directory=$@
+
+utils:
 	make --directory=$@
 
 Data.o: Data.cxx Data.h
@@ -29,6 +32,7 @@ clean:
 	rm -f *.o *.a ntupleData ntuplesData
 	make --directory=Data clean
 	make --directory=Selections clean
+	make --directory=utils clean
 
-.PHONY: Selections Data
+.PHONY: Selections Data utils
 
