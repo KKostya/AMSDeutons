@@ -25,6 +25,11 @@
 
 namespace rootUtils{
 
+    extern std::string redFontBegin;
+    extern std::string redFontEnd;
+
+
+
   namespace root{
     TObject* get( std::string filename, std::string objectName );
     

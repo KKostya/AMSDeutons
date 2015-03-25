@@ -13,8 +13,8 @@
 #include "root_setup.h"
 #include "root.h"
 
-#include "../utils/rootUtils.hpp"
-#include "../utils/Binning.hpp"
+#include "../../utils/rootUtils.hpp"
+#include "../../utils/Binning.hpp"
 
 // For the current data, creates an array exposureTime[iBin][iAngle][iChargeSign]
 // of the exposure time
