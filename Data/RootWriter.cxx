@@ -11,6 +11,7 @@
 #include "Tracker.h"
 #include "TOF.h"
 #include "TRD.h"
+#include "MC.h"
 #include "SelectionStatus.h"
 
 
@@ -42,6 +43,7 @@ void AddProvenanceVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<unsigned int, Run  >("Run",   tree));
     data.push_back(Wrap<unsigned int, Event>("Event", tree));
     data.push_back(Wrap<unsigned int, UTime>("UTime", tree));
+    data.push_back(Wrap<double      , JMDCTime>("JMDCTime", tree));
 }
 
 void AddGeoVariables(ROOTDataList & data, TTree * tree)
@@ -52,8 +54,10 @@ void AddGeoVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<double, Latitude>("Latitude", tree));
     data.push_back(Wrap<double, Rcutoff >("Rcutoff" , tree));
     data.push_back(Wrap<int   , Unbias  >("Unbias"  , tree));
+    data.push_back(Wrap<unsigned int, UTime>("UTime", tree));
 
     data.push_back(Wrap<unsigned long long, fStatus>("fStatus", tree));
+
 }
 
 void AddTrackerVariables(ROOTDataList & data, TTree * tree)
@@ -83,6 +87,14 @@ void AddTOFVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<int                , NTofClustersUsed>("NTofClustersUsed", tree));
     data.push_back(Wrap<std::vector<double>, EdepTOF         >("EdepTOF"         , tree));
     data.push_back(Wrap<double             , BetaTOF         >("BetaTOF"         , tree));
+}
+
+void AddMCVariables(ROOTDataList & data, TTree * tree)
+{
+    data.push_back(Wrap< double            , GenMomentum >("GenMomentum", tree ));
+    data.push_back(Wrap< int               , GenParID    >("GenParID",    tree ));
+    data.push_back(Wrap< std::vector<float>, GenCoo      >("GenCoo",      tree ));
+    data.push_back(Wrap< std::vector<float>, GenDir      >("GenDir",      tree ));
 }
 
 void AddSelectionVariables(ROOTDataList & data, TTree * tree)
