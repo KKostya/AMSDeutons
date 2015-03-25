@@ -56,7 +56,7 @@ bool ringNoNaFBorder (AMSEventR * ev)
     RichRingR * ring = getRing(ev); if(!ring ) return false;
     float x=ring->getTrackEmissionPoint()[0];
     float y=ring->getTrackEmissionPoint()[1];
-    return !(max(abs(x),abs(y)) <= cut_aerogel_nafborder[0]);
+    return max(abs(x),abs(y)) <= cut_aerogel_nafborder[0];
 }
 
 ///////////////////////////////////
