@@ -21,6 +21,7 @@
 #include "Data/RootWriter.hpp"
 #include "Data/TOF.h"
 #include "Data/Tracker.h"
+#include "Data/SelectionStatus.h"
 #include "rootUtils.hpp"
 
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
@@ -97,7 +98,9 @@ int main(int argc, char * argv[])
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
 
-    //    addRunTag(runTag, inFname);
+
+
+    addRunTag(runTag, inFname);
 
     // Creating  output trees
     TFile * File = new TFile(outFname.c_str(), "RECREATE");
@@ -122,6 +125,15 @@ int main(int argc, char * argv[])
     outTree->Branch("BetaRICH", &BetaRICH);
     outTree->Branch("BetaCorr", &BetaCorr);
     outTree->Branch("Mass",     &Mass);
+
+    ch->GetEvent(0);
+    if(AMSEventR::Head() && AMSEventR::Head()->nMCEventg() > 0)
+    {
+        std::cout << "MC detected, adding MC variables \n";
+        AddMCVariables	  (effdata, effTree);
+        AddMCVariables	  (effdata, outTree);
+    }
+    ch->Rewind();
 
     /////////////////////////////////////////////////////////////////
     // Creating selections arrays
@@ -151,8 +163,8 @@ int main(int argc, char * argv[])
     if(entries == 0) entries = ch->GetEntries();
     std::cout << "\n Starting processing " << entries << " events.\n" << std::endl;
     for(int ii=0;ii<entries;ii++)
-	{
-	    if( ii%10000 == 0 ) std::cout << "Entry : " << ii << std::endl;
+    {
+        if( ii%10000 == 0 ) std::cout << "Entry : " << ii << std::endl;
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
         // Compute and write selection status table
@@ -186,21 +198,24 @@ int main(int argc, char * argv[])
         if(ii%10000==0) outTree->AutoSave();
     }
 
-    // std::string runTagListStr;
-    // for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
-    // 	runTagListStr += it -> first;
-    // 	runTagListStr += " ";
-    // }
+    std::string runTagListStr;
+    for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
+    	runTagListStr += it -> first;
+    	runTagListStr += " ";
+    }
 
-    // File->mkdir("infos");
-    // File->cd("infos");
-    // TObjString runTagList( runTagListStr.c_str() );
-    // runTagList.Write("runTag");
+    File->mkdir("infos");
+    File->cd("infos");
+    TObjString runTagList( runTagListStr.c_str() );
+    runTagList.Write("runTag");
 
-    // TObjString gitVersion(gitversion);
-    // gitVersion.Write("gitVersion");
-    // registerSrcFilesInRootuple();
+    TObjString selectionBits(GetSelectionNames().c_str());
+    selectionBits.Write("selectionBits");
 
+    TObjString gitVersion(gitversion);
+    gitVersion.Write("gitVersion");
+    registerSrcFilesInRootuple(); 
+ 
     File->Write();
 
     //Printing all the selection counts
