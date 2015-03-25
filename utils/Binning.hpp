@@ -26,11 +26,11 @@ public:
 	}
     }
 
-    int size(){
+    int size() const{
 	return bin.size();
     }
 
-    Bin* operator[](int index){
+    Bin* operator[](int index) const{
 	return bin[index];
     }
 
