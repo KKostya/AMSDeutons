@@ -18,10 +18,9 @@ double Rcutoff  (AMSEventR * ev ){
     return ev->pParticle(0)->Cutoff;
 }
 
-int Unbias(AMSEventR * ev) {
-    Level1R * trig = ev->pLevel1(0);
-    if(trig && ((trig->PhysBPatt&1) == 1)) return 1; 
-    return 0;
+int PhysBPatt(AMSEventR * ev) {
+    if(!ev->pLevel1(0)) return -1;
+    return ev->pLevel1(0)->PhysBPatt;
 }
 
 unsigned long long fStatus(AMSEventR * ev) { return ev->fStatus; }
