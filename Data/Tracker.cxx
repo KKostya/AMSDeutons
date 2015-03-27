@@ -17,6 +17,7 @@ int NTrackHits(AMSEventR * ev){ return ev->pTrTrack(0)->NTrRecHit(); }
 double getRigidity(AMSEventR *ev, int i,int j, int k)
 {
     TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return 0;
     int fitID = track->iTrTrackPar(i,j,k);
     return track->GetRigidity(fitID);
 }
