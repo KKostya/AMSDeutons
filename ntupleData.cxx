@@ -130,7 +130,6 @@ int main(int argc, char * argv[])
     outTree->Branch("BetaCorr", &BetaCorr);
     outTree->Branch("Mass",     &Mass);
 
-    ch->GetEvent(0);
     if(isMC)
     {
         std::cout << "MC detected, adding MC variables \n";
