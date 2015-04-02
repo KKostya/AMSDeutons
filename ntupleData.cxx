@@ -22,7 +22,7 @@
 #include "Data/TOF.h"
 #include "Data/Tracker.h"
 #include "Data/SelectionStatus.h"
-#include "rootUtils.hpp"
+#include "utils/rootUtils.hpp"
 
 double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
 
@@ -98,8 +98,12 @@ int main(int argc, char * argv[])
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
 
+    // Checking if MC
+    ch->GetEvent(0);
+    bool isMC = AMSEventR::Head()->nMCEventg() > 0;
+    ch->Rewind();
 
-
+    // Adding a tag to output file
     addRunTag(runTag, inFname);
 
     // Creating  output trees
@@ -127,13 +131,12 @@ int main(int argc, char * argv[])
     outTree->Branch("Mass",     &Mass);
 
     ch->GetEvent(0);
-    if(AMSEventR::Head() && AMSEventR::Head()->nMCEventg() > 0)
+    if(isMC)
     {
         std::cout << "MC detected, adding MC variables \n";
         AddMCVariables	  (effdata, effTree);
         AddMCVariables	  (effdata, outTree);
     }
-    ch->Rewind();
 
     /////////////////////////////////////////////////////////////////
     // Creating selections arrays
@@ -167,6 +170,15 @@ int main(int argc, char * argv[])
         if( ii%10000 == 0 ) std::cout << "Entry : " << ii << std::endl;
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
+
+        // That fixes PhysBPat variables
+        if(ev->pLevel1(0))
+        {
+            int L1TrMemPatt, PhysTrPatt;
+            ev->pLevel1(0)->RestorePhysBPat(1); 
+            if(isMC) ev->pLevel1(0)->RebuildTrigPatt(L1TrMemPatt, PhysTrPatt); 
+        }
+
         // Compute and write selection status table
         for(int idat=0; idat<effdata.size(); idat++) effdata[idat](ev);
         effTree->Fill();
@@ -219,6 +231,8 @@ int main(int argc, char * argv[])
     File->Write();
 
     //Printing all the selection counts
+    std::cout << "\n\n\n";
+
     for(int nsel=0; nsel<geoSelections.size(); nsel++)
     {
         std::string name = geoSelections[nsel].name;
@@ -234,6 +248,4 @@ int main(int argc, char * argv[])
         std::string name = richSelections[nsel].name;
         std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
     }
-
-
 }

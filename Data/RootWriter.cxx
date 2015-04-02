@@ -38,6 +38,9 @@ void (*Wrap(const std::string & name,TTree * tree)) (AMSEventR *){
 }
 ///////////////////// end of craziness here //////////////////
 
+/////////////////////////////////////////////////////////////
+///////////////////// Variables for TTree selections /////////
+/////////////////////////////////////////////////////////////
 void AddProvenanceVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<unsigned int, Run  >("Run",   tree));
@@ -48,18 +51,27 @@ void AddProvenanceVariables(ROOTDataList & data, TTree * tree)
 
 void AddGeoVariables(ROOTDataList & data, TTree * tree)
 {
-    data.push_back(Wrap<double, ThetaS  >("ThetaS"  , tree));
-    data.push_back(Wrap<double, PhiS    >("PhiS"    , tree));
-    data.push_back(Wrap<double, Livetime>("Livetime", tree));
-    data.push_back(Wrap<double, Latitude>("Latitude", tree));
-    data.push_back(Wrap<double, Rcutoff >("Rcutoff" , tree));
-    data.push_back(Wrap<int   , PhysBPatt  >("PhysBPatt", tree));
-    data.push_back(Wrap<unsigned int, UTime>("UTime",     tree));
+
+    data.push_back(Wrap<double, ThetaS    >("ThetaS"  ,  tree));
+    data.push_back(Wrap<double, PhiS      >("PhiS"    ,  tree));
+    data.push_back(Wrap<double, Livetime  >("Livetime",  tree));
+    data.push_back(Wrap<double, Latitude  >("Latitude",  tree));
+    data.push_back(Wrap<double, Rcutoff   >("Rcutoff" ,  tree));
+    data.push_back(Wrap<int   , PhysBPatt >("PhysBPatt", tree));
+    data.push_back(Wrap<unsigned int, UTime>("UTime", tree));
 
     data.push_back(Wrap<unsigned long long, fStatus>("fStatus", tree));
-
 }
 
+void AddSelectionVariables(ROOTDataList & data, TTree * tree)
+{
+    data.push_back(Wrap<unsigned long long , selStatus >("selStatus" , tree));
+    data.push_back(Wrap<double             , R         >("R"         , tree));
+}
+
+/////////////////////////////////////////////////////////////
+///////////////////// Variables for TTree data /////////////
+/////////////////////////////////////////////////////////////
 void AddTrackerVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<int                , NTrackHits  >("NTrackHits"  , tree));
@@ -97,8 +109,4 @@ void AddMCVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap< std::vector<float>, GenDir      >("GenDir",      tree ));
 }
 
-void AddSelectionVariables(ROOTDataList & data, TTree * tree)
-{
-    data.push_back(Wrap<unsigned long long , selStatus       >("selStatus"       , tree));
-}
 

@@ -16,6 +16,7 @@
 /// MinBias selections
 ////////////////////////////////////////////////
 
+// Ask for at least one good cluster on every layer
 bool minimumbiasTOF(AMSEventR *ev)
 {
     if(ev->nParticle()   == 0) return false;
@@ -26,14 +27,17 @@ bool minimumbiasTOF(AMSEventR *ev)
     {
         TofClusterR * cluster = ev->pTofCluster(ic);
         if(!cluster) continue;
-        
+
+	// bit3(4)  -> ambig
+	// bit5(16) -> BAD((bit9 | bit10) & !bit12))
+	// bit8 is ORed over cluster-members
         if(cluster->Status & 0x1f94) continue; // 0b1111110010100
         goodlayer[cluster->Layer-1]=true;
     }
     
-    int c=0;
-    for(int i=0;i<4;i++) if(goodlayer[i]) c++;
-    if(c < 4) return false;
+    int nGoodLayers = 0;
+    for(int i=0;i<4;i++) if(goodlayer[i]) nGoodLayers++;
+    if(nGoodLayers < 4) return false;
     return true;
 }
 
