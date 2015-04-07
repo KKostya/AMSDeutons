@@ -25,5 +25,11 @@ int PhysBPatt(AMSEventR * ev)
     return ev->pLevel1(0)->PhysBPatt; 
 }
 
+int JMembPatt(AMSEventR * ev) 
+{
+    if(!ev->pLevel1(0)) return -1;
+    return ev->pLevel1(0)->JMembPatt;
+}
+
 unsigned long long fStatus(AMSEventR * ev) { return ev->fStatus; }
 

@@ -57,6 +57,7 @@ void AddGeoVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<double, Latitude  >("Latitude",  tree));
     data.push_back(Wrap<double, Rcutoff   >("Rcutoff" ,  tree));
     data.push_back(Wrap<int   , PhysBPatt >("PhysBPatt", tree));
+    data.push_back(Wrap<int   , JMembPatt >("JMembPatt", tree));
     data.push_back(Wrap<unsigned int, UTime>("UTime", tree));
 
     data.push_back(Wrap<unsigned long long, fStatus>("fStatus", tree));
