@@ -26,6 +26,7 @@ double BetaTOF(AMSEventR * ev)
 {
     double beta = 0;
     ParticleR * particle = ev->pParticle(0);
+    if(!particle) return beta;
     if(particle->pBetaH()) beta = particle->pBetaH()->GetBeta();
     if(beta>=1) return beta/(2*beta-1); // WTF
     return beta;

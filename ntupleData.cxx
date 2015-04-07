@@ -130,7 +130,6 @@ int main(int argc, char * argv[])
     outTree->Branch("BetaCorr", &BetaCorr);
     outTree->Branch("Mass",     &Mass);
 
-    ch->GetEvent(0);
     if(isMC)
     {
         std::cout << "MC detected, adding MC variables \n";
@@ -170,14 +169,6 @@ int main(int argc, char * argv[])
         if( ii%10000 == 0 ) std::cout << "Entry : " << ii << std::endl;
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
-
-        // That fixes PhysBPat variables
-        if(ev->pLevel1(0))
-        {
-            int L1TrMemPatt, PhysTrPatt;
-            ev->pLevel1(0)->RestorePhysBPat(1); 
-            if(isMC) ev->pLevel1(0)->RebuildTrigPatt(L1TrMemPatt, PhysTrPatt); 
-        }
 
         // Compute and write selection status table
         for(int idat=0; idat<effdata.size(); idat++) effdata[idat](ev);
