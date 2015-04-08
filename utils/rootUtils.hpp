@@ -22,6 +22,7 @@
 #include "TF1.h"
 #include "TMath.h"
 #include "TKey.h"
+#include "TObjString.h"
 
 namespace rootUtils{
 
@@ -30,60 +31,64 @@ namespace rootUtils{
 
 
 
-  namespace root{
-    TObject* get( std::string filename, std::string objectName );
+    namespace root{
+        TObject* get( std::string filename, std::string objectName );
     
-    // return an object contained in the TCanvas
-    TObject* getCanvasPrimitive( std::string fileName, std::string canvasName, std::string primitiveName );
+        // return an object contained in the TCanvas
+        TObject* getCanvasPrimitive( std::string fileName, std::string canvasName, std::string primitiveName );
 
-      // Loop on all objects of a file and call the function func on each of them
-    void loopOnObjects(TFile* file, void(*func)(TObject*) );
+        // Loop on all objects of a file and call the function func on each of them
+        void loopOnObjects(TFile* file, void(*func)(TObject*) );
 
-    // Loop on all objects of a list and call the function func on each of them
-    void loopOnObjects(TList* list, void(*func)(TObject*) );
+        // Loop on all objects of a list and call the function func on each of them
+        void loopOnObjects(TList* list, void(*func)(TObject*) );
 
     
-    void setOffset(TH2* h, float offset);
-    void setOffset(TGraph* gr, float offset);
-    TGraphErrors* averageGraphs( std::vector< TGraphErrors* > vecGr );
-    TGraphAsymmErrors* scale(TGraphAsymmErrors* gr, float scalingFactor );
+        void setOffset(TH2* h, float offset);
+        void setOffset(TGraph* gr, float offset);
+        TGraphErrors* averageGraphs( std::vector< TGraphErrors* > vecGr );
+        TGraphAsymmErrors* scale(TGraphAsymmErrors* gr, float scalingFactor );
     
-  };
+    };
   
-  std::map< std::string, float > getEnergyBeamTest();
-  std::map< std::string, std::string > getEnergyBeamTestString();
-  int getColor(int n, bool fill = 0);
+    std::map< std::string, float > getEnergyBeamTest();
+    std::map< std::string, std::string > getEnergyBeamTestString();
+    int getColor(int n, bool fill = 0);
 
-  std::string getPath(std::string fullFileName);
-  std::string getFileName(std::string fullFileName);
-  std::string getExtension( std::string fileName );
+    std::string getPath(std::string fullFileName);
+    std::string getFileName(std::string fullFileName);
+    std::string getExtension( std::string fileName );
 
-  std::vector <std::string > getFilesInDir(std::string dirName, int maxNumberOfFile = 0);
-  std::vector <std::string > getFilesInDirWithPattern(std::string dirName, std::string pattern);
+    std::vector <std::string > getFilesInDir(std::string dirName, int maxNumberOfFile = 0);
+    std::vector <std::string > getFilesInDirWithPattern(std::string dirName, std::string pattern);
 
-  std::string dateTime();
-  bool folderExists( std::string folderName );
-  int makeFolder( std::string folderName );
+    std::string dateTime();
+    bool folderExists( std::string folderName );
+    int makeFolder( std::string folderName );
 
-  // return STDOUT from the shell command: cmd (but not STDERR)
-  std::string exec(std::string cmd);
+    // return STDOUT from the shell command: cmd (but not STDERR)
+    std::string exec(std::string cmd);
 
-  // split a string containing line returns into several strings
-  std::vector<std::string> splitIntoLines(const std::string &string);
-  std::vector< std::string > split( std::string str, std::string delimiters );
-  // Same as Split but with reverse ordering
-  std::vector< std::string > splitFromEnd( std::string str, std::string delimiters );
-  std::string replacePattern(std::string str, const std::string& oldPattern, const std::string& newPattern);
+    // split a string containing line returns into several strings
+    std::vector<std::string> splitIntoLines(const std::string &string);
+    std::vector< std::string > split( std::string str, std::string delimiters );
+    // Same as Split but with reverse ordering
+    std::vector< std::string > splitFromEnd( std::string str, std::string delimiters );
+    std::string replacePattern(std::string str, const std::string& oldPattern, const std::string& newPattern);
 
-  template<class T> T stringTo(std::string str){
-    std::stringstream ss;
-    T res;
-    ss << str;
-    ss >> res;
-    return res;
-  }
+    template<class T> T stringTo(std::string str){
+        std::stringstream ss;
+        T res;
+        ss << str;
+        ss >> res;
+        return res;
+    }
 
-  std::string toString(float a);
+    std::string toString(float a);
+
+
+    // return the mask for the bit corresponding the selection 'theCut'
+    unsigned long long selectionMask( std::string filename, std::string theCut );
 };
 
 #endif

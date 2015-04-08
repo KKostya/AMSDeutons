@@ -195,7 +195,7 @@ int main(int argc, char * argv[])
             BetaCorr = BetaRICH;
         }
         // Mass
-        Mass = pow(fabs(pow(fabs(R(ev))*pow((1-pow(BetaCorr,2)),0.5)/BetaCorr,2)),0.5);
+        Mass = fabs( R(ev)*pow((1-pow(BetaCorr,2)),0.5)/BetaCorr );
 
         outTree->Fill();
         if(ii%10000==0) outTree->AutoSave();

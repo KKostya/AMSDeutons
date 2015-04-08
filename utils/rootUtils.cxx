@@ -164,7 +164,22 @@ namespace rootUtils{
 
   };
 
-  
+    unsigned long long selectionMask( std::string filename, std::string theCut ){
+        TFile* file = new TFile( filename.c_str() );
+        TDirectoryFile* infos = (TDirectoryFile*)file -> Get("infos");
+        TObjString* selectionBitsObjString = (TObjString*) infos -> Get("selectionBits");
+        std::string selectionBits(selectionBitsObjString -> GetString());
+        std::vector< std::string > cuts = rootUtils::split(selectionBits,",");
+
+        int iCut = -1;
+        for(int i = 0;i<cuts.size();i++){
+            std::cout << "cuts[i] : " << cuts[i] << std::endl;
+            if( cuts[i] == theCut ) iCut = i;
+        }
+
+        if( iCut > -1 ) return 1 << iCut;
+        else return 0;
+    }
 
 
   std::map< std::string, float > getEnergyBeamTest(){
