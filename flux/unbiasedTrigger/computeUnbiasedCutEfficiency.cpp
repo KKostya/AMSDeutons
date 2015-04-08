@@ -19,8 +19,10 @@ std::string firstTree;
 void printEfficiencies(const Binning &binning, std::vector<int> nUnbiased, std::vector<int> nPhysics){
     for(int i = 0;i<binning.size();i++){
         if(nPhysics[i] + 100. * nUnbiased[i] > 0){
+            double efficiency = nPhysics[i] / (double)(nPhysics[i] + 100. * nUnbiased[i]);
             double error = pow(100/pow(nPhysics[i] + 100 * nUnbiased[i],2),2) * (nPhysics[i] * pow(nUnbiased[i],2) + nUnbiased[i] * pow(nPhysics[i],2) + 2*nPhysics[i]*nUnbiased[i]*sqrt(nPhysics[i]*nUnbiased[i]));
-            std::cout << rootUtils::redFontBegin << "Unbiased trigger efficiency for bin [" << binning[i]->inf << "," << binning[i]->sup << "] : " << nPhysics[i] / (double)(nPhysics[i] + 100. * nUnbiased[i]) * 100 << "+/- " << error * 100. << "%  -   Nunb : " << nUnbiased[i]  << "    nPhys : " << nPhysics[i] << rootUtils::redFontEnd << std::endl;
+            
+            std::cout << rootUtils::redFontBegin << "Unbiased trigger efficiency for bin [" << binning[i]->inf << "," << binning[i]->sup << "] : " << efficiency * 100 << "+/- " << error * 100. << "%  -   Nunb : " << nUnbiased[i]  << "    nPhys : " << nPhysics[i] << rootUtils::redFontEnd << std::endl;
             //            std::cout << nUnbiased[i]*pow(nPhysics[i],2) << "\t"  <<  nPhysics[i] * pow(nUnbiased[i],2) << "\t" <<  200 * sqrt(nPhysics[i]* nUnbiased[i]) * nPhysics[i] * nUnbiased[i]
         }
     }
@@ -28,14 +30,15 @@ void printEfficiencies(const Binning &binning, std::vector<int> nUnbiased, std::
 
 void computeUnbiasedCutEfficiency(const Binning &binning, TTree* selectionTree ){
     
-    int PhysBPatt;
+    int PhysBPatt, physicsTrigger;
     double R;
     double Latitude;
-    long long int selStatus;
+    long long int selStatus, fStatus;
     selectionTree -> SetBranchAddress("PhysBPatt",  &PhysBPatt );
     selectionTree -> SetBranchAddress("R",  &R );
     selectionTree -> SetBranchAddress("Latitude",  &Latitude );
     selectionTree -> SetBranchAddress("selStatus",  &selStatus );
+    selectionTree -> SetBranchAddress("fStatus",  &fStatus );
 
     int nBins = binning.size();
     std::vector<int> nUnbiased(nBins,0);
@@ -50,10 +53,23 @@ void computeUnbiasedCutEfficiency(const Binning &binning, TTree* selectionTree )
 
     long int nEntries = selectionTree->GetEntries();
 
-    int maskATrack = rootUtils::selectionMask(firstTree, "aTrack");
-    int maskGoldenTracker = rootUtils::selectionMask(firstTree, "goldenTRACKER");
-    int maskChargeOne = rootUtils::selectionMask(firstTree, "chargeOne");
-    int preselMask = maskATrack | maskGoldenTracker | maskChargeOne;
+    std::vector< std::string > masks;
+    masks.push_back("notFirstTwo");
+    masks.push_back("notInSaaCut");
+    masks.push_back("zenithCut");
+    masks.push_back("runtypeCut");
+    masks.push_back("oneTrack");
+    masks.push_back("aTRDTrack");
+    masks.push_back("goldenTRACKER");
+    masks.push_back("chargeOne");
+    masks.push_back("downGoing");
+    masks.push_back("betaNotCrazy");
+    
+    int preselMask = 0;
+    for(int i = 0; i<masks.size(); i++){
+        int theMask = rootUtils::selectionMask(firstTree, masks[i]);
+        preselMask |= theMask;
+    }
     
     int preselCuts = 0;
 
@@ -63,17 +79,25 @@ void computeUnbiasedCutEfficiency(const Binning &binning, TTree* selectionTree )
 	selectionTree -> GetEntry(i);
 
         std::bitset<20> x(selStatus);
-        if( selStatus&0b1111 != 0b1111 ) continue;
-        if( (selStatus&preselMask) != preselMask ) {
+        if( (selStatus&preselMask) != preselMask  || ((fStatus >> 8) & 0b11) != 1) {
+            //if( (selStatus&preselMask) != preselMask) {
             preselCuts++;
             continue;
         }
         
         int bin = binning.findBin(R);
+        physicsTrigger = (PhysBPatt >> 1)&0b11111;
+
 
         if( bin > -1){
             if( PhysBPatt == 0 ) nUnbiased[bin]++;
-            else nPhysics[bin]++;
+            else{
+                if( physicsTrigger != 0 ) {
+                    nPhysics[bin]++;
+                }else{
+                    std::cout << "not physics :" << PhysBPatt << std::endl;
+                }
+            }
         }
 
         if( R > 0.5 ){
@@ -81,7 +105,9 @@ void computeUnbiasedCutEfficiency(const Binning &binning, TTree* selectionTree )
 
             if( binLatitude > -1){
                 if( PhysBPatt == 0 ) nUnbiasedLatitude[binLatitude]++;
-                else nPhysicsLatitude[binLatitude]++;
+                else{
+                    if( physicsTrigger != 0 ) nPhysicsLatitude[binLatitude]++;
+                }
             }
         }
     }

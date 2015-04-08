@@ -178,7 +178,8 @@ namespace rootUtils{
         }
 
         if( iCut > -1 ) return 1 << iCut;
-        else return 0;
+        std::cout << redFontBegin << "Bit field for : " << theCut << " not found !" << redFontEnd << std::endl;
+        return 0;
     }
 
 

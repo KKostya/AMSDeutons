@@ -20,6 +20,7 @@ bool aTRDTrack(AMSEventR *ev) { return ev->NTrdTrack() >= 1; }
 
 bool oneParticle(AMSEventR *ev) { return ev->nParticle() == 1; }
 bool oneTrack(AMSEventR *ev) { return ev->nTrTrack()  == 1; }
+bool oneTRDTrack(AMSEventR *ev) { return ev->NTrdTrack() == 1; }
 
 bool chargeOne(AMSEventR *ev) { 
     if(!ev->pParticle(0)) return false;
