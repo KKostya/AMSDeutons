@@ -19,7 +19,7 @@ DEBUG	      := -g
 #Ca va chier dans le compilo
 ROOTCFG  := root-config
 CXX      :=$(shell $(ROOTCFG) --cxx)   #g++
-CXXFLAGS :=$(DEBUG) -O2 $(shell $(ROOTCFG) --cflags) -D_PGTRACK_ -Wno-write-strings # TH1F...
+CXXFLAGS :=$(DEBUG) -O2 $(shell $(ROOTCFG) --cflags) -D_PGTRACK_ -Wno-write-strings -std=c++0x # TH1F...
 ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 
 

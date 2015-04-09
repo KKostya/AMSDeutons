@@ -46,9 +46,8 @@ bool DoSelection( AMSEventR * ev,
 
 
 // Extract run tag from filename
-void addRunTag( std::map< std::string, long int > &runTag, std::string inFname ){
-    std::string runTagStr = (rootUtils::getFileName(inFname)).substr(0,10);
-    runTag[ runTagStr ] = rootUtils::stringTo<long int>(runTagStr);
+void addRunTag( std::vector< std::string > &runTag, std::string inFname ){
+    runTag.push_back(inFname);
 }
 
 
@@ -92,7 +91,7 @@ int main(int argc, char * argv[])
     std::cout << "Input file: " << inFname << std::endl;
     std::cout << "Output file: " << outFname << std::endl;
 
-    std::map< std::string, long int> runTag;
+    std::vector< std::string > runTag;
     
     // Opening input file
     AMSChain  * ch = new AMSChain;
@@ -202,15 +201,13 @@ int main(int argc, char * argv[])
     }
 
     std::string runTagListStr;
-    for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
-    	runTagListStr += it -> first;
-    	runTagListStr += " ";
-    }
+    for( int i = 0; i< runTag.size()-1;i++) runTagListStr += (runTag[i] + ",");
+    runTagListStr += runTag[runTag.size()-1];
 
     File->mkdir("infos");
     File->cd("infos");
     TObjString runTagList( runTagListStr.c_str() );
-    runTagList.Write("runTag");
+    runTagList.Write("inputFiles");
 
     TObjString selectionBits(GetSelectionNames().c_str());
     selectionBits.Write("selectionBits");

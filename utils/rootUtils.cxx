@@ -173,7 +173,7 @@ namespace rootUtils{
 
         int iCut = -1;
         for(int i = 0;i<cuts.size();i++){
-            std::cout << "cuts[i] : " << cuts[i] << std::endl;
+            //            std::cout << "cuts[i] : " << cuts[i] << std::endl;
             if( cuts[i] == theCut ) iCut = i;
         }
 
