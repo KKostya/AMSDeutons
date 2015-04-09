@@ -217,6 +217,10 @@ int main(int argc, char * argv[])
 
     TObjString gitVersion(gitversion);
     gitVersion.Write("gitVersion");
+
+    TObjString inFileName(inFname.c_str());
+    inFileName.Write("inFileName");
+
     registerSrcFilesInRootuple(); 
  
     File->Write();
