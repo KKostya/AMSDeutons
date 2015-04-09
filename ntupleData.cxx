@@ -45,12 +45,6 @@ bool DoSelection( AMSEventR * ev,
 }
 
 
-// Extract run tag from filename
-void addRunTag( std::vector< std::string > &runTag, std::string inFname ){
-    runTag.push_back(inFname);
-}
-
-
 void registerSrcFilesInRootuple(){
     std::vector <std::string > files = rootUtils::getFilesInDir(".");
     std::vector <std::string > dataFiles = rootUtils::getFilesInDir("Data");
@@ -91,8 +85,6 @@ int main(int argc, char * argv[])
     std::cout << "Input file: " << inFname << std::endl;
     std::cout << "Output file: " << outFname << std::endl;
 
-    std::vector< std::string > runTag;
-    
     // Opening input file
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
@@ -101,9 +93,6 @@ int main(int argc, char * argv[])
     ch->GetEvent(0);
     bool isMC = AMSEventR::Head()->nMCEventg() > 0;
     ch->Rewind();
-
-    // Adding a tag to output file
-    addRunTag(runTag, inFname);
 
     // Creating  output trees
     TFile * File = new TFile(outFname.c_str(), "RECREATE");
@@ -200,14 +189,8 @@ int main(int argc, char * argv[])
         if(ii%10000==0) outTree->AutoSave();
     }
 
-    std::string runTagListStr;
-    for( int i = 0; i< runTag.size()-1;i++) runTagListStr += (runTag[i] + ",");
-    runTagListStr += runTag[runTag.size()-1];
-
     File->mkdir("infos");
     File->cd("infos");
-    TObjString runTagList( runTagListStr.c_str() );
-    runTagList.Write("inputFiles");
 
     TObjString selectionBits(GetSelectionNames().c_str());
     selectionBits.Write("selectionBits");
@@ -216,7 +199,7 @@ int main(int argc, char * argv[])
     gitVersion.Write("gitVersion");
 
     TObjString inFileName(inFname.c_str());
-    inFileName.Write("inFileName");
+    inFileName.Write("inputFileName");
 
     registerSrcFilesInRootuple(); 
  
