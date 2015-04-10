@@ -103,10 +103,14 @@ void computeUnbiasedCutEfficiency(const std::vector<Binning> &binning, TTree* se
             continue;
         }
 
-        physicsTrigger = (PhysBPatt >> 1)&0b11111;
-
-        if( PhysBPatt == 0 || physicsTrigger ){
-            tree.push_back( Tuple((PhysBPatt!=0), Rfull, Latitude*180./TMath::Pi(), UTime) );
+        // Ensure event with ECAL unbiased trigger and external trigger
+        if( (PhysBPatt>>6) == 0 ){
+            
+            physicsTrigger = (PhysBPatt >> 1)&0b11111;
+            
+            if( PhysBPatt == 0 || physicsTrigger ){
+                tree.push_back( Tuple((PhysBPatt!=0), Rfull, Latitude*180./TMath::Pi(), UTime) );
+            }
         }
     }
 
