@@ -1,20 +1,4 @@
-// AMS includes
-#ifndef _PGTRACK_
-#define _PGTRACK_
-#include "TrTrack.h"
-#endif
-#include <amschain.h>
-
 #include "RootWriter.hpp"
-#include "Provenance.h"
-#include "Geo.h"
-#include "Tracker.h"
-#include "TOF.h"
-#include "TRD.h"
-#include "RICH.h"
-#include "MC.h"
-#include "SelectionStatus.h"
-
 
 /////////////////////// Lol I'm crazzy!!! ////////////////////
 // ROOTWrapper is a metafunction that takes a return type T
@@ -105,6 +89,11 @@ void AddTOFVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<int                , NTofClustersUsed>("NTofClustersUsed", tree));
     data.push_back(Wrap<std::vector<double>, EdepTOF         >("EdepTOF"         , tree));
     data.push_back(Wrap<double             , BetaTOF         >("BetaTOF"         , tree));
+}
+
+void AddECALVariable(ROOTDataList & data, TTree * tree)
+{
+    data.push_back(Wrap<double             , EnergyE         >("EnergyE"         , tree));
 }
 
 void AddMCVariables(ROOTDataList & data, TTree * tree)

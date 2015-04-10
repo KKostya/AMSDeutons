@@ -50,16 +50,18 @@ template<int N> void printEfficienciesTuple(const std::vector< Tuple > &tree, co
 void computeUnbiasedCutEfficiency(const std::vector<Binning> &binning, TTree* selectionTree ){
     
     int PhysBPatt, physicsTrigger;
-    double R;
+    double Rfull;
     double Latitude;
+    double BetaTOF;
     unsigned int UTime;
     unsigned long long int selStatus, fStatus;
     selectionTree -> SetBranchAddress("PhysBPatt",  &PhysBPatt );
-    selectionTree -> SetBranchAddress("R",  &R );
+    selectionTree -> SetBranchAddress("Rfull",  &Rfull );
     selectionTree -> SetBranchAddress("UTime",  &UTime );
     selectionTree -> SetBranchAddress("Latitude",  &Latitude );
     selectionTree -> SetBranchAddress("selStatus",  &selStatus );
     selectionTree -> SetBranchAddress("fStatus",  &fStatus );
+    selectionTree -> SetBranchAddress("BetaTOF",  &BetaTOF );
 
 
     long int nEntries = selectionTree->GetEntries();
@@ -87,12 +89,16 @@ void computeUnbiasedCutEfficiency(const std::vector<Binning> &binning, TTree* se
     
     int preselCuts = 0;
     std::vector< Tuple > tree;
+    float mass;
+    
     for(int i = 0;i<nEntries;i++){
-        //        if(i > 1000000 ) break;
+        //        if(i > 10000000 ) break;
         if( i%50000 == 0 ) std::cout << "entry : "  << i << std::endl;
 	selectionTree -> GetEntry(i);
 
-        if( (selStatus&preselMask) != preselMask ) {
+        mass = Rfull * sqrt(1 - pow(BetaTOF,2)) / BetaTOF;
+            
+        if( (selStatus&preselMask) != preselMask || Rfull <= 0 || mass < 0.8 || mass > 1.3 ) {
             preselCuts++;
             continue;
         }
@@ -100,7 +106,7 @@ void computeUnbiasedCutEfficiency(const std::vector<Binning> &binning, TTree* se
         physicsTrigger = (PhysBPatt >> 1)&0b11111;
 
         if( PhysBPatt == 0 || physicsTrigger ){
-            tree.push_back( Tuple((PhysBPatt!=0), R, Latitude*180./TMath::Pi(), UTime) );
+            tree.push_back( Tuple((PhysBPatt!=0), Rfull, Latitude*180./TMath::Pi(), UTime) );
         }
     }
 

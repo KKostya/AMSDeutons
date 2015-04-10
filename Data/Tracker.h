@@ -1,3 +1,12 @@
+#ifndef TRACKER_H
+#define TRACKER_H
+// AMS includes
+#ifndef _PGTRACK_
+#define _PGTRACK_
+#include "TrTrack.h"
+#endif
+#include <amschain.h>
+
 int NTrackHits(AMSEventR * ev);
 
 double Rup  (AMSEventR * ev);
@@ -14,3 +23,5 @@ std::vector<double> ResiduiY(AMSEventR * ev);
 int unusedLayers(AMSEventR * ev);
 
 double EdepTrack(AMSEventR * ev);
+
+#endif //TRACKER_H
