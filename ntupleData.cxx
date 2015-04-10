@@ -21,6 +21,7 @@
 #include "Data/RootWriter.hpp"
 #include "Data/TOF.h"
 #include "Data/Tracker.h"
+#include "Data/Ecal.h"
 #include "Data/SelectionStatus.h"
 #include "utils/rootUtils.hpp"
 
@@ -106,6 +107,7 @@ int main(int argc, char * argv[])
     AddProvenanceVariables(effdata, effTree);
     AddGeoVariables       (effdata, effTree);
     AddSelectionVariables (effdata, effTree);
+    AddECALVariable       (effdata, effTree);
 
     ROOTDataList data;
     AddProvenanceVariables(data, outTree);
