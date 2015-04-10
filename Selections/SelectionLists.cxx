@@ -44,6 +44,7 @@ void AddPreSelections(SelectionList & selections)
     selections.push_back( SelectionItem("chargeOne", chargeOne));
     selections.push_back( SelectionItem("downGoing", downGoing));
     selections.push_back( SelectionItem("betaNotCrazy", betaNotCrazy));
+    selections.push_back( SelectionItem("physicsTrigger", physicsTrigger));
 }
 
 void AddOldRICHSelections(SelectionList & selections)

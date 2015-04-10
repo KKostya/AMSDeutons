@@ -42,6 +42,14 @@ bool betaNotCrazy(AMSEventR *ev)
     return ev->pParticle(0)->pBeta()->Beta < 8;
 }
 
+// Ensure at least one physics trigger
+bool physicsTrigger(AMSEventR *ev)
+{
+    Level1R* level1 = ev->pLevel1(0);
+    if( level1 == NULL ) return false;
+    return ((level1->PhysBPatt >> 1)&0b11111);
+}
+
 template<int FIT>
 bool fitExists(AMSEventR *ev)
 {

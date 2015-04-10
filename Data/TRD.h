@@ -10,5 +10,6 @@
 
 int NTRDclusters(AMSEventR * ev);
 double EdepTRD(AMSEventR * ev);
-
+double ChargeTRD(AMSEventR * ev);
+    
 #endif //TRD_H

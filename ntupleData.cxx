@@ -108,7 +108,9 @@ int main(int argc, char * argv[])
     AddGeoVariables       (effdata, effTree);
     AddSelectionVariables (effdata, effTree);
     AddECALVariable       (effdata, effTree);
-
+    AddTRDVariables       (effdata, effTree);
+    AddTOFVariables       (effdata, effTree);
+    
     ROOTDataList data;
     AddProvenanceVariables(data, outTree);
     AddTrackerVariables(data, outTree);
