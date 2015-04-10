@@ -11,7 +11,7 @@
 double ThetaS   (AMSEventR * ev ){ return  ev->fHeader.ThetaS;       }
 double PhiS     (AMSEventR * ev ){ return  ev->fHeader.PhiS;         }
 double Livetime (AMSEventR * ev ){ return  ev->LiveTime();           }
-double Latitude (AMSEventR * ev ){ return  fabs(ev->fHeader.ThetaM); }
+double Latitude (AMSEventR * ev ){ return  ev->fHeader.ThetaM; }
 
 double Rcutoff  (AMSEventR * ev )
 {

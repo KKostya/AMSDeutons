@@ -24,6 +24,7 @@ double getRigidity(AMSEventR *ev, int i,int j, int k)
 double Rup  (AMSEventR * ev) { return getRigidity(ev,1,1,1); }
 double Rdown(AMSEventR * ev) { return getRigidity(ev,1,2,1); }
 double R    (AMSEventR * ev) { return getRigidity(ev,1,3,1); }
+double Rfull(AMSEventR * ev) { return getRigidity(ev,1,7,1); }
 double Chisquare(AMSEventR * ev)
 { 
     TrTrackR * track = ev->pTrTrack(0);
