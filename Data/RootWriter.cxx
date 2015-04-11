@@ -81,6 +81,7 @@ void AddTRDVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<int    , NTRDclusters>("NTRDclusters", tree));
     data.push_back(Wrap<double , EdepTRD     >("EdepTRD"     , tree));
+    data.push_back(Wrap<double , ChargeTRD     >("ChargeTRD"     , tree));
 }
 
 void AddTOFVariables(ROOTDataList & data, TTree * tree)
@@ -89,6 +90,7 @@ void AddTOFVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<int                , NTofClustersUsed>("NTofClustersUsed", tree));
     data.push_back(Wrap<std::vector<double>, EdepTOF         >("EdepTOF"         , tree));
     data.push_back(Wrap<double             , BetaTOF         >("BetaTOF"         , tree));
+    data.push_back(Wrap<double             , ChargeTOF       >("ChargeTOF"         , tree));
 }
 
 void AddECALVariable(ROOTDataList & data, TTree * tree)
