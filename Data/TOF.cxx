@@ -1,16 +1,8 @@
-// AMS includes
-#ifndef _PGTRACK_
-#define _PGTRACK_
-#include "TrTrack.h"
-#endif
-#include <amschain.h>
-
-// Local includes
 #include "TOF.h"
 
 
-int NTofClusters(AMSEventR * ev)    { return ev->NTofCluster(); }
-int NTofClustersUsed(AMSEventR * ev){ return ev->pBeta(0)->NTofCluster(); }
+int NTofClusters(AMSEventR * ev)    { return ev?ev->NTofCluster():0; }
+int NTofClustersUsed(AMSEventR * ev){ return ev?(ev->pBeta(0)?ev->pBeta(0)->NTofCluster():0):0; }
 
 // TOF energy deposit
 std::vector<double> EdepTOF(AMSEventR * ev)
@@ -32,3 +24,14 @@ double BetaTOF(AMSEventR * ev)
     return beta;
 }
 
+double ChargeTOF(AMSEventR * ev)
+{
+    ParticleR * particle = ev->pParticle(0);
+    if(!particle) return -999;
+
+    BetaHR *betah=ev->pParticle(0)->pBetaH();
+    if( betah == NULL ) return -999;
+
+    int nlay; float qrms;
+    return betah->GetQ(nlay,qrms); //TOF Trancate Mean Q, see vdev/examples/Tof_BetaH.C for more charges accessors
+}

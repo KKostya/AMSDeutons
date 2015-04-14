@@ -21,6 +21,7 @@
 #include "Data/RootWriter.hpp"
 #include "Data/TOF.h"
 #include "Data/Tracker.h"
+#include "Data/Ecal.h"
 #include "Data/SelectionStatus.h"
 #include "utils/rootUtils.hpp"
 
@@ -42,13 +43,6 @@ bool DoSelection( AMSEventR * ev,
         if(eventPasses) counts[name].second++;
     }
     return eventPasses;
-}
-
-
-// Extract run tag from filename
-void addRunTag( std::map< std::string, long int > &runTag, std::string inFname ){
-    std::string runTagStr = (rootUtils::getFileName(inFname)).substr(0,10);
-    runTag[ runTagStr ] = rootUtils::stringTo<long int>(runTagStr);
 }
 
 
@@ -92,8 +86,6 @@ int main(int argc, char * argv[])
     std::cout << "Input file: " << inFname << std::endl;
     std::cout << "Output file: " << outFname << std::endl;
 
-    std::map< std::string, long int> runTag;
-    
     // Opening input file
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
@@ -102,9 +94,6 @@ int main(int argc, char * argv[])
     ch->GetEvent(0);
     bool isMC = AMSEventR::Head()->nMCEventg() > 0;
     ch->Rewind();
-
-    // Adding a tag to output file
-    addRunTag(runTag, inFname);
 
     // Creating  output trees
     TFile * File = new TFile(outFname.c_str(), "RECREATE");
@@ -118,7 +107,10 @@ int main(int argc, char * argv[])
     AddProvenanceVariables(effdata, effTree);
     AddGeoVariables       (effdata, effTree);
     AddSelectionVariables (effdata, effTree);
-
+    AddECALVariable       (effdata, effTree);
+    AddTRDVariables       (effdata, effTree);
+    AddTOFVariables       (effdata, effTree);
+    
     ROOTDataList data;
     AddProvenanceVariables(data, outTree);
     AddTrackerVariables(data, outTree);
@@ -195,28 +187,24 @@ int main(int argc, char * argv[])
             BetaCorr = BetaRICH;
         }
         // Mass
-        Mass = pow(fabs(pow(fabs(R(ev))*pow((1-pow(BetaCorr,2)),0.5)/BetaCorr,2)),0.5);
+        Mass = fabs( R(ev)*pow((1-pow(BetaCorr,2)),0.5)/BetaCorr );
 
         outTree->Fill();
         if(ii%10000==0) outTree->AutoSave();
     }
 
-    std::string runTagListStr;
-    for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
-    	runTagListStr += it -> first;
-    	runTagListStr += " ";
-    }
-
     File->mkdir("infos");
     File->cd("infos");
-    TObjString runTagList( runTagListStr.c_str() );
-    runTagList.Write("runTag");
 
     TObjString selectionBits(GetSelectionNames().c_str());
     selectionBits.Write("selectionBits");
 
     TObjString gitVersion(gitversion);
     gitVersion.Write("gitVersion");
+
+    TObjString inFileName(inFname.c_str());
+    inFileName.Write("inputFileName");
+
     registerSrcFilesInRootuple(); 
  
     File->Write();

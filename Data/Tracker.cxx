@@ -1,11 +1,3 @@
-// AMS includes
-#ifndef _PGTRACK_
-#define _PGTRACK_
-#include "TrTrack.h"
-#endif
-#include <amschain.h>
-
-// Local includes
 #include "Tracker.h"
 
 int NTrackHits(AMSEventR * ev){ return ev->pTrTrack(0)->NTrRecHit(); }
@@ -24,6 +16,7 @@ double getRigidity(AMSEventR *ev, int i,int j, int k)
 double Rup  (AMSEventR * ev) { return getRigidity(ev,1,1,1); }
 double Rdown(AMSEventR * ev) { return getRigidity(ev,1,2,1); }
 double R    (AMSEventR * ev) { return getRigidity(ev,1,3,1); }
+double Rfull(AMSEventR * ev) { return getRigidity(ev,1,7,1); }
 double Chisquare(AMSEventR * ev)
 { 
     TrTrackR * track = ev->pTrTrack(0);
