@@ -18,9 +18,8 @@ unsigned long long selStatus(AMSEventR * ev)
     SelectionList selections = GetSelectionList();
     unsigned long long ret = 0;
     for(int nsel=0; nsel<selections.size(); nsel++)
-        if(selections[nsel].cutFunction(ev)){ 
+        if(selections[nsel].cutFunction(ev))
             ret += 1LLU << nsel;
-         }
 
     return ret;
 }
