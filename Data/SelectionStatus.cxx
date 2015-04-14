@@ -1,4 +1,6 @@
+#include <stdint.h>
 #include <sstream> 
+#include <bitset>
 
 // AMS includes #ifndef _PGTRACK_
 #ifndef _PGTRACK_
@@ -27,8 +29,11 @@ unsigned long long selStatus(AMSEventR * ev)
     SelectionList selections = GetSelectionList();
     unsigned long long ret = 0;
     for(int nsel=0; nsel<selections.size(); nsel++)
-        if(selections[nsel].cutFunction(ev)) 
-            ret += 1 << nsel;
+        if(selections[nsel].cutFunction(ev)){ 
+            ret += 1LLU << nsel;
+            std::bitset<64> bit(ret);
+        }
+
     return ret;
 }
 

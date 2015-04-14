@@ -105,7 +105,6 @@ void computeUnbiasedCutEfficiency(const std::vector<Binning> &binning, TTree* se
 
         // Ensure event with ECAL unbiased trigger and external trigger
         if( (PhysBPatt>>6) == 0 ){
-            
             physicsTrigger = (PhysBPatt >> 1)&0b11111;
             
             if( PhysBPatt == 0 || physicsTrigger ){
