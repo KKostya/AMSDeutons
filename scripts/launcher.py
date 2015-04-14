@@ -5,13 +5,15 @@ import random
 srcPath = "/storage/gpfs_ams/ams/Rec/2014/ISS.B950/pass6/"
 dstPath = "/storage/gpfs_ams/ams/users/kostya/ntuples/"
 
+def getn(f):
+    return f.split('/')[-1].replace('.root','').replace('.ntuple','') 
 
-lst = glob.glob(srcPath + "*")
+lst = set(getn(f) for f in glob.glob(srcPath + "*"))
 
 for i in xrange(40):
-    inf = random.choice(lst)
-    outf = inf.split('/')[-1]
-    outf = dstPath + '.'.join(outf.split('.')[:-1]) + ".ntuple.root"
+    produced = set(getn(f) for f in  glob.glob(dstPath + "*"))
+    lst = lst - produced
 
-    os.system("./ntupleData {0} -o {1}".format(inf,outf))
+    inf = random.choice(list(lst))
+    os.system("../ntupleData {1}/{0}.root -o {2}/{0}.ntuple.root".format(inf,srcPath,dstPath))
 
