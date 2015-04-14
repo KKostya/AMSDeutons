@@ -51,6 +51,8 @@ void AddGeoVariables(ROOTDataList & data, TTree * tree)
 void AddSelectionVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<unsigned long long , selStatus >("selStatus" , tree));
+    //    data.push_back(Wrap< mySelStatus , selStatus2 >("selStatus" , tree));
+    data.push_back(Wrap<TBits , selStatus2 >("selStatus2" , tree));
 
 
     data.push_back(Wrap<double             , R         >("R"         , tree));

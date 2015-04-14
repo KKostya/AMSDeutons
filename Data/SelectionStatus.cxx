@@ -1,15 +1,4 @@
-#include <stdint.h>
-#include <sstream> 
-#include <bitset>
-
-// AMS includes #ifndef _PGTRACK_
-#ifndef _PGTRACK_
-#define _PGTRACK_
-#include "TrTrack.h"
-#endif
-#include <amschain.h>
-
-#include "../Selections/SelectionLists.hpp"
+#include "SelectionStatus.h"
 
 SelectionList selections;
 SelectionList GetSelectionList()
@@ -31,10 +20,23 @@ unsigned long long selStatus(AMSEventR * ev)
     for(int nsel=0; nsel<selections.size(); nsel++)
         if(selections[nsel].cutFunction(ev)){ 
             ret += 1LLU << nsel;
-            std::bitset<64> bit(ret);
-        }
+         }
 
     return ret;
+}
+
+TBits selStatus2(AMSEventR * ev)
+{
+    TBits bits;
+
+    SelectionList selections = GetSelectionList();
+    unsigned long long ret = 0;
+    for(int nsel=0; nsel<selections.size(); nsel++)
+        if(selections[nsel].cutFunction(ev)){ 
+            bits.SetBitNumber(nsel,true);
+        }
+    
+    return bits;
 }
 
 std::string GetSelectionNames()
