@@ -40,7 +40,15 @@ public:
 	    Bin* aBin = new Bin( startingPoint*pow(coefficient,i) , startingPoint*pow(coefficient,i+1) );
 	    bin.push_back( aBin );
 	    std::cout << "Bin #" << i << " : " << aBin->inf << " - " << aBin->sup << std::endl;
-	}        
+	} 
+    }
+
+    void createUniformBinning( float startingPoint, float endingPoint, int nBins){
+        for(int i = 0;i<nBins;i++){
+	    Bin* aBin = new Bin( startingPoint + i*(endingPoint-startingPoint)/nBins , startingPoint + (i+1)*(endingPoint-startingPoint)/nBins );
+	    bin.push_back( aBin );
+	    std::cout << "Bin #" << i << " : " << aBin->inf << " - " << aBin->sup << std::endl;
+	}
     }
 
     int findBin( float val ) const{

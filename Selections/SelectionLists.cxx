@@ -40,9 +40,11 @@ void AddPreSelections(SelectionList & selections)
     selections.push_back( SelectionItem("aTRDTrack", aTRDTrack));
     selections.push_back( SelectionItem("oneParticle", oneParticle));
     selections.push_back( SelectionItem("oneTrack", oneTrack));
+    selections.push_back( SelectionItem("oneTRDTrack", oneTRDTrack));
     selections.push_back( SelectionItem("chargeOne", chargeOne));
     selections.push_back( SelectionItem("downGoing", downGoing));
     selections.push_back( SelectionItem("betaNotCrazy", betaNotCrazy));
+    selections.push_back( SelectionItem("physicsTrigger", physicsTrigger));
 }
 
 void AddOldRICHSelections(SelectionList & selections)

@@ -1,15 +1,8 @@
-// AMS includes
-#ifndef _PGTRACK_
-#define _PGTRACK_
-#include "TrTrack.h"
-#endif
-#include <amschain.h>
-
-// Local includes
 #include "TRD.h"
 
 int NTRDclusters(AMSEventR * ev)
 {
+    if( ev -> pTrdTrack(0) == NULL ) return -1;
     int ret = 0;
     for(int j = 0; j < ev->pTrdTrack(0)->NTrdSegment(); j++) 
     {
@@ -19,8 +12,14 @@ int NTRDclusters(AMSEventR * ev)
     return ret;
 }
 
+double ChargeTRD(AMSEventR * ev){
+    if( ev -> pTrdTrack(0) == NULL ) return -1;
+    return ev->pTrdTrack(0)->Q;
+}
+
 double EdepTRD(AMSEventR * ev)
 {
+    if( ev -> pTrdTrack(0) == NULL ) return -1;
     double ret = 0;
     for(int j = 0; j < ev->pTrdTrack(0)->NTrdSegment(); j++) 
     {
