@@ -9,10 +9,13 @@ class Binning{
 public:
     class Bin{
     public:
-	Bin( float binLowEdge, float binHighEdge ): inf(binLowEdge), sup(binHighEdge){}
+	Bin( float binLowEdge, float binHighEdge ): inf(binLowEdge), sup(binHighEdge){
+            center = (inf+sup)*0.5;
+        }
 	
 	float inf;
 	float sup;
+        float center;
     };
 
     std::vector< Bin* > bin;
@@ -56,6 +59,14 @@ public:
             if( val >= bin[i]->inf && val < bin[i]->sup ) return i;
 	}
         return 0;
+    }
+
+    TH1F* histo(const std::string & name) const{
+        if( bin.size() == 0 ){
+            std::cout << "Binning is empty !" << std::endl;
+            return new TH1F();
+        }
+        return new TH1F(name.c_str(), name.c_str(),bin.size(),bin[0]->inf, bin[bin.size()-1]->sup);
     }
 
 };

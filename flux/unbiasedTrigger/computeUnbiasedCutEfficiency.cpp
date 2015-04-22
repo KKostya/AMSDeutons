@@ -17,44 +17,90 @@
 
 std::string firstTree;
 
-typedef std::tuple<bool, float, float, float > Tuple;
+
+enum TriggerState {
+    kPhysics,
+    kUnbiasedOnlyTofFlag,
+    kUnbiasedOnlyEcalFlag,
+    kUnbiasedTofAndEcalFlags,
+    kNotSupposedToHappen
+};
+
+typedef std::tuple<TriggerState, float, float, float > Tuple;
+
 
 template<int N> void printEfficienciesTuple(const std::vector< Tuple > &tree, const Binning &binning){
     int bin;
     float val;
     int nBins = binning.size();
-    std::vector<int> nUnbiased(nBins,0);
+    std::vector<int> nUnbiasedTofNoEcal(nBins,0); // All unbiased events with a FTC1 flag (JMembPatt == 4) but no Ecal flag (JMembPatt != 11 )
+    std::vector<int> nUnbiasedEcal(nBins,0); // All unbiased events with an EcalF flag (JMembPatt == 11) 
     std::vector<int> nPhysics(nBins, 0);
-    
+
     for(int i = 0;i<tree.size();i++){
         val = std::get<N>(tree[i]);
         bin = binning.findBin(val);
         if( bin > -1 ){
-            if( std::get<0>(tree[i]) == 0 ) nUnbiased[bin]++;
-            else nPhysics[bin]++;
+            TriggerState triggerState = std::get<0>(tree[i]);
+            
+            switch( triggerState ){
+            case kPhysics:
+                nPhysics[bin]++;
+                break;
+
+            case kUnbiasedTofAndEcalFlags:
+                nUnbiasedEcal[bin]++;
+                break;
+
+            case kUnbiasedOnlyEcalFlag:
+                nUnbiasedEcal[bin]++;
+                break;
+
+            case kUnbiasedOnlyTofFlag:
+                nUnbiasedTofNoEcal[bin]++;
+                break;
+
+            default:
+                std::cout << "Not supposed to happen" << std::endl;
+                break;
+            }
         }
     }
 
+    TFile* file = new TFile(Form("unbiasedCutEfficiency_%i.root",N),"recreate");
+    TGraphErrors gr;
+    
     for(int i = 0;i<binning.size();i++){
-        if(nPhysics[i] + 100. * nUnbiased[i] > 0){
-            double efficiency = nPhysics[i] / (double)(nPhysics[i] + 100. * nUnbiased[i]);
-            double error = pow(100/pow(nPhysics[i] + 100 * nUnbiased[i],2),2) * (nPhysics[i] * pow(nUnbiased[i],2) + nUnbiased[i] * pow(nPhysics[i],2) + 2*nPhysics[i]*nUnbiased[i]*sqrt(nPhysics[i]*nUnbiased[i]));
-            
-            std::cout << rootUtils::redFontBegin << "Unbiased trigger efficiency for bin [" << binning[i]->inf << "," << binning[i]->sup << "] : " << efficiency * 100 << "+/- " << error * 100. << "%  -   Nunb : " << nUnbiased[i]  << "    nPhys : " << nPhysics[i] << rootUtils::redFontEnd << std::endl;
-        }
+        double error = 0;
+        double efficiency = 0;
+        double Ntot = nPhysics[i] + 100. * nUnbiasedTofNoEcal[i] + 1000. * nUnbiasedEcal[i];
+        if(Ntot > 0){
+            efficiency = nPhysics[i] / (double)(nPhysics[i] + 100. * nUnbiasedTofNoEcal[i] + 1000. * nUnbiasedEcal[i]);
+            // error = pow(100/pow(nPhysics[i] + 100 * nUnbiased[i],2),2) * (nPhysics[i] * pow(nUnbiased[i],2) + nUnbiased[i] * pow(nPhysics[i],2) + 2*nPhysics[i]*nUnbiased[i]*sqrt(nPhysics[i]*nUnbiased[i]));
+            error = sqrt( pow(100/Ntot,2) * nUnbiasedTofNoEcal[i] + pow(1000/Ntot,2) * nUnbiasedEcal[i]) ;
+         }
+        
+        std::cout << rootUtils::redFontBegin << "Unbiased trigger efficiency for bin [" << binning[i]->inf << "," << binning[i]->sup << "] : " << efficiency * 100 << "+/- " << error * 100. << "%  -   Nunb : " <<  nUnbiasedEcal[i] + nUnbiasedTofNoEcal[i] << "    nPhys : " << nPhysics[i] << rootUtils::redFontEnd << std::endl;
+        gr.SetPoint(i, binning[i]->center, efficiency );
+        gr.SetPointError(i,binning[i]->center - binning[i]->inf, error);
     }
+
+    gr.Write("gr");
+    
     std::cout << std::endl;
 
 }
 
 void computeUnbiasedCutEfficiency(const std::vector<Binning> &binning, TTree* selectionTree ){
     
-    int PhysBPatt, physicsTrigger;
+    int PhysBPatt, JMembPatt;
+
     double Rfull;
     double Latitude;
     double BetaTOF;
     unsigned int UTime;
     unsigned long long int selStatus, fStatus;
+    selectionTree -> SetBranchAddress("JMembPatt",  &JMembPatt );
     selectionTree -> SetBranchAddress("PhysBPatt",  &PhysBPatt );
     selectionTree -> SetBranchAddress("Rfull",  &Rfull );
     selectionTree -> SetBranchAddress("UTime",  &UTime );
@@ -62,7 +108,6 @@ void computeUnbiasedCutEfficiency(const std::vector<Binning> &binning, TTree* se
     selectionTree -> SetBranchAddress("selStatus",  &selStatus );
     selectionTree -> SetBranchAddress("fStatus",  &fStatus );
     selectionTree -> SetBranchAddress("BetaTOF",  &BetaTOF );
-
 
     long int nEntries = selectionTree->GetEntries();
 
@@ -90,27 +135,33 @@ void computeUnbiasedCutEfficiency(const std::vector<Binning> &binning, TTree* se
     int preselCuts = 0;
     std::vector< Tuple > tree;
     float mass;
-    
+    int p = 0;
+    //    for(int i = 100000000;i<nEntries;i++){
     for(int i = 0;i<nEntries;i++){
-        //        if(i > 10000000 ) break;
+        //        if(p++ > 14000000 ) break;
         if( i%50000 == 0 ) std::cout << "entry : "  << i << std::endl;
 	selectionTree -> GetEntry(i);
 
         mass = Rfull * sqrt(1 - pow(BetaTOF,2)) / BetaTOF;
-            
+
+        //        std::cout << "(selStatus^preselMask) : " << std::bitset<64>(selStatus^preselMask) << std::endl;
         if( (selStatus&preselMask) != preselMask || Rfull <= 0 || mass < 0.8 || mass > 1.3 ) {
             preselCuts++;
             continue;
         }
 
-        // Ensure event with ECAL unbiased trigger and external trigger
-        if( (PhysBPatt>>6) == 0 ){
-            physicsTrigger = (PhysBPatt >> 1)&0b11111;
-            
-            if( PhysBPatt == 0 || physicsTrigger ){
-                tree.push_back( Tuple((PhysBPatt!=0), Rfull, Latitude*180./TMath::Pi(), UTime) );
-            }
-        }
+        std::bitset<16> JMembPattBit(JMembPatt);
+        bool isEcalF = JMembPattBit.test(11);
+        bool isTof = JMembPattBit.test(4);
+
+        TriggerState theTriggerState;
+        if( ((PhysBPatt >> 1)&0b11111) != 0 ) theTriggerState = kPhysics;
+        else if( isTof && !isEcalF ) theTriggerState = kUnbiasedOnlyTofFlag;
+        else if( !isTof && isEcalF ) theTriggerState = kUnbiasedOnlyEcalFlag;
+        else if( isTof && isEcalF ) theTriggerState = kUnbiasedTofAndEcalFlags;
+        else theTriggerState = kNotSupposedToHappen;
+
+        tree.push_back( Tuple(theTriggerState, Rfull, Latitude*180./TMath::Pi(), UTime) );
     }
 
     printEfficienciesTuple<1>(tree, binning[0]);
@@ -134,6 +185,8 @@ int main(){
 
     TChain* chain = new TChain();
     std::vector< std::string > files = rootUtils::getFilesInDirWithPattern("/afs/cern.ch/user/b/bcoste/eos/ams/user/k/kostams/DeuteronNtuples/production","ntuple.root");
+    // std::vector< std::string > files;
+    // files.push_back("ntuple.root");
     firstTree = files[0];
 
     for(int i = 0;i<files.size();i++){
