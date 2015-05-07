@@ -1,4 +1,15 @@
+#ifndef SELECTIONLISTS_H
+#define SELECTIONLISTS_H
 #include<vector>
+
+#include <amschain.h>
+
+#include "Geo.h"
+#include "Preselect.h"
+#include "Golden.h"
+#include "MinBias.h"
+#include "RICH.h"
+
 
 
 struct SelectionItem{
@@ -18,3 +29,5 @@ void AddPreSelections(SelectionList & selections);
 
 void AddOldRICHSelections(SelectionList & selections);
 void AddRICHSelections(SelectionList & selections);
+
+#endif //SELECTIONLISTS_H

@@ -9,6 +9,13 @@ ntupleData: ntupleData.o Data Selections gitversion.c utils gitversion.c
 selTable: SelectionsTable.o Selections 
 	g++ -o $@ $(AMSLIBso) $(ROOTLIB) SelectionsTable.o  Selections/selections.a 
 
+
+MyDict.cxx: $(HEADERS) Linkdef.h
+	rootcint -f $@ -c $(CXXFLAGS) -p $^
+
+libMyLib.so: MyDict.cxx $(SOURCES)
+	g++ -shared -o$@ `root-config --ldflags` $(CXXFLAGS) -I$(ROOTSYS)/include $^
+
 Data:
 	make --directory=$@
 

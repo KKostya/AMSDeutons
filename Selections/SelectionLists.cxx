@@ -1,13 +1,4 @@
-#include <amschain.h>
 #include "SelectionLists.hpp"
-
-#include "Geo.h"
-#include "Preselect.h"
-#include "Golden.h"
-#include "MinBias.h"
-#include "RICH.h"
-
-
  
 void AddGeoSelections(SelectionList & selections)
 {

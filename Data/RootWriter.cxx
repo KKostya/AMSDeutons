@@ -52,10 +52,9 @@ void AddGeoVariables(ROOTDataList & data, TTree * tree)
 void AddSelectionVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<unsigned long long , selStatus >("selStatus" , tree));
+    //data.push_back(Wrap< mySelStatus , selStatus2 >("selStatus" , tree));
+    //data.push_back(Wrap<TBits , selStatus2 >("selStatus2" , tree));
 
-
-    data.push_back(Wrap<double             , R         >("R"         , tree));
-    data.push_back(Wrap<double             , Rfull     >("Rfull"     , tree));
     data.push_back(Wrap<double             , BetaTOF   >("BetaTOF"   , tree));
     data.push_back(Wrap<double             , BetaRICH  >("BetaRICH"  , tree));
 }
@@ -66,6 +65,7 @@ void AddSelectionVariables(ROOTDataList & data, TTree * tree)
 void AddTrackerVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<int                , NTrackHits  >("NTrackHits"  , tree));
+    data.push_back(Wrap<double             , Rfull       >("Rfull"     , tree));
     data.push_back(Wrap<double             , Rup         >("Rup"         , tree));
     data.push_back(Wrap<double             , Rdown       >("Rdown"       , tree));
     data.push_back(Wrap<double             , R           >("R"           , tree));
@@ -82,7 +82,7 @@ void AddTRDVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<int    , NTRDclusters>("NTRDclusters", tree));
     data.push_back(Wrap<double , EdepTRD     >("EdepTRD"     , tree));
-    data.push_back(Wrap<double , ChargeTRD     >("ChargeTRD"     , tree));
+    data.push_back(Wrap<double , ChargeTRD   >("ChargeTRD"     , tree));
 }
 
 void AddTOFVariables(ROOTDataList & data, TTree * tree)

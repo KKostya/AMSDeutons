@@ -1,6 +1,6 @@
 #include "Tracker.h"
 
-int NTrackHits(AMSEventR * ev){ return ev->pTrTrack(0)->NTrRecHit(); }
+int NTrackHits(AMSEventR * ev){ return ev->pTrTrack(0)?ev->pTrTrack(0)->NTrRecHit():0; }
 
 ///////////////////////////
 //  Various fits and chi2
@@ -20,6 +20,7 @@ double Rfull(AMSEventR * ev) { return getRigidity(ev,1,7,1); }
 double Chisquare(AMSEventR * ev)
 { 
     TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return 0;
     int fitID = track->iTrTrackPar(1,3,1);
     return track->GetChisq(fitID);
 }
@@ -37,8 +38,9 @@ int fit[6] = {
 
 std::vector<double> R_(AMSEventR * ev) 
 { 
-    std::vector<double> ret;
+    std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
     TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return ret;
     for(int i=0; i<sizeof(fit)/sizeof(fit[0]); i++)
     {
         track->FitT(fit[i],-1);
@@ -48,8 +50,9 @@ std::vector<double> R_(AMSEventR * ev)
 }
 std::vector<double> chiq(AMSEventR * ev) 
 { 
-    std::vector<double> ret;
+    std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
     TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return ret;
     for(int i=0; i<sizeof(fit)/sizeof(fit[0]); i++)
         ret.push_back(track->FitT(fit[i],-1));
     return ret;
@@ -61,9 +64,11 @@ std::vector<double> chiq(AMSEventR * ev)
 
 std::vector<double> ResiduiX(AMSEventR * ev)
 {
-    std::vector<double> ret;
+    std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
     TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return ret;
     int fitID = track->iTrTrackPar(1,3,1);
+    if(!track->ParExists(fitID)) return ret;
     TrTrackPar parametri = track->gTrTrackPar(fitID);
     for (int layer=2;layer<9;layer++) 
     {
@@ -80,9 +85,11 @@ std::vector<double> ResiduiX(AMSEventR * ev)
 
 std::vector<double> ResiduiY(AMSEventR * ev)
 {
-    std::vector<double> ret;
+    std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
     TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return ret;
     int fitID = track->iTrTrackPar(1,3,1);
+    if(!track->ParExists(fitID)) return ret;
     TrTrackPar parametri = track->gTrTrackPar(fitID);
     for (int layer=2;layer<9;layer++) 
     {
@@ -100,7 +107,9 @@ std::vector<double> ResiduiY(AMSEventR * ev)
 int unusedLayers(AMSEventR * ev)
 {
     TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return -1;
     int fitID = track->iTrTrackPar(1,3,1);
+    if(!track->ParExists(fitID)) return -1;
     TrTrackPar parametri = track->gTrTrackPar(fitID);
 
     int ret = 0;
@@ -118,6 +127,7 @@ double EdepTrack(AMSEventR * ev)
 {
     TrTrackR * track = ev->pTrTrack(0);
     double ret = 0;   
+    if(!track) return ret;
     for(int i=0; i<track->NTrRecHit();i++){
         TrRecHitR * hit=track->pTrRecHit(i);
         ret += hit->Sum();

@@ -14,12 +14,12 @@ AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
 AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG
 LIBS	      := -L${HOME}/utils/lib/ -lRootUtils
 INCLUDES      := -I. -I$(AMSROOTLIBS) -Iinclude/ -I${HOME}/utils/include
-DEBUG	      := -g
+DEBUG	      := -O3
 
 #Ca va chier dans le compilo
 ROOTCFG  := root-config
 CXX      :=$(shell $(ROOTCFG) --cxx)   #g++
-CXXFLAGS :=$(DEBUG) -O2 $(shell $(ROOTCFG) --cflags) -D_PGTRACK_ -Wno-write-strings # TH1F...
+CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -D_PGTRACK_ -Wno-write-strings # TH1F...
 ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 
 
