@@ -10,6 +10,7 @@ SelectionList GetSelectionList()
         AddMinBiasSelections(selections);
         AddPreSelections    (selections);
         AddRICHSelections   (selections);
+        AddOldRICHSelections(selections);
     }
     return selections;
 }
