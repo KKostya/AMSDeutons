@@ -44,7 +44,7 @@ std::vector<double> R_(AMSEventR * ev)
     for(int i=0; i<sizeof(fit)/sizeof(fit[0]); i++)
     {
         track->FitT(fit[i],-1);
-        ret.push_back(track->GetRigidity(fit[i]));
+        ret[i] = track->GetRigidity(fit[i]);
     }
     return ret;
 }
@@ -54,7 +54,7 @@ std::vector<double> chiq(AMSEventR * ev)
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return ret;
     for(int i=0; i<sizeof(fit)/sizeof(fit[0]); i++)
-        ret.push_back(track->FitT(fit[i],-1));
+        ret[i] = track->FitT(fit[i],-1);
     return ret;
 }
 
@@ -64,7 +64,7 @@ std::vector<double> chiq(AMSEventR * ev)
 
 std::vector<double> ResiduiX(AMSEventR * ev)
 {
-    std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
+    std::vector<double> ret(9, -999999);
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return ret;
     int fitID = track->iTrTrackPar(1,3,1);
@@ -73,11 +73,11 @@ std::vector<double> ResiduiX(AMSEventR * ev)
     for (int layer=2;layer<9;layer++) 
     {
         if(!track->TestHitLayerJ(layer) || !track->TestHitLayerJHasXY(layer)) 
-            ret.push_back(-999999);
+            ret[layer] = -999999;
         else
         {
             AMSPoint Residual_point = track->GetResidualJ(layer,fitID);
-            ret.push_back(Residual_point.x());
+            ret[layer] = Residual_point.x();
         }
     }
     return ret;
@@ -85,7 +85,7 @@ std::vector<double> ResiduiX(AMSEventR * ev)
 
 std::vector<double> ResiduiY(AMSEventR * ev)
 {
-    std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
+    std::vector<double> ret(9, -999999);
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return ret;
     int fitID = track->iTrTrackPar(1,3,1);
@@ -94,11 +94,11 @@ std::vector<double> ResiduiY(AMSEventR * ev)
     for (int layer=2;layer<9;layer++) 
     {
         if(!track->TestHitLayerJ(layer))
-            ret.push_back(-999999);
+            ret[layer] = -999999;
         else
         {
             AMSPoint Residual_point = track->GetResidualJ(layer,fitID);
-            ret.push_back(Residual_point.y());
+            ret[layer] = Residual_point.y();
         }
     }
     return ret;
