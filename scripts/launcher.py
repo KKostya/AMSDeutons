@@ -8,7 +8,8 @@ dstPath = "/storage/gpfs_ams/ams/users/kostya/ntuples/"
 def getn(f):
     return f.split('/')[-1].replace('.root','').replace('.ntuple','') 
 
-lst = set(getn(f) for f in glob.glob(srcPath + "*"))
+patt = "1367[3-9]*"
+lst = set(getn(f) for f in glob.glob(srcPath + patt))
 
 for i in xrange(40):
     produced = set(getn(f) for f in  glob.glob(dstPath + "*"))
