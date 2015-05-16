@@ -6,7 +6,8 @@ import pandas as pd
 import ROOT
 import root_numpy
 
-workdir = "/storage/gpfs_ams/ams/users/kostya/ntuples/"
+lockdir = "/afs/cern.ch/user/k/kostams/temp/"
+workdir = "/afs/cern.ch/user/k/kostams/eos/ams/user/k/kostams/DeuteronNtuples/month/"
 filenames = sorted(glob.glob(workdir + "*.ntuple.root"))
 
 def steps(N,n):
@@ -44,15 +45,11 @@ for n,(i,j) in enumerate(steps(len(filenames),10)):
     
     outfname = "may2013." + str(n) + ".csv.gz" 
     print "Current target is " + outfname
-    if os.path.exists(workdir + outfname):
+    if os.path.exists(lockdir + outfname):
         print " already exists skipping."
         continue
-    os.system("touch " + workdir + outfname)
-    while not os.path.exists(workdir + outfname):
-        print "Cannot access outdir, retrying in 10"
-        print "sleep 10 && touch " + workdir + outfname
-        os.system("sleep 10 && touch " + workdir + outfname)
-    
+    os.system("touch " + lockdir + outfname)
+
     data = []
     for filename in filenames[i:j]:
         print "Reading " + filename.split('/')[-1]
