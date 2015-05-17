@@ -41,7 +41,7 @@ def makeframe(dnumpy):
     
     
     
-for n,(i,j) in enumerate(steps(len(filenames),10)):
+for n,(i,j) in enumerate(steps(len(filenames),5)):
     
     outfname = "may2013." + str(n) + ".csv.gz" 
     print "Current target is " + outfname
@@ -50,23 +50,23 @@ for n,(i,j) in enumerate(steps(len(filenames),10)):
         continue
     os.system("touch " + lockdir + outfname)
 
-    data = []
-    for filename in filenames[i:j]:
-        print "Reading " + filename.split('/')[-1]
-        sys.stdout.flush()
-        f = ROOT.TFile(filename)
-        if f.IsZombie(): continue
-        tree = f.Get("data")
-        frame = makeframe(root_numpy.tree2rec(tree))
-        data.append(frame)
-    data = pd.concat(data)
-
-    print "Writing " + str(len(data)) + " rows into " + outfname + " ... ",
-    sys.stdout.flush()
-    with gzip.open(outfname, 'w') as csvOut: data.to_csv(csvOut)  
-    print " done."
+    with gzip.open(outfname, 'w') as csvOut:
+        firstWrite = True
+        for filename in filenames[i:j]:
+            print "Reading " + filename.split('/')[-1]
+            sys.stdout.flush()
+            f = ROOT.TFile(filename)
+            if f.IsZombie(): continue
+            tree = f.Get("data")
+            frame = makeframe(root_numpy.tree2rec(tree))
+            print "Writing " + str(len(frame)) + " rows into " + outfname + " ... ",
+            sys.stdout.flush()
+            frame.to_csv(csvOut, header=firstWrite)  
+            firstWrite = False
+            print " done."
+            sys.stdout.flush()
     
-    print "Copying ...",
+    print "Copying " + outfname + " ...",
     sys.stdout.flush()
     os.system("\cp " + outfname + " " + workdir)
     print " done."
