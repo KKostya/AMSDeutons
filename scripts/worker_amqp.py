@@ -8,9 +8,8 @@ def pflush(str):
 
 
 def callback(ch, method, properties, body):
-
     pflush( " [x]  Executing " + body )
-
+    os.system(body)
     pflush( " [x] Job done ..." )
     ch.basic_ack(delivery_tag = method.delivery_tag)
 
