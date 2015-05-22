@@ -109,6 +109,7 @@ int main(int argc, char * argv[])
     {
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
+        if(!ev) continue;
         // Fill the TTree 
         for(int idat=0; idat<data.size(); idat++) data[idat](ev);
         outTree->Fill();
