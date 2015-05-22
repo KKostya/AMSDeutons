@@ -22,5 +22,5 @@ channel.queue_declare(queue='task_queue', durable=True)
 pflush(' [*] Waiting for messages. To exit press CTRL+C')
 
 channel.basic_qos(prefetch_count=1)
-channel.basic_consume(callback, queue='hello')
+channel.basic_consume(callback, queue='task_queue')
 channel.start_consuming()

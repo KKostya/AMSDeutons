@@ -24,7 +24,7 @@ for f in glob.glob(os.path.join(srcPath,"*.root")):
     channel.basic_publish(exchange='',
                           routing_key='task_queue',
                           body=command,
-                          properties=pika.BasicProperties(
+                          properties=p.BasicProperties(
                              delivery_mode = 2, # make message persistent
                           ))
 
