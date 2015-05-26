@@ -54,8 +54,33 @@ void AddSelectionVariables(ROOTDataList & data, TTree * tree)
     //data.push_back(Wrap< mySelStatus , selStatus2 >("selStatus" , tree));
     //data.push_back(Wrap<TBits , selStatus2 >("selStatus2" , tree));
 
-    data.push_back(Wrap<double             , BetaTOF   >("BetaTOF"   , tree));
-    data.push_back(Wrap<double             , BetaRICH  >("BetaRICH"  , tree));
+    data.push_back(Wrap<double             , BetaTOF                     >("BetaTOF"   , tree));
+    data.push_back(Wrap<double             , BetaRICH                    >("betaRICH"  , tree));
+
+    // Rich variables
+    data.push_back(Wrap<double             , DistanceTileBorder          >("rich_distanceTileBorder", tree));
+    data.push_back(Wrap<double             , RingWidth                   >("rich_ringWidth", tree));
+    data.push_back(Wrap<float              , getBeta                     >("rich_getBeta", tree));
+    data.push_back(Wrap<int                , PmtCorrectionsFailed        >("rich_pmtCorrectionsFailed", tree));
+    data.push_back(Wrap<int                , getUsedHits                 >("rich_getUsedHits", tree));
+    data.push_back(Wrap<float              , getPhotoElectrons           >("rich_getPhotoElectrons", tree));
+    data.push_back(Wrap<float              , getExpectedPhotoElectrons   >("rich_getExpectedPhotoElectrons", tree));
+    data.push_back(Wrap<float              , getCharge2Estimate          >("rich_getCharge2Estimate", tree));
+    data.push_back(Wrap<float              , getBetaError                >("rich_getBetaError", tree));
+    data.push_back(Wrap<float              , getProb                     >("rich_getProb", tree));
+    data.push_back(Wrap<float              , getWidth                    >("rich_getWidth", tree));
+    data.push_back(Wrap<float              , getRawIndexUsed             >("rich_getRawIndexUsed", tree));
+    data.push_back(Wrap<float              , getIndexUsed                >("rich_getIndexUsed", tree));
+    data.push_back(Wrap<std::vector<float> , getTrackEmissionPoint       >("rich_getTrackEmissionPoint", tree));
+    data.push_back(Wrap<float              , getBetaConsistency          >("rich_getBetaConsistency", tree));
+    data.push_back(Wrap<int                , getHits                     >("rich_getHits", tree));
+    data.push_back(Wrap<int                , getPMTs                     >("rich_getPMTs", tree));
+    data.push_back(Wrap<int                , getReflectedHits            >("rich_getReflectedHits", tree));
+    data.push_back(Wrap<float              , getPMTChargeConsistency     >("rich_getPMTChargeConsistency", tree));
+    data.push_back(Wrap<float              , getBetaExpectedResolution   >("rich_getBetaExpectedResolution", tree));
+    data.push_back(Wrap<float              , getBetaExpectedRms          >("rich_getBetaExpectedRms", tree));
+    data.push_back(Wrap<float              , getChargeExpectedRms        >("rich_getChargeExpectedRms", tree));
+    
 }
 
 /////////////////////////////////////////////////////////////
