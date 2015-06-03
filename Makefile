@@ -9,6 +9,8 @@ ntupleData: ntupleData.o Data Selections gitversion.c utils gitversion.c
 selTable: SelectionsTable.o Selections 
 	g++ -o $@ $(AMSLIBso) $(ROOTLIB) SelectionsTable.o  Selections/selections.a 
 
+dumpRTI: dumpRTI.cxx 
+	g++ -o dumpRTI $(AMSINC) -std=c++11 $(AMSLIBso) `root-config --cflags --libs` dumpRTI.cxx 
 
 MyDict.cxx: $(HEADERS) Linkdef.h
 	rootcint -f $@ -c $(CXXFLAGS) -p $^
