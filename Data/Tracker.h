@@ -20,6 +20,9 @@ std::vector<double> chiq(AMSEventR * ev);
 
 std::vector<double> ResiduiX(AMSEventR * ev);
 std::vector<double> ResiduiY(AMSEventR * ev);
+
+std::vector<double> ChargeTracker(ParticleR* part);
+
 int unusedLayers(AMSEventR * ev);
 
 double EdepTrack(AMSEventR * ev);

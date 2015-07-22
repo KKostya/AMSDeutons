@@ -25,7 +25,6 @@ double Chisquare(AMSEventR * ev)
     return track->GetChisq(fitID);
 }
 
-
 // Bit patterns for fits
 int fit[6] = {
     0x78211,  //  1111000 0010 0001 0001
@@ -48,6 +47,7 @@ std::vector<double> R_(AMSEventR * ev)
     }
     return ret;
 }
+
 std::vector<double> chiq(AMSEventR * ev) 
 { 
     std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
@@ -134,4 +134,21 @@ double EdepTrack(AMSEventR * ev)
     }
 }
 
+///////////////////////////////
+// Charge
+///////////////////////////////
+std::vector<double> ChargeTracker(ParticleR* part) {
+    std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
+
+    TrTrackR* track = part->pTrTrack(0);
+    if(!track) return ret;
+
+    BetaHR* betah = (BetaHR*) part->pBetaH();
+    double beta = betah->GetBeta();
+    for(int i=0; i<sizeof(fit)/sizeof(fit[0]); i++)
+        {
+            ret[i] = track->GetQ_all(beta, fit[i]).Mean;
+        }
+    return ret;
+}
 

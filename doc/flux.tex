@@ -26,11 +26,6 @@
 % typeset front matter (including abstract)
 \maketitle
 
-\begin{figure}[htb]
-  \centering
-  \includegraphics{plots/japbcvpavbzau9dbuaxf.jpg}
-\end{figure}
-
 
 \section{Introduction}
 Let's take a simple example where cosmic rays are only composed of 2 mono-energetic species A and B.
@@ -103,6 +98,26 @@ where $P(cut|S)$ is the probability that a particle passes the unbiased cut \tex
 
 \subsection{Discussion: is unbiased cut really unbiased ?}
 At some point we should discuss that.
+
+\section{Selection cuts}
+Before adding more complex cuts, in a first time let's try to stick to the cuts used by the proton paper
+\subsection{Preselection}
+\begin{itemize}
+\item minimumbiasTOF: We ask for 4 good TOF planes. 
+  \footnote{minimumbiasTRIGG doens't add any cuts to what has been cut by minimumbiasTOF so it has been removed from the cut list}
+\item downGoing
+\end{itemize}
+
+\subsection{Track selection}
+\begin{itemize}
+\item notFirstTwo: because the first two events are screwed by the calibration that just happened
+\item minimumbiasTRACKER:
+  It requires that at least one reconstructed track has the following properties.
+  Not a fake track, with a non-null rigidity, a strictly positive chi square, and at least inner tracker
+\item chargeOne
+\end{itemize}
+
+physicsTrigger
 
 
 \begin{thebibliography}{99}

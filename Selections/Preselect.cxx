@@ -31,8 +31,8 @@ bool chargeOne(AMSEventR *ev) {
 bool downGoing(AMSEventR *ev) 
 { 
     if(!ev->pParticle(0)) return false;
-    if(!ev->pParticle(0)->pBeta()) return false;
-    return ev->pParticle(0)->pBeta()->Beta > 0;
+    if(!ev->pParticle(0)->pBetaH()) return false;
+    return ev->pParticle(0)->pBetaH()->Beta > 0;
 }
 
 bool betaNotCrazy(AMSEventR *ev) 

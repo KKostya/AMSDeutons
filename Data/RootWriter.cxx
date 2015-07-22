@@ -88,18 +88,19 @@ void AddSelectionVariables(ROOTDataList & data, TTree * tree)
 /////////////////////////////////////////////////////////////
 void AddTrackerVariables(ROOTDataList & data, TTree * tree)
 {
-    data.push_back(Wrap<int                , NTrackHits  >("NTrackHits"  , tree));
-    data.push_back(Wrap<double             , Rfull       >("Rfull"     , tree));
-    data.push_back(Wrap<double             , Rup         >("Rup"         , tree));
-    data.push_back(Wrap<double             , Rdown       >("Rdown"       , tree));
-    data.push_back(Wrap<double             , R           >("R"           , tree));
-    data.push_back(Wrap<double             , Chisquare   >("Chisquare"   , tree));
-    data.push_back(Wrap<std::vector<double>, R_          >("R_"          , tree));
-    data.push_back(Wrap<std::vector<double>, chiq        >("chiq"        , tree));
-    data.push_back(Wrap<std::vector<double>, ResiduiX    >("ResiduiX"    , tree));
-    data.push_back(Wrap<std::vector<double>, ResiduiY    >("ResiduiY"    , tree));
-    data.push_back(Wrap<int                , unusedLayers>("unusedLayers", tree));
-    data.push_back(Wrap<double             , EdepTrack   >("EdepTrack"   , tree));
+    data.push_back(Wrap<int                , NTrackHits    >("NTrackHits"   , tree));
+    data.push_back(Wrap<double             , Rfull         >("Rfull"        , tree));
+    data.push_back(Wrap<double             , Rup           >("Rup"          , tree));
+    data.push_back(Wrap<double             , Rdown         >("Rdown"        , tree));
+    data.push_back(Wrap<double             , R             >("R"            , tree));
+    data.push_back(Wrap<double             , Chisquare     >("Chisquare"    , tree));
+    data.push_back(Wrap<std::vector<double>, R_            >("R_"           , tree));
+    data.push_back(Wrap<std::vector<double>, chiq          >("chiq"         , tree));
+    data.push_back(Wrap<std::vector<double>, ResiduiX      >("ResiduiX"     , tree));
+    data.push_back(Wrap<std::vector<double>, ResiduiY      >("ResiduiY"     , tree));
+    data.push_back(Wrap<std::vector<double>, ChargeTracker >("ChargeTracker", tree));
+    data.push_back(Wrap<int                , unusedLayers  >("unusedLayers" , tree));
+    data.push_back(Wrap<double             , EdepTrack     >("EdepTrack"    , tree));
 }
 
 void AddTRDVariables(ROOTDataList & data, TTree * tree)
