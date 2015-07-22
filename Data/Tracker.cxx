@@ -137,12 +137,15 @@ double EdepTrack(AMSEventR * ev)
 ///////////////////////////////
 // Charge
 ///////////////////////////////
-std::vector<double> ChargeTracker(ParticleR* part) {
+std::vector<double> ChargeTracker(AMSEventR* ev) {
     std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
 
-    TrTrackR* track = part->pTrTrack(0);
+    TrTrackR* track = ev->pTrTrack(0);
     if(!track) return ret;
 
+    ParticleR *part = ev->pParticle(0);
+    if(!part) return ret;
+    
     BetaHR* betah = (BetaHR*) part->pBetaH();
     double beta = betah->GetBeta();
     for(int i=0; i<sizeof(fit)/sizeof(fit[0]); i++)
