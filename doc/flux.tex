@@ -101,23 +101,50 @@ At some point we should discuss that.
 
 \section{Selection cuts}
 Before adding more complex cuts, in a first time let's try to stick to the cuts used by the proton paper
-\subsection{Preselection}
+\subsection{Preselection cuts}
 \begin{itemize}
+\item physicsTrigger: The events must have been trigged by at least one of the 5 physics triggers
 \item minimumbiasTOF: We ask for 4 good TOF planes. 
   \footnote{minimumbiasTRIGG doens't add any cuts to what has been cut by minimumbiasTOF so it has been removed from the cut list}
 \item downGoing
+
+\subsection{Preselection efficiency}
+The efficiency of the preselection cuts is computed with the proton MC
+
+Since geometric factors and preselections cut efficiency can't be decorrelated, we don't actually compute the preselection cut effieciency but the effectiva acceptance.
+The effective acceptance is computed as:
+\begin{equation}
+  A_{eff} = A_{gen} \frac{N_{acc}}{N_{gen}}
+\end{equation}
+
+Events are generated from the top surface at Z=195, and with $X \in [-195,195]$, $Y \in [-195,195]$.
+There are generated downgoing with $\theta \in [0,\arccos(0.7)]$ degrees.
+The solid angle is :
+\begin{equation}
+  \int_{\phi = 0}^{2 \pi}   \int_{\theta = 0}^{\arccos 0.7} \sin \theta d\theta d\phi = 2 \pi \left[ - \cos \theta \right]_{0}^{\arccos 0.7} = 2 \pi *  0.3
+\end{equation}
+
+So finally $A_{gen} = 2 \pi * 0.3 $ = 28.67017455666045 m^2
+
 \end{itemize}
 
-\subsection{Track selection}
+\subsection{Track selection cuts}
 \begin{itemize}
 \item notFirstTwo: because the first two events are screwed by the calibration that just happened
 \item minimumbiasTRACKER:
   It requires that at least one reconstructed track has the following properties.
   Not a fake track, with a non-null rigidity, a strictly positive chi square, and at least inner tracker
-\item chargeOne
+\item chargeOne:
+  Ask for a charge equal to one in the Tracker. To compute the charge, the tracker needs beta. The beta is supplied by TOF.
+  We'll have to be carefull when we compute the efficiency
 \end{itemize}
 
-physicsTrigger
+\subsection{Track selection efficiency}
+\begin{itemize}
+\item notFirstTwo: negligible
+\item minimumbiasTRACKER AND chargeOne:
+  This cut is computed with a sample composed of the preselected event passing an additionnal cut requiring TOF Charge == 1
+\end{itemize}
 
 
 \begin{thebibliography}{99}
