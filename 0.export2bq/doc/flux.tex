@@ -1,0 +1,164 @@
+% Created 2015-07-26 dim. 10:59
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{soul}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{latexsym}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\tolerance=1000
+\providecommand{\alert}[1]{\textbf{#1}}
+
+\title{flux}
+\author{benoit}
+\date{\today}
+\hypersetup{
+  pdfkeywords={},
+  pdfsubject={},
+  pdfcreator={Emacs Org-mode version 7.9.3f}}
+
+\begin{document}
+
+\maketitle
+
+\setcounter{tocdepth}{3}
+\tableofcontents
+\vspace*{1cm}
+\section{Introduction}
+\label{sec-1}
+
+Let's take a simple example where cosmic rays are only composed of 2 mono-energetic species A and B.
+\begin{itemize}
+\item We wan't to compute the flux of species A.
+\item During one second, the detector has been crossed by $N_{A}$ (resp. $N_{B}$) element of species A (resp. B).
+\item B is so abundant that the detector cannot trig everytime one B element cross it. To cope with this problem the detector has 2 triggers:
+  an unbiased trigger (called U-trigger in the following) that sees everything (it sees the $N_{A}+N_{B}$ particles passing trough) but triggers only on one over 100 particles it sees. But if we had only this one we would miss a lot of A so we have an other one (let's call it S for science trigger) that triggers quite often when a A go through it. Let's also remind that it is possible that both triggers activate for the same event.
+\end{itemize}
+
+From here we can define a few numbers:
+\begin{itemize}
+\item $N_{A}^{U}$, the number of A trigged by U but not by S.
+\item $N_{B}^{U}$, the number of B trigged by U but not by S.
+\item $N_{A}^{S}$, the number of A trigged by S but not by U.
+\item $N_{B}^{S}$, the number of B trigged by S but not by U.
+\item $N_{A}^{U+S}$, the number of A trigged by both triggers.
+\item $N_{B}^{U+S}$, the number of B trigged by both triggers.
+\end{itemize}
+
+We can also define so efficiencies:
+\begin{itemize}
+\item $\epsilon_{A}^{U} = \epsilon_{B}^{U} = 1 \%$, the effiency of trigger U for spicies A and B
+\item $\epsilon_{A}^{S}$ (resp. $\epsilon_{B}^{S}$) the efficiencies of trigger S for A (resp. B).
+\end{itemize}
+
+\[
+\epsilon_{A}^{U} = \frac{N_{A}^{U} + N_{A}^{U+S}}{N_{A}} = 1 \%
+\]
+
+\[
+  \epsilon_{A}^{S} = \frac{N_{A}^{S} + N_{A}^{U+S}}{N_{A}}
+\]
+
+And the same stands for B as well.
+\section{Unbiased cut}
+\label{sec-2}
+
+The raw data are unusable without cleaning. Let's apply a first cut $C_{U}$. We'll call it the unbiased cut and make the hypothesis that its effiency is the same for every species. We will now compute the efficiency $\epsilon_{CU}$ of such a cut.
+\subsection{Efficiency of the unbiased cut}
+\label{sec-2-1}
+
+Let's define two new numbers: the numbers of A (resp. B) in our data (ie. really present in the ROOT files) will be $N_{A}^{raw}$ (resp. $N_{B}^{raw}$). It is simply:
+\[
+  \label{rawSample}
+  N_{A}^{raw} = N_{A}^{U} + N_{A}^{S} + N_{A}^{U+S}
+\]
+
+The unbiased cut has reduced our A sample to:
+$N_{A}^{after C_{U}} = \epsilon_{CU} N_{A}^{raw}$
+\subsubsection{What NOT to say: $\epsilon_{CU} = \frac{N_{A}^{after C_{U}} + N_{B}^{after C_{U}}}{N_{A}^{raw} + N_{B}^{raw}}$}
+\label{sec-2-1-1}
+
+
+We need to look at probabilities. Let's define $P(Cut)$ the probability that a particle passes the cut.
+We have already divided the A sample into 3 sub-samples in equation \ref{rawSample} so let's have a look at how many particles of every sub-sample pass the cut.
+
+$N_{A}^{U after C_{U}} = N_{A}^{U} P(cut)$ is valid but what is not is the same for $N_{A}^{S}$ and $N_{A}^{U+S}$ sub-samples.
+For them the equation is:
+\[
+  N_{A}^{S after C_{U}} = N_{A}^{S} P(cut|S)
+\]
+
+where $P(cut|S)$ is the probability that a particle passes the unbiased cut \textbf{given that} the particle triggers the S trigger. This is not uncorrelated since it means that the particle exhibits a particular behaviour.
+For example it can have a better defined TrTrack and that raises the probability of passing the cut with respect to a random particle.
+\subsection{The proper answer: $\epsilon_{CU} = \frac{N_{A}^{U after C_{U}} + N_{B}^{after C_{U}}}{N_{A}^{raw} + N_{B}^{raw}}$}
+\label{sec-2-2}
+\subsection{Discussion: is unbiased cut really unbiased ?}
+\label{sec-2-3}
+
+At some point we should discuss that.
+\section{Selection cuts}
+\label{sec-3}
+
+Before adding more complex cuts, in a first time let's try to stick to the cuts used by the proton paper
+\subsection{Preselection cuts}
+\label{sec-3-1}
+
+\begin{itemize}
+\item physicsTrigger: The events must have been trigged by at least one of the 5 physics triggers
+\item minimumbiasTOF: We ask for 4 good TOF planes. 
+  \footnote\{minimumbiasTRIGG doens't add any cuts to what has been cut by minimumbiasTOF so it has been removed from the cut list\}
+\item downGoing
+\end{itemize}
+\subsection{Preselection efficiency}
+\label{sec-3-2}
+
+The efficiency of the preselection cuts is computed with the proton MC
+
+Since geometric factors and preselections cut efficiency can't be decorrelated, we don't actually compute the preselection cut effieciency but the effectiva acceptance.
+The effective acceptance is computed as:
+\[
+  A_{eff} = A_{gen} \frac{N_{acc}}{N_{gen}}
+\]
+
+Events are generated from the top surface at Z=195, and with $X \in [-195,195]$, $Y \in [-195,195]$.
+There are generated downgoing with C$\theta \in [0,\pi/2]$ and $\phi \in [0, 2 \pi]$.
+The solid angle is :
+
+\[
+  \int_{\phi = 0}^{2 \pi}   \int_{\theta = 0}^{\pi/2} \sin \theta d\theta d\phi = 2 \pi \left[ - \cos \theta \right]_{0}^{\pi/2} = 2 \pi
+\]
+
+So finally :
+\[
+A_{gen} = 2 \pi S^2 = 47.784  
+\] m$^2$
+\subsection{Track selection cuts}
+\label{sec-3-3}
+
+\begin{itemize}
+\item notFirstTwo: because the first two events are screwed by the calibration that just happened
+\item minimumbiasTRACKER:
+  It requires that at least one reconstructed track has the following properties.
+  Not a fake track, with a non-null rigidity, a strictly positive chi square, and at least inner tracker
+\item chargeOne:
+  Ask for a charge equal to one in the Tracker. To compute the charge, the tracker needs beta. The beta is supplied by TOF.
+  We'll have to be carefull when we compute the efficiency
+\end{itemize}
+\subsection{Track selection efficiency}
+\label{sec-3-4}
+
+\begin{itemize}
+\item notFirstTwo: negligible
+\item minimumbiasTRACKER AND chargeOne:
+  This cut is computed with a sample composed of the preselected event passing an additionnal cut requiring TOF Charge == 1
+\end{itemize}
+
+\end{document}

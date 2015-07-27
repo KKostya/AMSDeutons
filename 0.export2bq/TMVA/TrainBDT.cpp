@@ -1,0 +1,95 @@
+//
+// Compile it with:
+//
+//  g++ -o likelihood  QualityLikelihoodTrain.cpp `root-config --cflags --libs` -lTMVA
+
+
+#include <TFile.h>
+#include <TMVA/Factory.h>
+
+
+int main(int argc, char * argv[])
+{
+    //Processing input options
+    int c;
+    std::string outFname;
+    std::string  inFname;
+    while((c = getopt(argc, argv, "o:")) != -1) {
+        if(c == 'o') outFname = std::string(optarg);
+    }
+    if (optind < argc) inFname = std::string(argv[optind++]); else return 1;
+
+    if( inFname.empty())  inFname = std::string("/home/AMS/fdimicco/fdimicco/MAIN/sommaMC/sommaMC_old.root");
+    if(outFname.empty()) outFname = std::string("QualityBDT.root");
+
+    // Open  input files, get the trees
+    TFile * mcFile = new TFile(inFname.c_str());
+    TTree * mc = (TTree*)mcFile->Get("grandezze_tagli");
+
+    // Preparing options for the TMVA::Factory
+    std::string options( 
+        "!V:" 
+        "!Silent:"
+        "Color:"
+        "DrawProgressBar:"
+        "Transformations=I;D;P;G,D:"
+        "AnalysisType=Classification"
+    );
+
+    //Creating the factory
+    TFile *   ldFile = new TFile(outFname.c_str(),"RECREATE");
+    TMVA::Factory * factory = new TMVA::Factory("QualityBDT", ldFile, options.c_str());
+
+    //Preparing variables 
+    factory->AddVariable("NAnticluster", 'I');
+    factory->AddVariable("Chisquare", 'F');
+    factory->AddVariable("layernonusati", 'F');
+    factory->AddVariable("NTofUsed := NTofClusters - NTofClustersusati", 'I');
+    factory->AddVariable("diffR := TMath::Abs(Rup-Rdown)/R", 'F');
+    factory->AddVariable("TOF_Up_Down := TMath::Abs(Endep[2]+Endep[3]-Endep[0]-Endep[1])", 'F');
+    factory->AddVariable("endepostatrack", 'I');
+
+    factory->AddVariable("ResiduiX[0]", 'F');
+    factory->AddVariable("ResiduiX[1]", 'F');
+    factory->AddVariable("ResiduiX[2]", 'F');
+    factory->AddVariable("ResiduiX[3]", 'F');
+    factory->AddVariable("ResiduiX[4]", 'F');
+    factory->AddVariable("ResiduiX[5]", 'F');
+    factory->AddVariable("ResiduiX[6]", 'F');
+
+    factory->AddVariable("ResiduiY[0]", 'F');
+    factory->AddVariable("ResiduiY[1]", 'F');
+    factory->AddVariable("ResiduiY[2]", 'F');
+    factory->AddVariable("ResiduiY[3]", 'F');
+    factory->AddVariable("ResiduiY[4]", 'F');
+    factory->AddVariable("ResiduiY[5]", 'F');
+    factory->AddVariable("ResiduiY[6]", 'F');
+
+    //Preselection cuts
+    std::string signalCut = "Betacorr<0.75&&Betacorr>0.5&&Massa_gen<2&&Massa_gen>1.5&&(1/Massa)<0.6";
+    std::string backgnCut = "Betacorr<0.75&&Betacorr>0.5&&Massa_gen<1&&Massa_gen>0.5&&(1/Massa)<0.6";
+	
+    factory->AddTree(mc,"Signal"    ,1,signalCut.c_str());
+    factory->AddTree(mc,"Background",1,backgnCut.c_str());
+
+    // Preparing
+    std::string preselection = "";
+    std::string inputparams(
+        "SplitMode=Random:"
+        "NormMode=NumEvents:"
+        "!V"
+    );
+    factory->PrepareTrainingAndTestTree(preselection.c_str(),inputparams.c_str());
+
+    // Training
+    std::string trainparams ="!H:!V:MaxDepth=3";
+    factory->BookMethod(TMVA::Types::kBDT, "BDT", trainparams.c_str());
+
+    //trainparams ="!H:!V";
+    //factory->BookMethod(TMVA::Types::kLikelihood, "Likelihood", trainparams.c_str());
+
+
+    factory->TrainAllMethods();
+    factory->TestAllMethods();
+    factory->EvaluateAllMethods();
+}
