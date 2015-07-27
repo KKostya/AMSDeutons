@@ -1,33 +1,40 @@
-\documentclass[fleqn,twoside]{article}
-\usepackage{espcrc1}
-
-% change this to the following line for use with LaTeX2.09
-% \documentstyle[twoside,fleqn,espcrc2]{article}
-
-% if you want to include PostScript figures
-\usepackage[ddmmyyyy]{datetime}
+% Created 2015-07-26 dim. 10:59
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
 \usepackage{graphicx}
-\textheight = 20cm
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{soul}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{latexsym}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\tolerance=1000
+\providecommand{\alert}[1]{\textbf{#1}}
+
+\title{flux}
+\author{benoit}
+\date{\today}
+\hypersetup{
+  pdfkeywords={},
+  pdfsubject={},
+  pdfcreator={Emacs Org-mode version 7.9.3f}}
+
 \begin{document}
 
-% declarations for front matter
-\title{
-  AMS note: \today \\
-  \hspace{1cm} \\
-  Flux calculation
-}
-
-\author{
-  B. Coste\address[Trento]{INFN, Istituto Nazionale di Fisica Nucleare, Trento, Italia}
-  %Auth1\addressmark[Pisa],
-  %Auth2\addressmark[Beijing]
-}
-
-% typeset front matter (including abstract)
 \maketitle
 
-
+\setcounter{tocdepth}{3}
+\tableofcontents
+\vspace*{1cm}
 \section{Introduction}
+\label{sec-1}
+
 Let's take a simple example where cosmic rays are only composed of 2 mono-energetic species A and B.
 \begin{itemize}
 \item We wan't to compute the flux of species A.
@@ -52,83 +59,90 @@ We can also define so efficiencies:
 \item $\epsilon_{A}^{S}$ (resp. $\epsilon_{B}^{S}$) the efficiencies of trigger S for A (resp. B).
 \end{itemize}
 
-Now we can lie a couple of relations:
+\[
+\epsilon_{A}^{U} = \frac{N_{A}^{U} + N_{A}^{U+S}}{N_{A}} = 1 \%
+\]
 
-\begin{equation}
-  \epsilon_{A}^{U} = \frac{N_{A}^{U} + N_{A}^{U+S}}{N_{A}} = 1 \%
-\end{equation}
-
-
-\begin{equation}
+\[
   \epsilon_{A}^{S} = \frac{N_{A}^{S} + N_{A}^{U+S}}{N_{A}}
-\end{equation}
+\]
 
 And the same stands for B as well.
-
-
-
-
 \section{Unbiased cut}
-The raw data are unusable without cleaning. Let's apply a first cut $C_{U}$. We'll call it the unbiased cut and make the hypothesis that its effiency is the same for every species. We will now compute the efficiency $\epsilon_{CU}$ of such a cut.
+\label{sec-2}
 
+The raw data are unusable without cleaning. Let's apply a first cut $C_{U}$. We'll call it the unbiased cut and make the hypothesis that its effiency is the same for every species. We will now compute the efficiency $\epsilon_{CU}$ of such a cut.
 \subsection{Efficiency of the unbiased cut}
+\label{sec-2-1}
+
 Let's define two new numbers: the numbers of A (resp. B) in our data (ie. really present in the ROOT files) will be $N_{A}^{raw}$ (resp. $N_{B}^{raw}$). It is simply:
-\begin{equation}
+\[
   \label{rawSample}
   N_{A}^{raw} = N_{A}^{U} + N_{A}^{S} + N_{A}^{U+S}
-\end{equation}
+\]
 
 The unbiased cut has reduced our A sample to:
 $N_{A}^{after C_{U}} = \epsilon_{CU} N_{A}^{raw}$
-
 \subsubsection{What NOT to say: $\epsilon_{CU} = \frac{N_{A}^{after C_{U}} + N_{B}^{after C_{U}}}{N_{A}^{raw} + N_{B}^{raw}}$}
+\label{sec-2-1-1}
+
 
 We need to look at probabilities. Let's define $P(Cut)$ the probability that a particle passes the cut.
 We have already divided the A sample into 3 sub-samples in equation \ref{rawSample} so let's have a look at how many particles of every sub-sample pass the cut.
 
 $N_{A}^{U after C_{U}} = N_{A}^{U} P(cut)$ is valid but what is not is the same for $N_{A}^{S}$ and $N_{A}^{U+S}$ sub-samples.
 For them the equation is:
-\begin{equation}
+\[
   N_{A}^{S after C_{U}} = N_{A}^{S} P(cut|S)
-\end{equation}
+\]
 
-where $P(cut|S)$ is the probability that a particle passes the unbiased cut \textbf{given that} the particle triggers the S trigger. This is not uncorrelated since it means that the particle exhibits a particular behaviour. For example it can have a better defined TrTrack and that raises the probability of passing the cut with respect to a random particle.
-
-\subsubsection{The proper answer: $\epsilon_{CU} = \frac{N_{A}^{U after C_{U}} + N_{B}^{after C_{U}}}{N_{A}^{raw} + N_{B}^{raw}}$}
-
+where $P(cut|S)$ is the probability that a particle passes the unbiased cut \textbf{given that} the particle triggers the S trigger. This is not uncorrelated since it means that the particle exhibits a particular behaviour.
+For example it can have a better defined TrTrack and that raises the probability of passing the cut with respect to a random particle.
+\subsection{The proper answer: $\epsilon_{CU} = \frac{N_{A}^{U after C_{U}} + N_{B}^{after C_{U}}}{N_{A}^{raw} + N_{B}^{raw}}$}
+\label{sec-2-2}
 \subsection{Discussion: is unbiased cut really unbiased ?}
-At some point we should discuss that.
+\label{sec-2-3}
 
+At some point we should discuss that.
 \section{Selection cuts}
+\label{sec-3}
+
 Before adding more complex cuts, in a first time let's try to stick to the cuts used by the proton paper
 \subsection{Preselection cuts}
+\label{sec-3-1}
+
 \begin{itemize}
 \item physicsTrigger: The events must have been trigged by at least one of the 5 physics triggers
 \item minimumbiasTOF: We ask for 4 good TOF planes. 
-  \footnote{minimumbiasTRIGG doens't add any cuts to what has been cut by minimumbiasTOF so it has been removed from the cut list}
+  \footnote\{minimumbiasTRIGG doens't add any cuts to what has been cut by minimumbiasTOF so it has been removed from the cut list\}
 \item downGoing
-
+\end{itemize}
 \subsection{Preselection efficiency}
+\label{sec-3-2}
+
 The efficiency of the preselection cuts is computed with the proton MC
 
 Since geometric factors and preselections cut efficiency can't be decorrelated, we don't actually compute the preselection cut effieciency but the effectiva acceptance.
 The effective acceptance is computed as:
-\begin{equation}
+\[
   A_{eff} = A_{gen} \frac{N_{acc}}{N_{gen}}
-\end{equation}
+\]
 
 Events are generated from the top surface at Z=195, and with $X \in [-195,195]$, $Y \in [-195,195]$.
-There are generated downgoing with $\theta \in [0,\arccos(0.7)]$ degrees.
+There are generated downgoing with C$\theta \in [0,\pi/2]$ and $\phi \in [0, 2 \pi]$.
 The solid angle is :
-\begin{equation}
-  \int_{\phi = 0}^{2 \pi}   \int_{\theta = 0}^{\arccos 0.7} \sin \theta d\theta d\phi = 2 \pi \left[ - \cos \theta \right]_{0}^{\arccos 0.7} = 2 \pi *  0.3
-\end{equation}
 
-So finally $A_{gen} = 2 \pi * 0.3 $ = 28.67017455666045 m^2
+\[
+  \int_{\phi = 0}^{2 \pi}   \int_{\theta = 0}^{\pi/2} \sin \theta d\theta d\phi = 2 \pi \left[ - \cos \theta \right]_{0}^{\pi/2} = 2 \pi
+\]
 
-\end{itemize}
-
+So finally :
+\[
+A_{gen} = 2 \pi S^2 = 47.784  
+\] m$^2$
 \subsection{Track selection cuts}
+\label{sec-3-3}
+
 \begin{itemize}
 \item notFirstTwo: because the first two events are screwed by the calibration that just happened
 \item minimumbiasTRACKER:
@@ -138,18 +152,13 @@ So finally $A_{gen} = 2 \pi * 0.3 $ = 28.67017455666045 m^2
   Ask for a charge equal to one in the Tracker. To compute the charge, the tracker needs beta. The beta is supplied by TOF.
   We'll have to be carefull when we compute the efficiency
 \end{itemize}
-
 \subsection{Track selection efficiency}
+\label{sec-3-4}
+
 \begin{itemize}
 \item notFirstTwo: negligible
 \item minimumbiasTRACKER AND chargeOne:
   This cut is computed with a sample composed of the preselected event passing an additionnal cut requiring TOF Charge == 1
 \end{itemize}
 
-
-\begin{thebibliography}{99}
-
-\end{thebibliography}
-
 \end{document}
-
