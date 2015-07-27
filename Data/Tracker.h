@@ -5,6 +5,8 @@
 #define _PGTRACK_
 #include "TrTrack.h"
 #endif
+#include "TrCharge.h"
+
 #include <amschain.h>
 
 int NTrackHits(AMSEventR * ev);
@@ -21,7 +23,7 @@ std::vector<double> chiq(AMSEventR * ev);
 std::vector<double> ResiduiX(AMSEventR * ev);
 std::vector<double> ResiduiY(AMSEventR * ev);
 
-std::vector<double> ChargeTracker(ParticleR* part);
+std::vector<double> ChargeTracker(AMSEventR*);
 
 int unusedLayers(AMSEventR * ev);
 
