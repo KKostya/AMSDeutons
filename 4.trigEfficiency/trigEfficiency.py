@@ -27,8 +27,6 @@ def main(argv):
     # print theMask
     # print "{0:b}".format(theMask)
 
-    mass = "(Rfull * sqrt(1 - pow(BetaTOF,2)) / BetaTOF)"
-
     queryOption=str()
     globalOptions=str()
 
