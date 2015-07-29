@@ -96,7 +96,7 @@ float getIndexUsed(AMSEventR* ev){
 /// The track parameters extrapolated to the radiator as used in the reconstruction.
 /// \return A pointer to an array of 5 floats, corresponding to x,y,z theta and phi of the track used in the reconstruction
 std::vector<float> getTrackEmissionPoint(AMSEventR* ev){
-    if(!ev->pRichRing(0)) return std::vector<float>();
+    if(!ev->pRichRing(0)) return std::vector<float>(0,5);
     const float *p = ev->pRichRing(0)->getTrackEmissionPoint();
     return std::vector<float>(p,p+5);
 }

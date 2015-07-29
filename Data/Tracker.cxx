@@ -6,7 +6,7 @@ int NTrackHits(AMSEventR * ev){ return ev->pTrTrack(0)?ev->pTrTrack(0)->NTrRecHi
 //  Various fits and chi2
 //////////////////////////////
 
-double getRigidity(AMSEventR *ev, int i,int j, int k)
+double getRigidity(AMSEventR *ev, int i, int j, int k)
 {
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return 0;
@@ -17,92 +17,103 @@ double Rup  (AMSEventR * ev) { return getRigidity(ev,1,1,1); }
 double Rdown(AMSEventR * ev) { return getRigidity(ev,1,2,1); }
 double R    (AMSEventR * ev) { return getRigidity(ev,1,3,1); }
 double Rfull(AMSEventR * ev) { return getRigidity(ev,1,7,1); }
-double Chisquare(AMSEventR * ev)
+
+double getChisquare(AMSEventR * ev, int i, int j, int k)
 { 
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return 0;
-    int fitID = track->iTrTrackPar(1,3,1);
+    int fitID = track->iTrTrackPar(i,j,k);
     return track->GetChisq(fitID);
 }
+double ChiQup  (AMSEventR * ev) { return getChisquare(ev,1,1,1); }
+double ChiQdown(AMSEventR * ev) { return getChisquare(ev,1,2,1); }
+double ChiQ    (AMSEventR * ev) { return getChisquare(ev,1,3,1); }
+double ChiQfull(AMSEventR * ev) { return getChisquare(ev,1,7,1); }
 
-// Bit patterns for fits
-int fit[6] = {
-    0x78211,  //  1111000 0010 0001 0001
-    0x63211,  //  1100011 0010 0001 0001
-    0x0f211,  //  0001111 0010 0001 0001
-    0x1c211,  //  0011100 0010 0001 0001
-    0x3f211,  //  0111111 0010 0001 0001
-    0x7e211,  //  1111110 0010 0001 0001
-};
+//////////////////////////////////////////
+// Total energy deposited in each layer //
+//////////////////////////////////////////
 
-std::vector<double> R_(AMSEventR * ev) 
-{ 
-    std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
-    TrTrackR * track = ev->pTrTrack(0);
-    if(!track) return ret;
-    for(int i=0; i<sizeof(fit)/sizeof(fit[0]); i++)
+template<int SIDE>
+std::vector<double> edepLayer(AMSEventR * ev)
+{
+    std::vector<double> ret(9, 0);
+    for (int i = 0; i < ev->NTrCluster(); i++) 
     {
-        track->FitT(fit[i],-1);
-        ret[i] = track->GetRigidity(fit[i]);
+        TrClusterR* cluster = ev->pTrCluster(i);
+        if (cluster->GetSide() != SIDE) continue;
+        int ilay = cluster->GetLayerJ()-1;
+        ret[ilay] += cluster->GetEdep();
     }
     return ret;
 }
 
-std::vector<double> chiq(AMSEventR * ev) 
-{ 
-    std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
+std::vector<double> EDepLayerX(AMSEventR * ev) { return edepLayer<0>(ev); }
+std::vector<double> EDepLayerY(AMSEventR * ev) { return edepLayer<1>(ev); }
+
+//////////////////////////////////////////
+//  Energy deposited along the track    //
+//////////////////////////////////////////
+
+template<int SIDE>
+std::vector<double> edepTrack(AMSEventR * ev)
+{
+    std::vector<double> ret(9, 0);
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return ret;
-    for(int i=0; i<sizeof(fit)/sizeof(fit[0]); i++)
-        ret[i] = track->FitT(fit[i],-1);
+    for (int i = 0; i < track->GetNhits(); i++) 
+    {
+        TrRecHitR* hit = track->GetHit(i);
+        int ilay = hit->GetLayerJ()-1;
+        TrClusterR* cluster = hit->GetYCluster();   
+        if(SIDE == 1) ret[ilay] = cluster->GetEdep();
+        if (hit->OnlyY()) continue;
+        cluster = hit->GetXCluster();   
+        if(SIDE == 0) ret[ilay] = cluster->GetEdep();
+    }
     return ret;
 }
 
-///////
-// Residuals and unused layers
-///////
+std::vector<double> EDepTrackX(AMSEventR * ev) { return edepTrack<0>(ev); }
+std::vector<double> EDepTrackY(AMSEventR * ev) { return edepTrack<1>(ev); }
 
-std::vector<double> ResiduiX(AMSEventR * ev)
+///////////////////
+//  Residuals    //
+///////////////////
+
+template <int SIDE, int FID>
+std::vector<double> Residual(AMSEventR * ev)
 {
     std::vector<double> ret(9, -999999);
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return ret;
-    int fitID = track->iTrTrackPar(1,3,1);
-    if(!track->ParExists(fitID)) return ret;
-    TrTrackPar parametri = track->gTrTrackPar(fitID);
-    for (int layer=2;layer<9;layer++) 
+    int fitID = track->iTrTrackPar(1,FID,1);
+    for (int layer = 0;layer < 9;layer++) 
     {
-        if(!track->TestHitLayerJ(layer) || !track->TestHitLayerJHasXY(layer)) 
+        if(!track->TestHitLayerJ(layer+1))
             ret[layer] = -999999;
         else
         {
-            AMSPoint Residual_point = track->GetResidualJ(layer,fitID);
-            ret[layer] = Residual_point.x();
+            AMSPoint Residual_point = track->GetResidualJ(layer+1,fitID);
+            if(SIDE == 0) ret[layer] = Residual_point.x();
+            if(SIDE == 1) ret[layer] = Residual_point.y();
         }
     }
     return ret;
 }
 
-std::vector<double> ResiduiY(AMSEventR * ev)
-{
-    std::vector<double> ret(9, -999999);
-    TrTrackR * track = ev->pTrTrack(0);
-    if(!track) return ret;
-    int fitID = track->iTrTrackPar(1,3,1);
-    if(!track->ParExists(fitID)) return ret;
-    TrTrackPar parametri = track->gTrTrackPar(fitID);
-    for (int layer=2;layer<9;layer++) 
-    {
-        if(!track->TestHitLayerJ(layer))
-            ret[layer] = -999999;
-        else
-        {
-            AMSPoint Residual_point = track->GetResidualJ(layer,fitID);
-            ret[layer] = Residual_point.y();
-        }
-    }
-    return ret;
-}
+std::vector<double> ResidualX    (AMSEventR * ev) { return Residual<0,3>(ev); }
+std::vector<double> ResidualY    (AMSEventR * ev) { return Residual<1,3>(ev); }
+std::vector<double> ResidualUpX  (AMSEventR * ev) { return Residual<0,1>(ev); }
+std::vector<double> ResidualUpY  (AMSEventR * ev) { return Residual<1,1>(ev); }
+std::vector<double> ResidualDownX(AMSEventR * ev) { return Residual<0,2>(ev); }
+std::vector<double> ResidualDownY(AMSEventR * ev) { return Residual<1,2>(ev); }
+std::vector<double> ResidualFullX(AMSEventR * ev) { return Residual<0,7>(ev); }
+std::vector<double> ResidualFullY(AMSEventR * ev) { return Residual<1,7>(ev); }
+
+//////////////////////////////////////////
+// unused layers //
+//////////////////////////////////////////
 
 int unusedLayers(AMSEventR * ev)
 {
@@ -113,45 +124,30 @@ int unusedLayers(AMSEventR * ev)
     TrTrackPar parametri = track->gTrTrackPar(fitID);
 
     int ret = 0;
-    for (int layer=2;layer<9;layer++) 
-        if(!parametri.TestHitLayerJ(layer)) ret++;
+    for (int layer = 0; layer < 9; layer++) 
+        if(!parametri.TestHitLayerJ(layer+1)) ret++;
 
     return ret;
 }
 
-//////////////////////////////
-// Deposited energy 
-//////////////////////////////
-
-double EdepTrack(AMSEventR * ev)
+template <int FIT>
+int getLayerBits(AMSEventR * ev)
 {
     TrTrackR * track = ev->pTrTrack(0);
-    double ret = 0;   
-    if(!track) return ret;
-    for(int i=0; i<track->NTrRecHit();i++){
-        TrRecHitR * hit=track->pTrRecHit(i);
-        ret += hit->Sum();
-    }
-}
+    if(!track) return 0;
+    int fitID = track->iTrTrackPar(1,FIT,1);
+    if(!track->ParExists(fitID)) return 0;
+    TrTrackPar parametri = track->gTrTrackPar(fitID);
 
-///////////////////////////////
-// Charge
-///////////////////////////////
-std::vector<double> ChargeTracker(AMSEventR* ev) {
-    std::vector<double> ret(sizeof(fit)/sizeof(fit[0]), 0);
-
-    TrTrackR* track = ev->pTrTrack(0);
-    if(!track) return ret;
-
-    ParticleR *part = ev->pParticle(0);
-    if(!part) return ret;
-    
-    BetaHR* betah = (BetaHR*) part->pBetaH();
-    double beta = betah->GetBeta();
-    for(int i=0; i<sizeof(fit)/sizeof(fit[0]); i++)
-        {
-            ret[i] = track->GetQ_all(beta, fit[i]).Mean;
-        }
+    int ret = 0;
+    for (int layer = 0; layer < 9; layer++) 
+        if(parametri.TestHitLayerJ(layer)) 
+            ret |= (1 << layer);
     return ret;
 }
+
+int LayerBits    (AMSEventR * ev){ return getLayerBits<3>(ev); }
+int LayerBitsUp  (AMSEventR * ev){ return getLayerBits<1>(ev); }
+int LayerBitsDown(AMSEventR * ev){ return getLayerBits<2>(ev); }
+int LayerBitsFull(AMSEventR * ev){ return getLayerBits<7>(ev); }
 
