@@ -11,15 +11,15 @@
 
 int NTrackHits(AMSEventR * ev);
 
-double Rup  (AMSEventR * ev);
-double Rdown(AMSEventR * ev);
+double RUp  (AMSEventR * ev);
+double RDown(AMSEventR * ev);
 double R    (AMSEventR * ev);
-double Rfull(AMSEventR * ev);
+double RL1  (AMSEventR * ev);
 
-double ChiQup  (AMSEventR * ev);
-double ChiQdown(AMSEventR * ev);
+double ChiQUp  (AMSEventR * ev);
+double ChiQDown(AMSEventR * ev);
 double ChiQ    (AMSEventR * ev);
-double ChiQfull(AMSEventR * ev);
+double ChiQL1  (AMSEventR * ev);
 
 std::vector<double> EDepLayerX(AMSEventR * ev);
 std::vector<double> EDepLayerY(AMSEventR * ev);
@@ -32,15 +32,15 @@ std::vector<double> ResidualUpX  (AMSEventR * ev);
 std::vector<double> ResidualUpY  (AMSEventR * ev);
 std::vector<double> ResidualDownX(AMSEventR * ev);
 std::vector<double> ResidualDownY(AMSEventR * ev);
-std::vector<double> ResidualFullX(AMSEventR * ev);
-std::vector<double> ResidualFullY(AMSEventR * ev);
+std::vector<double> ResidualL1X  (AMSEventR * ev);
+std::vector<double> ResidualL1Y  (AMSEventR * ev);
 
 int unusedLayers(AMSEventR * ev);
 
 int LayerBits    (AMSEventR * ev);
 int LayerBitsUp  (AMSEventR * ev);
 int LayerBitsDown(AMSEventR * ev);
-int LayerBitsFull(AMSEventR * ev);
+int LayerBitsL1  (AMSEventR * ev);
 
 
 #endif //TRACKER_H

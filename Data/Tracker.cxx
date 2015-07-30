@@ -11,24 +11,26 @@ double getRigidity(AMSEventR *ev, int i, int j, int k)
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return 0;
     int fitID = track->iTrTrackPar(i,j,k);
+    if(!track->ParExists(fitID)) return 0;
     return track->GetRigidity(fitID);
 }
-double Rup  (AMSEventR * ev) { return getRigidity(ev,1,1,1); }
-double Rdown(AMSEventR * ev) { return getRigidity(ev,1,2,1); }
+double RUp  (AMSEventR * ev) { return getRigidity(ev,1,1,1); }
+double RDown(AMSEventR * ev) { return getRigidity(ev,1,2,1); }
 double R    (AMSEventR * ev) { return getRigidity(ev,1,3,1); }
-double Rfull(AMSEventR * ev) { return getRigidity(ev,1,7,1); }
+double RL1  (AMSEventR * ev) { return getRigidity(ev,1,5,1); }
 
 double getChisquare(AMSEventR * ev, int i, int j, int k)
 { 
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return 0;
     int fitID = track->iTrTrackPar(i,j,k);
+    if(!track->ParExists(fitID)) return 0;
     return track->GetChisq(fitID);
 }
-double ChiQup  (AMSEventR * ev) { return getChisquare(ev,1,1,1); }
-double ChiQdown(AMSEventR * ev) { return getChisquare(ev,1,2,1); }
+double ChiQUp  (AMSEventR * ev) { return getChisquare(ev,1,1,1); }
+double ChiQDown(AMSEventR * ev) { return getChisquare(ev,1,2,1); }
 double ChiQ    (AMSEventR * ev) { return getChisquare(ev,1,3,1); }
-double ChiQfull(AMSEventR * ev) { return getChisquare(ev,1,7,1); }
+double ChiQL1  (AMSEventR * ev) { return getChisquare(ev,1,5,1); }
 
 //////////////////////////////////////////
 // Total energy deposited in each layer //
@@ -88,6 +90,7 @@ std::vector<double> Residual(AMSEventR * ev)
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return ret;
     int fitID = track->iTrTrackPar(1,FID,1);
+    if(!track->ParExists(fitID)) return ret;
     for (int layer = 0;layer < 9;layer++) 
     {
         if(!track->TestHitLayerJ(layer+1))
@@ -108,8 +111,8 @@ std::vector<double> ResidualUpX  (AMSEventR * ev) { return Residual<0,1>(ev); }
 std::vector<double> ResidualUpY  (AMSEventR * ev) { return Residual<1,1>(ev); }
 std::vector<double> ResidualDownX(AMSEventR * ev) { return Residual<0,2>(ev); }
 std::vector<double> ResidualDownY(AMSEventR * ev) { return Residual<1,2>(ev); }
-std::vector<double> ResidualFullX(AMSEventR * ev) { return Residual<0,7>(ev); }
-std::vector<double> ResidualFullY(AMSEventR * ev) { return Residual<1,7>(ev); }
+std::vector<double> ResidualL1X(AMSEventR * ev)   { return Residual<0,5>(ev); }
+std::vector<double> ResidualL1Y(AMSEventR * ev)   { return Residual<1,5>(ev); }
 
 //////////////////////////////////////////
 // unused layers //
@@ -141,7 +144,7 @@ int getLayerBits(AMSEventR * ev)
 
     int ret = 0;
     for (int layer = 0; layer < 9; layer++) 
-        if(parametri.TestHitLayerJ(layer)) 
+        if(parametri.TestHitLayerJ(layer+1)) 
             ret |= (1 << layer);
     return ret;
 }
@@ -149,5 +152,5 @@ int getLayerBits(AMSEventR * ev)
 int LayerBits    (AMSEventR * ev){ return getLayerBits<3>(ev); }
 int LayerBitsUp  (AMSEventR * ev){ return getLayerBits<1>(ev); }
 int LayerBitsDown(AMSEventR * ev){ return getLayerBits<2>(ev); }
-int LayerBitsFull(AMSEventR * ev){ return getLayerBits<7>(ev); }
+int LayerBitsL1  (AMSEventR * ev){ return getLayerBits<5>(ev); }
 
