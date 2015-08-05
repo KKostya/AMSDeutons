@@ -96,8 +96,8 @@ void AddTrackerVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<double             , R             >("R"            , tree));
 
     data.push_back(Wrap<double             , ChiQL1        >("ChiQL1"       , tree));
-    data.push_back(Wrap<double             , ChiQUp        >("ChiQup"       , tree));
-    data.push_back(Wrap<double             , ChiQDown      >("ChiQdown"     , tree));
+    data.push_back(Wrap<double             , ChiQUp        >("ChiQUp"       , tree));
+    data.push_back(Wrap<double             , ChiQDown      >("ChiQDown"     , tree));
     data.push_back(Wrap<double             , ChiQ          >("ChiQ"         , tree));
 
     data.push_back(Wrap<std::vector<double>, EDepLayerX    >("EDepLayerX"   , tree));

@@ -79,6 +79,12 @@ std::vector<double> edepTrack(AMSEventR * ev)
 std::vector<double> EDepTrackX(AMSEventR * ev) { return edepTrack<0>(ev); }
 std::vector<double> EDepTrackY(AMSEventR * ev) { return edepTrack<1>(ev); }
 
+///////////////////////////////
+//  Hit coordinates 1 and 2  //
+///////////////////////////////
+
+
+
 ///////////////////
 //  Residuals    //
 ///////////////////
