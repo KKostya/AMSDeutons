@@ -27,7 +27,7 @@
 
 
 extern const char *gitversion;
-AMSSetupR::RTI rti;
+
 
 void registerSrcFilesInRootuple(){
     std::vector <std::string > files = rootUtils::getFilesInDir(".");
@@ -74,7 +74,7 @@ int main(int argc, char * argv[])
     ch->Add(inFname.c_str());
 
     // Initializing RTI
-    rti.UseLatest(6);
+    AMSSetupR::RTI rti;rti.UseLatest(6);
     TkDBc::UseFinal();
     TRMCFFKEY_DEF::ReadFromFile = 0;
     TRFITFFKEY_DEF::ReadFromFile = 0;

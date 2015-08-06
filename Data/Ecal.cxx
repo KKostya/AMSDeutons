@@ -69,56 +69,56 @@ int nlayMip (AMSEventR * ev) {
 
    // Variables init.
 	
-	int nhits=ev->nEcalHit();
+   int nhits=ev->nEcalHit();
 
-	float hPlane[18][72]={{0}};   // Map of hit energies
+   float hPlane[18][72]={{0}};   // Map of hit energies
    for (int ihit=0;ihit<nhits; ihit++)
-		hPlane[ev->EcalHit(ihit).Plane][ev->EcalHit(ihit).Cell]=ev->EcalHit(ihit).ADC[0];
+      hPlane[ev->EcalHit(ihit).Plane][ev->EcalHit(ihit).Cell]=ev->EcalHit(ihit).ADC[0];
    hPlane[6][50]=0;              // Dead cell
-      
+   
 
-	int cellmax;                 
-	bool isAdj=false;             
+   int cellmax;                 
+   bool isAdj=false;             
 
 
    // Basic idea : one condition not filled -> the last layer at MIP was before
    // Index starts at 0; we return plane = number of layers at MIP (= plane + 1 -1)
 		
-	for (char plane=0; plane<18; plane++) { 
+   for (char plane=0; plane<18; plane++) { 
 
       float elmax =	3;    // max energy seen in the current layer; threshold at 3 ADC
-		int cellmax = -1;    // corresponding cell
-		bool isAdj=false;    // check we don't have 3 adjacent cells
-
-		for (int cell=0;cell<72;cell++) {
-			if (hPlane[int(plane)][cell]>elmax) {
-				elmax=hPlane[int(plane)][cell];
-				cellmax=cell;
-			}
-		}		
-		if (cellmax==-1) 	return plane; // no hit > 3
-
-		float S3=hPlane[int(plane)][cellmax];
-
-		if (cellmax>0) { // not totally left
-			S3+=hPlane[int(plane)][cellmax-1];
-			if (hPlane[int(plane)][cellmax-1]) isAdj=true;
-		}
-
-		if (cellmax<71) { // not totally right
-			S3+=hPlane[int(plane)][cellmax+1];
-			if (hPlane[int(plane)][cellmax+1] && isAdj) return plane;
-		}
-
-		float S5=S3;
-		if (cellmax>1)  S5+=hPlane[int(plane)][cellmax-2];
-		if (cellmax<70) S5+=hPlane[int(plane)][cellmax+2];
-		if (S3/S5<0.99) return plane;
+      int cellmax = -1;    // corresponding cell
+      bool isAdj=false;    // check we don't have 3 adjacent cells
+      
+      for (int cell=0;cell<72;cell++) {
+	    if (hPlane[int(plane)][cell]>elmax) {
+		     elmax=hPlane[int(plane)][cell];
+		     cellmax=cell;
+	    }
+      }		
+      if (cellmax==-1) 	return plane; // no hit > 3
+      
+      float S3=hPlane[int(plane)][cellmax];
+      
+      if (cellmax>0) { // not totally left
+	    S3+=hPlane[int(plane)][cellmax-1];
+	    if (hPlane[int(plane)][cellmax-1]) isAdj=true;
+      }
+      
+      if (cellmax<71) { // not totally right
+	    S3+=hPlane[int(plane)][cellmax+1];
+	    if (hPlane[int(plane)][cellmax+1] && isAdj) return plane;
+      }
+      
+      float S5=S3;
+      if (cellmax>1)  S5+=hPlane[int(plane)][cellmax-2];
+      if (cellmax<70) S5+=hPlane[int(plane)][cellmax+2];
+      if (S3/S5<0.99) return plane;
 		
 
-	} // End of loop on layers
+   } // End of loop on layers
 
-	return 18; // All layers have been seen as MIP
+   return 18; // All layers have been seen as MIP
 
 
 }
