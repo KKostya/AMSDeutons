@@ -27,6 +27,7 @@
 
 
 extern const char *gitversion;
+AMSSetupR::RTI rti;
 
 void registerSrcFilesInRootuple(){
     std::vector <std::string > files = rootUtils::getFilesInDir(".");
@@ -71,6 +72,13 @@ int main(int argc, char * argv[])
     // Opening input file
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
+
+    // Initializing RTI
+    rti.UseLatest(6);
+    TkDBc::UseFinal();
+    TRMCFFKEY_DEF::ReadFromFile = 0;
+    TRFITFFKEY_DEF::ReadFromFile = 0;
+    TRFITFFKEY.magtemp = 0;
 
     // Checking if MC
     ch->GetEvent(0);
