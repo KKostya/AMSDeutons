@@ -21,35 +21,12 @@
 #include "Data/RootWriter.hpp"
 #include "Data/TOF.h"
 #include "Data/Tracker.h"
-#include "rootUtils.hpp"
+#include "Data/Ecal.h"
+#include "Data/SelectionStatus.h"
+#include "utils/rootUtils.hpp"
 
-double geomag[12]={0,0,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.3};
 
 extern const char *gitversion;
-
-bool DoSelection( AMSEventR * ev,
-    SelectionList & selections,
-    std::map<std::string, std::pair<long,long> > & counts,
-    bool eventPasses)
-{
-    for(int nsel=0; nsel<selections.size(); nsel++)
-    {
-        std::string name = selections[nsel].first;
-        bool thisPasses = selections[nsel].second(ev);
-        eventPasses = eventPasses && thisPasses;
-        if(thisPasses) counts[name].first++;
-        if(eventPasses) counts[name].second++;
-    }
-    return eventPasses;
-}
-
-
-// Extract run tag from filename
-void addRunTag( std::map< std::string, long int > &runTag, std::string inFname ){
-    std::string runTagStr = (rootUtils::getFileName(inFname)).substr(0,10);
-    runTag[ runTagStr ] = rootUtils::stringTo<long int>(runTagStr);
-}
-
 
 void registerSrcFilesInRootuple(){
     std::vector <std::string > files = rootUtils::getFilesInDir(".");
@@ -61,15 +38,12 @@ void registerSrcFilesInRootuple(){
     
     TDirectory *srcDir = gFile -> mkdir("infos/srcFiles");
     gFile -> cd("infos/srcFiles");
-    std::cout << "listing" << std::endl;
-    srcDir -> ls();
 
     for(int i = 0; i < files.size(); i++){
 	string extension = rootUtils::getExtension( files[i] );
 	if( extension == "cpp" || extension == "hpp" || extension == "h" || extension == "c" || extension == "C" || extension == "cxx" || extension == "hxx"){
 	    TMacro m( files[i].c_str() );
 	    m.Write( rootUtils::getFileName(files[i]).c_str() );
-	    std::cout << "files[i] : " << files[i] << std::endl;
 	}
     }
   
@@ -94,140 +68,70 @@ int main(int argc, char * argv[])
     std::cout << "Input file: " << inFname << std::endl;
     std::cout << "Output file: " << outFname << std::endl;
 
-    std::map< std::string, long int> runTag;
-    
     // Opening input file
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
 
-    addRunTag(runTag, inFname);
-    addRunTag(runTag, " ~/eos/ams/Data/AMS02/2014/ISS.B800/pass5/8988159992.00000001.root");
-
+    // Checking if MC
+    ch->GetEvent(0);
+    bool isMC = AMSEventR::Head()->nMCEventg() > 0;
+    ch->Rewind();
 
     // Creating  output trees
     TFile * File = new TFile(outFname.c_str(), "RECREATE");
     TTree * outTree = new TTree("data","data");
-    TTree * geoTree = new TTree("geodata","geodata");
 
     /////////////////////////////////////////////////////////////////
     // Preparing data writer arrays 
     /////////////////////////////////////////////////////////////////
-    
-    ROOTDataList geodata;
-    AddProvenanceVariables(geodata, outTree);
-    AddGeoVariables(geodata, geoTree);
-
     ROOTDataList data;
     AddProvenanceVariables(data, outTree);
-    AddTrackerVariables(data, outTree);
-    AddTRDVariables(data, outTree);
-    AddTOFVariables(data, outTree);
+    AddGeoVariables       (data, outTree);
+    AddSelectionVariables (data, outTree);
+    AddECALVariable       (data, outTree);
+    AddTRDVariables       (data, outTree);
+    AddTOFVariables       (data, outTree);
+    AddTrackerVariables   (data, outTree);
     
-    double BetaRICH, BetaCorr, Mass; 
-    outTree->Branch("BetaRICH", &BetaRICH);
-    outTree->Branch("BetaCorr", &BetaCorr);
-    outTree->Branch("Mass",     &Mass);
+    if(isMC)
+    {
+        std::cout << "MC detected, adding MC variables \n";
+        AddMCVariables	  (data, outTree);
+    }
 
-    /////////////////////////////////////////////////////////////////
-    // Creating selections arrays
-    /////////////////////////////////////////////////////////////////
-    SelectionList geoSelections;
-    AddGeoSelections    (geoSelections);
-
-    SelectionList selections;
-    AddGoldenSelections (selections);
-    AddMinBiasSelections(selections);
-    AddPreSelections    (selections);
-
-    SelectionList richSelections;
-    AddRICHSelections   (richSelections);
-
-    std::map<std::string, std::pair<long,long> > counts;
-    for(int nsel=0; nsel<geoSelections.size(); nsel++)
-        counts[geoSelections[nsel].first] = std::make_pair(0,0);
-    for(int nsel=0; nsel<selections.size(); nsel++)
-        counts[selections[nsel].first] = std::make_pair(0,0);
-    for(int nsel=0; nsel<richSelections.size(); nsel++)
-        counts[richSelections[nsel].first] = std::make_pair(0,0);
-    
+    try {
     /////////////////////////////////////////////////////////////////
     // Event loop
     /////////////////////////////////////////////////////////////////
     if(entries == 0) entries = ch->GetEntries();
     std::cout << "\n Starting processing " << entries << " events.\n" << std::endl;
     for(int ii=0;ii<entries;ii++)
-	{ 
+    {
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
-
-        // Looping over geometric/geomagnetinc selections 
-        eventPasses = DoSelection(ev, geoSelections, counts, eventPasses);
-        // If doesn't pass Geometry/Geography/SAA e.t.c then skip event
-        if (!eventPasses) continue;
-        // Record the exposure data in the geodata tree
-        for(int idat=0; idat<geodata.size(); idat++) geodata[idat](ev);
-        geoTree->Fill();
-
-        // Looping over selections 
-        eventPasses = DoSelection(ev, selections, counts, eventPasses);
-        if(!eventPasses) continue;
-        // Record most of the data
+        // Fill the TTree 
         for(int idat=0; idat<data.size(); idat++) data[idat](ev);
-
-        // Doing RICH selections / getting beta
-        BetaCorr = BetaTOF(ev);
-        BetaRICH = -1;
-        eventPasses = DoSelection(ev, richSelections, counts, eventPasses);
-        if (eventPasses) 
-        {
-            BetaRICH = ev->pRichRing(0)->getBeta();
-            BetaCorr = BetaRICH;
-        }
-        // Mass
-        Mass = pow(fabs(pow(fabs(R(ev))*pow((1-pow(BetaCorr,2)),0.5)/BetaCorr,2)),0.5);
-
         outTree->Fill();
+
+        if( ii%10000 == 0 ) std::cout << "Entry : " << ii << std::endl;
         if(ii%10000==0) outTree->AutoSave();
     }
-
-    std::string runTagListStr;
-    for( std::map<std::string,long int>::iterator it = runTag.begin(); it != runTag.end(); it++){
-    	std::cout << "it -> first : " << it -> first << std::endl;
-    	std::cout << "it -> second  : " << it -> second  << std::endl;
-	runTagListStr += it -> first;
-	runTagListStr += " ";
-    }
+    } catch (std::string & ex)
+    { std::cout << "Exception; " << ex << "\n";}
 
     File->mkdir("infos");
     File->cd("infos");
-    TObjString runTagList( runTagListStr.c_str() );
-    runTagList.Write("runTag");
+
+    TObjString selectionBits(GetSelectionNames().c_str());
+    selectionBits.Write("selectionBits");
 
     TObjString gitVersion(gitversion);
     gitVersion.Write("gitVersion");
-    registerSrcFilesInRootuple();
-    // SaveFiles(){
-	
-    // }
-    
+
+    TObjString inFileName(inFname.c_str());
+    inFileName.Write("inputFileName");
+
+    registerSrcFilesInRootuple(); 
+ 
     File->Write();
-
-    //Printing all the selection counts
-    for(int nsel=0; nsel<geoSelections.size(); nsel++)
-    {
-        std::string name = geoSelections[nsel].first;
-        std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
-    }
-    for(int nsel=0; nsel<selections.size(); nsel++)
-    {
-        std::string name = selections[nsel].first;
-        std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
-    }
-    for(int nsel=0; nsel<richSelections.size(); nsel++)
-    {
-        std::string name = richSelections[nsel].first;
-        std::cout << name << " : " <<counts[name].first << "," << counts[name].second << "\n";
-    }
-
-
 }

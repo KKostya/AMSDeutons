@@ -1,21 +1,29 @@
-CFLAGS=
+CFLAGS= -g
+
 ROOTINC=`root-config --cflags`
 ROOTLIB=`root-config --libs`
 AMSINC=-I$(AMSSRC)/include
 
-selTable: SelectionsTable.o Selections
-	g++ -o $@ $(AMSLIBso) $(ROOTLIB) SelectionsTable.o  Selections/selections.a
+ntupleData: ntupleData.o Data Selections gitversion.c utils gitversion.c
+	g++ -o $@ $(AMSLIBso) $(ROOTLIB) ntupleData.o Data/data.a  Selections/selections.a utils/utils.a gitversion.c
 
-ntuplesData: Data.o CreateDataTree.o Selections
-	g++ -o $@ $(AMSLIBso) $(ROOTLIB) Data.o CreateDataTree.o  Selections/selections.a
+selTable: SelectionsTable.o Selections 
+	g++ -o $@ $(AMSLIBso) $(ROOTLIB) SelectionsTable.o  Selections/selections.a 
 
-ntupleData: ntupleData.o Data Selections gitversion.c rootUtils.o
-	g++ -o $@ $(AMSLIBso) $(ROOTLIB) ntupleData.o rootUtils.o Data/data.a  Selections/selections.a gitversion.c 
+
+MyDict.cxx: $(HEADERS) Linkdef.h
+	rootcint -f $@ -c $(CXXFLAGS) -p $^
+
+libMyLib.so: MyDict.cxx $(SOURCES)
+	g++ -shared -o$@ `root-config --ldflags` $(CXXFLAGS) -I$(ROOTSYS)/include $^
 
 Data:
 	make --directory=$@
 
 Selections:
+	make --directory=$@
+
+utils:
 	make --directory=$@
 
 Data.o: Data.cxx Data.h
@@ -29,6 +37,10 @@ gitversion.c: .git/HEAD .git/index
 	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
 
 clean:
-	rm -f *.o *.a ntupleData ntuplesData 
+	rm -f *.o *.a ntupleData ntuplesData
+	make --directory=Data clean
+	make --directory=Selections clean
+	make --directory=utils clean
 
-.PHONY: Selections
+.PHONY: Selections Data utils
+
