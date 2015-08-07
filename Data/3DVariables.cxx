@@ -1,3 +1,7 @@
+#include <vector>
+#include <numeric>
+
+
 #include "TOF.h"
 #include "TRD.h"
 #include "Tracker.h"
@@ -120,21 +124,103 @@ double CorrTRD[30] = {
     1.34156,1.34009,1.33849,1.33596,1.33436,1.32501,1.29415,1.2545,1.22218,1.20732,
 };
 
-////////////// DEFINIZIONE SPLINES //////////////////
-TSpline3 *Rig = new TSpline3("Cubic Spline",valorecent,sigmaRinv,23);
-TSpline3 *beta = new TSpline3("beta",betacent,sigmabetainv,30);
-TSpline3 *etof = new TSpline3("Cubic Spline",Beta_cent,sigmaEtofinv,30);
-TSpline3 *etrack = new TSpline3("Cubic Spline",Beta_cent,sigmaEtrackinv,30);
-TSpline3 *etrd = new TSpline3("Cubic Spline",Beta_cent,sigmaETRDinv,30);
-TSpline3 *EdepTOFbeta = new TSpline3("Cubic Spline",Beta_cent,ETOF,30);
-TSpline3 *EdepTrackbeta = new TSpline3("Cubic Spline",Beta_cent,ETrack,30);
-TSpline3 *EdepTRDbeta = new TSpline3("Cubic Spline",Beta_cent,ETRD,30);
-TSpline3 *Corr_TOF = new TSpline3("Cubic Spline",Beta_cent,CorrTOF,30);
-TSpline3 *Corr_Track = new TSpline3("Cubic Spline",Beta_cent,CorrTrack,30);
-TSpline3 *Corr_TRD = new TSpline3("Cubic Spline",Beta_cent,CorrTRD,30);
-TSpline3 *Rgenmis = new TSpline3("",R_mis,R_gen,34);
-TSpline3 *CorrRICH = new TSpline3("",R_rich,Corr_rich,25);
+////////////// Defining splines  //////////////////
+TSpline3 * sigma_rgdt  = new TSpline3("Cubic Spline", valorecent, sigmaRinv,      23);
+TSpline3 * sigma_beta  = new TSpline3("Cubic Spline", betacent,   sigmabetainv,   30);
+TSpline3 * sigma_etof  = new TSpline3("Cubic Spline", Beta_cent,  sigmaEtofinv,   30);
+TSpline3 * sigma_etrk  = new TSpline3("Cubic Spline", Beta_cent,  sigmaEtrackinv, 30);
+TSpline3 * sigma_etrd  = new TSpline3("Cubic Spline", Beta_cent,  sigmaETRDinv,   30);
+
+
+TSpline3 * EdepTOFbeta   = new TSpline3("Cubic Spline",Beta_cent,ETOF,30);
+TSpline3 * EdepTrackbeta = new TSpline3("Cubic Spline",Beta_cent,ETrack,30);
+TSpline3 * EdepTRDbeta   = new TSpline3("Cubic Spline",Beta_cent,ETRD,30);
+TSpline3 * Corr_TOF      = new TSpline3("Cubic Spline",Beta_cent,CorrTOF,30);
+TSpline3 * Corr_Track    = new TSpline3("Cubic Spline",Beta_cent,CorrTrack,30);
+TSpline3 * Corr_TRD      = new TSpline3("Cubic Spline",Beta_cent,CorrTRD,30);
+TSpline3 * Rgenmis       = new TSpline3("",R_mis,R_gen,34);
+TSpline3 * CorrRICH      = new TSpline3("",R_rich,Corr_rich,25);
 ///////////////////////////////////////////////////////
+
+bool    updatedTOF,  uodatedTRD,  updatedTracker;
+double distanceTOF, distanceTRD, distanceTracker;
+double  rgdtMinTOF,  rgdtMinTRD,  rgdtMinTracker;
+
+double Sum(const std::vector<double> & v) 
+{ return std::accumulate(v.begin(),v.end(),0); }
+
+double weightedDiff(double xTrue, double xMeasured, double sigma)
+{
+    return (xTrue - xMeasured)/ ( pow(xTrue,2) * sigma);
+}
+
+void CalculateDistances(AMSEvent * ev, )
+{
+    // Initialising globals
+    updatedTRD     = true; distanceTRD     = 1000000; 
+    updatedTOF     = true; distanceTOF     = 1000000; 
+    updatedTracker = true; distanceTracker = 1000000; 
+
+    // Getting Measured values
+    double rgdtMeasured = R(ev); // call to Tracker R(AMSEvent * ev)
+    double betaMeasured = BetaTOF(ev); 
+    double etofMeasured = Sum(EdepTOF(ev));
+    double etrdMeasured = EdepTRD(ev)
+    double etrkMeasured = Sum(EdepTrackX(ev)) + Sum(EdepTrackY(ev));
+
+    //Checking that we're good
+    if(rgdtMeasured <= 0) return;
+    if(betaMeasured <= 0) return;
+    if(betaMeasured >= 2) return;
+    if(etofMeasured <= 0) return;
+    if(etrdMeanured <= 0) return;
+    if(etrkMeasured <= 0) return;
+
+    //
+    double CooTOF[]   = {0,0,0}; int DR1 = 0;
+    double CooTrack[] = {0,0,0}; int DR2 = 0;
+    double CooTRD[]   = {0,0,0}; int DR3 = 0;
+
+    // Scanning Rtrue and recording the minimal values for distance
+    double step = 0.05;
+    for(double rgdtTrue = 0; rgdtTrue < step * 1E6; rgdtTrue += step)
+    {
+        double betaTrue = Rtrue->Eval(rgdtTrue);
+
+        // Thist uses splines for the "theoretical values"
+        double etofTrue = EdepTOFbeta   -> Eval(betaTrue);  
+        double etrdTrue = EdepTrackbeta -> Eval(betaTrue);  
+        double etrkTrue = EdepTRDbeta   -> Eval(betaTrue);  
+
+        double rgdtDist = weightedDiff(rgdtTrue, rgdtMeasured, sigma_rgdt->Eval(rgdtTrue))
+        double betaDist = weightedDiff(betaTrue, betaMeasured, sigma_beta->Eval(betaTrue))
+        double etofDist = weightedDiff(etofTrue, etofMeasured, sigma_etof->Eval(betaTrue))
+        double etrdDist = weightedDiff(etrdTrue, etrdMeasured, sigma_etrd->Eval(betaTrue))
+        double etrkDist = weightedDiff(etrkTrue, etrkMeasured, sigma_etrk->Eval(betaTrue))
+        
+        double CurrentTOF   = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etofDist,2), 0.5);
+        double CurrentTrack = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etrdDist,2), 0.5);
+        double CurrentTRD   = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etrkDist,2), 0.5);
+        if(CurrentTOF < distanceTOF) { 
+            DR1 = 0;
+            distanceTOF = CurrentTOF;  RminTOF=RGDT;}
+        else DR1++;
+        if(DistTrack<Dist2) { DR2=0;Dist2=DistTrack; CooTrack[0]=distETrack; CooTrack[1]=distB; CooTrack[2]=distR; RminTrack=RGDT;}
+        else DR2++;
+        if(DistTRD<Dist3) { DR3=0;Dist3=DistTRD; CooTRD[0]=distETRD; CooTRD[1]=distB; CooTRD[2]=distR; RminTRD=RGDT;}
+        else DR3++;
+        if(DR1>25&&DR2>25&&DR3>25) break;
+    }
+ 
+    }
+}
+
+
+
+
+
+
+
  
 
 double DistanceTOF(AMSEventR * ev) {}
