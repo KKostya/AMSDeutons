@@ -24,11 +24,8 @@ def main(argv):
     b.setTable(theTable)
 
     theMask=b.makeSelectionMask(masks)
-    # print theMask
-    # print "{0:b}".format(theMask)
 
-    queryOption=str()
-    globalOptions=str()
+    # print "{0:b}".format(theMask)
 
     #whereClause="(Rfull > 0 && (selStatus&" + str(theMask)+ ")==" + str(theMask)+ " && " + mass + " > 0.8 && " + mass + " < 1.3 )"
     whereClause="(Rfull > 0 && (selStatus&" + str(theMask)+ ")==" + str(theMask)+ " )"
@@ -40,11 +37,7 @@ def main(argv):
 
     variables='{} as binX, {},{},{},COUNT(1)'.format(b.binLowEdgeFromArray('Rfull', binArray),isPhysicsTrigger,isTof,isEcal)
 
-    # queryOption=" --require_cache "
-    globalOptions=' --format json '
-
-    theCommand="""bq """ + globalOptions + """ query -n 10000 """ + queryOption + """'
-    SELECT binX, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalNoTof*1000 + nTofAll*100),100), nTofAll, nEcalNoTof, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalAll*1000 + nTofNoEcal*100),100), nPhysics, nEcalAll, nTofNoEcal FROM (
+    theCommand="""SELECT binX, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalNoTof*1000 + nTofAll*100),100), nTofAll, nEcalNoTof, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalAll*1000 + nTofNoEcal*100),100), nPhysics, nEcalAll, nTofNoEcal FROM (
 
         SELECT binX,
                     SUM(IF(isPhysicsTrigger==True  && isEcal IS NULL       && isTof IS NULL,CAST(f0_ AS INTEGER),0)) AS nPhysics,
@@ -55,12 +48,10 @@ def main(argv):
 
                 FROM (SELECT """ + variables  + """ FROM [""" + theTable + """] WHERE """ + whereClause + """ GROUP BY ROLLUP (binX,isPhysicsTrigger, isEcal, isTof) HAVING """ + havingClause + """ ORDER BY binX)
 
-                GROUP BY binX )'"""
+                GROUP BY binX )"""
 
-
-    #print(b.executeQuery(theCommand))
-
-    df=b.histCustomCommand( theCommand)
+    print theCommand
+    df=b.executeQuery( theCommand)
     return df
     
 if __name__ == "__main__":
