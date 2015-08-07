@@ -1,6 +1,10 @@
 #include <vector>
 #include <numeric>
 
+#include "TF1.h"
+#include "TMath.h"
+
+class AMSEventR;
 
 #include "TOF.h"
 #include "TRD.h"
@@ -102,11 +106,6 @@ double ETRD[30] = {
     3.07584,2.95305,2.88637,2.74594,2.64957,2.6319,2.62964,2.64484,2.6624,2.68055,
 };
 
-//////////////////////// Theoretic curves /////////////////////////////
-TF1 *protons = new TF1("f1","((x)^2/0.938^2/(1 + (x)^2/0.938^2))^0.5",0.1,100);
-TF1 *deutons = new TF1("f1","((x)^2/1.875^2/(1 + (x)^2/1.875^2))^0.5",0,100);
-TF1 *f1RICH = new TF1("f1","((x - 3*(0.0615*x+0.002949283*x^2+0.0489))^2/0.9382^2/(1 + (x - 3*(0.0615*x+0.002949283*x^2+0.0489 ))^2/0.9382^2))^0.5 - 3*(9.9e-4*(x^3)/0.9382^2/(22.163375 + x^3/0.9382^2))",0,100);
-
 ////////////////////// Edep COrrecitons //////////////////////////
 double CorrTOF[30] = {
     0.87745,0.8774,0.876843,0.880285,0.88604,0.886568,0.88934,0.892939,0.896916,0.902652,
@@ -135,95 +134,126 @@ TSpline3 * sigma_etrd  = new TSpline3("Cubic Spline", Beta_cent,  sigmaETRDinv, 
 TSpline3 * EdepTOFbeta   = new TSpline3("Cubic Spline",Beta_cent,ETOF,30);
 TSpline3 * EdepTrackbeta = new TSpline3("Cubic Spline",Beta_cent,ETrack,30);
 TSpline3 * EdepTRDbeta   = new TSpline3("Cubic Spline",Beta_cent,ETRD,30);
+
 TSpline3 * Corr_TOF      = new TSpline3("Cubic Spline",Beta_cent,CorrTOF,30);
 TSpline3 * Corr_Track    = new TSpline3("Cubic Spline",Beta_cent,CorrTrack,30);
 TSpline3 * Corr_TRD      = new TSpline3("Cubic Spline",Beta_cent,CorrTRD,30);
+
 TSpline3 * Rgenmis       = new TSpline3("",R_mis,R_gen,34);
 TSpline3 * CorrRICH      = new TSpline3("",R_rich,Corr_rich,25);
 ///////////////////////////////////////////////////////
 
-bool    updatedTOF,  uodatedTRD,  updatedTracker;
-double distanceTOF, distanceTRD, distanceTracker;
-double  rgdtMinTOF,  rgdtMinTRD,  rgdtMinTracker;
-
+// Utility functions
 double Sum(const std::vector<double> & v) 
 { return std::accumulate(v.begin(),v.end(),0); }
 
 double weightedDiff(double xTrue, double xMeasured, double sigma)
+{ return (xTrue - xMeasured) / (pow(xTrue,2) * sigma); }
+
+
+// Structure for distance variables 
+struct DistanceData {
+    double      TOF,      TRD,      Track;
+    double  rMinTOF,  rMinTRD,  rMinTrack;
+};
+
+// This class does all the work -- it reads the measured data 
+// in the constructor. And then finds minimal "distance" by scanning
+// true rigidity variable.
+class DistanceMinimizer
 {
-    return (xTrue - xMeasured)/ ( pow(xTrue,2) * sigma);
-}
+    double rgdtMeasured; 
+    double betaMeasured; 
+    double etofMeasured; 
+    double etrdMeasured; 
+    double etrkMeasured; 
+public:
+    DistanceMinimizer(AMSEventR * ev){
+        rgdtMeasured = R(ev); // call to Tracker R(AMSEvent * ev)
+        betaMeasured = BetaTOF(ev); 
+        etofMeasured = Sum(EdepTOF(ev));
+        etrdMeasured = EdepTRD(ev);
+        etrkMeasured = Sum(EDepTrackX(ev)) + Sum(EDepTrackY(ev));
+    }
 
-void CalculateDistances(AMSEvent * ev, )
-{
-    // Initialising globals
-    updatedTRD     = true; distanceTRD     = 1000000; 
-    updatedTOF     = true; distanceTOF     = 1000000; 
-    updatedTracker = true; distanceTracker = 1000000; 
-
-    // Getting Measured values
-    double rgdtMeasured = R(ev); // call to Tracker R(AMSEvent * ev)
-    double betaMeasured = BetaTOF(ev); 
-    double etofMeasured = Sum(EdepTOF(ev));
-    double etrdMeasured = EdepTRD(ev)
-    double etrkMeasured = Sum(EdepTrackX(ev)) + Sum(EdepTrackY(ev));
-
-    //Checking that we're good
-    if(rgdtMeasured <= 0) return;
-    if(betaMeasured <= 0) return;
-    if(betaMeasured >= 2) return;
-    if(etofMeasured <= 0) return;
-    if(etrdMeanured <= 0) return;
-    if(etrkMeasured <= 0) return;
-
-    //
-    double CooTOF[]   = {0,0,0}; int DR1 = 0;
-    double CooTrack[] = {0,0,0}; int DR2 = 0;
-    double CooTRD[]   = {0,0,0}; int DR3 = 0;
-
-    // Scanning Rtrue and recording the minimal values for distance
-    double step = 0.05;
-    for(double rgdtTrue = 0; rgdtTrue < step * 1E6; rgdtTrue += step)
+    DistanceData FindMinimum(TF1 * RvsB) 
     {
-        double betaTrue = Rtrue->Eval(rgdtTrue);
+        DistanceData distance;
+        // Initialising 
+        distance.TRD   = 1000000; distance.rMinTRD   = 0;
+        distance.TOF   = 1000000; distance.rMinTOF   = 0;
+        distance.Track = 1000000; distance.rMinTrack = 0; 
 
-        // Thist uses splines for the "theoretical values"
-        double etofTrue = EdepTOFbeta   -> Eval(betaTrue);  
-        double etrdTrue = EdepTrackbeta -> Eval(betaTrue);  
-        double etrkTrue = EdepTRDbeta   -> Eval(betaTrue);  
+        //Checking that we're good
+        if(rgdtMeasured <= 0) return distance;
+        if(betaMeasured <= 0) return distance;
+        if(betaMeasured >= 2) return distance;
+        if(etofMeasured <= 0) return distance;
+        if(etrdMeasured <= 0) return distance;
+        if(etrkMeasured <= 0) return distance;
 
-        double rgdtDist = weightedDiff(rgdtTrue, rgdtMeasured, sigma_rgdt->Eval(rgdtTrue))
-        double betaDist = weightedDiff(betaTrue, betaMeasured, sigma_beta->Eval(betaTrue))
-        double etofDist = weightedDiff(etofTrue, etofMeasured, sigma_etof->Eval(betaTrue))
-        double etrdDist = weightedDiff(etrdTrue, etrdMeasured, sigma_etrd->Eval(betaTrue))
-        double etrkDist = weightedDiff(etrkTrue, etrkMeasured, sigma_etrk->Eval(betaTrue))
-        
-        double CurrentTOF   = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etofDist,2), 0.5);
-        double CurrentTrack = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etrdDist,2), 0.5);
-        double CurrentTRD   = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etrkDist,2), 0.5);
-        if(CurrentTOF < distanceTOF) { 
-            DR1 = 0;
-            distanceTOF = CurrentTOF;  RminTOF=RGDT;}
-        else DR1++;
-        if(DistTrack<Dist2) { DR2=0;Dist2=DistTrack; CooTrack[0]=distETrack; CooTrack[1]=distB; CooTrack[2]=distR; RminTrack=RGDT;}
-        else DR2++;
-        if(DistTRD<Dist3) { DR3=0;Dist3=DistTRD; CooTRD[0]=distETRD; CooTRD[1]=distB; CooTRD[2]=distR; RminTRD=RGDT;}
-        else DR3++;
-        if(DR1>25&&DR2>25&&DR3>25) break;
+        // Scanning Rtrue and recording the minimal values for distance
+        int DR1 = 0, DR2 = 0, DR3 = 0;
+        double step = 0.05;
+        for(double rgdtTrue = 0; rgdtTrue < step * 1E6; rgdtTrue += step)
+        {
+            double betaTrue = RvsB->Eval(rgdtTrue);
+
+            // Thist uses splines for the "theoretical values"
+            double etofTrue = EdepTOFbeta   -> Eval(betaTrue);  
+            double etrdTrue = EdepTrackbeta -> Eval(betaTrue);  
+            double etrkTrue = EdepTRDbeta   -> Eval(betaTrue);  
+
+            double rgdtDist = weightedDiff(rgdtTrue, rgdtMeasured, sigma_rgdt->Eval(rgdtTrue));
+            double betaDist = weightedDiff(betaTrue, betaMeasured, sigma_beta->Eval(betaTrue));
+            double etofDist = weightedDiff(etofTrue, etofMeasured, sigma_etof->Eval(betaTrue));
+            double etrdDist = weightedDiff(etrdTrue, etrdMeasured, sigma_etrd->Eval(betaTrue));
+            double etrkDist = weightedDiff(etrkTrue, etrkMeasured, sigma_etrk->Eval(betaTrue));
+
+            double CurrentTOF   = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etofDist,2), 0.5);
+            double CurrentTrack = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etrdDist,2), 0.5);
+            double CurrentTRD   = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etrkDist,2), 0.5);
+
+            if(CurrentTOF   < distance.TOF)   { DR1 = 0; distance.TOF   = CurrentTOF;   distance.rMinTOF   = rgdtTrue;} else DR1++;
+            if(CurrentTRD   < distance.TRD)   { DR2 = 0; distance.TRD   = CurrentTRD;   distance.rMinTRD   = rgdtTrue;} else DR2++;
+            if(CurrentTrack < distance.Track) { DR3 = 0; distance.Track = CurrentTrack; distance.rMinTrack = rgdtTrue;} else DR3++;
+
+            if(DR1 > 25 && DR2 > 25 && DR3 > 25) break;
+        }
     }
- 
-    }
+};
+
+
+//////////////////////// Theoretic curves /////////////////////////////
+TF1 * protons = new TF1("f1","((x)^2/0.938^2/(1 + (x)^2/0.938^2))^0.5",0.1,100);
+TF1 * deutons = new TF1("f1","((x)^2/1.875^2/(1 + (x)^2/1.875^2))^0.5",0,100);
+
+// Two globals. I hate globals.
+DistanceData protonDists, deutonDists;
+
+//
+//   Exported functions start from here
+//
+
+//That claculates distances and populates the globals
+void CalculateDistances(AMSEventR * ev)
+{
+    DistanceMinimizer minimizer(ev);
+    protonDists = minimizer.FindMinimum(protons);
+    deutonDists = minimizer.FindMinimum(deutons);
 }
 
+double DistanceTOF_P      (AMSEventR * ev) { return protonDists.TOF;       }
+double DistanceTRD_P      (AMSEventR * ev) { return protonDists.TRD;       }
+double DistanceTracker_P  (AMSEventR * ev) { return protonDists.Track;     }
+double MLRigidityTOF_P    (AMSEventR * ev) { return protonDists.rMinTOF;   }
+double MLRigidityTRD_P    (AMSEventR * ev) { return protonDists.rMinTRD;   }
+double MLRigidityTracker_P(AMSEventR * ev) { return protonDists.rMinTrack; }
 
-
-
-
-
-
- 
-
-double DistanceTOF(AMSEventR * ev) {}
-double DistanceTRD(AMSEventR * ev) {}
-double DistanceTracker(AMSEventR * ev) {}
+double DistanceTOF_D      (AMSEventR * ev) { return deutonDists.TOF;       }
+double DistanceTRD_D      (AMSEventR * ev) { return deutonDists.TRD;       }
+double DistanceTracker_D  (AMSEventR * ev) { return deutonDists.Track;     }
+double MLRigidityTOF_D    (AMSEventR * ev) { return deutonDists.rMinTOF;   }
+double MLRigidityTRD_D    (AMSEventR * ev) { return deutonDists.rMinTRD;   }
+double MLRigidityTracker_D(AMSEventR * ev) { return deutonDists.rMinTrack; }
 

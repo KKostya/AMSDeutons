@@ -20,6 +20,7 @@
 #include "RICH.h"
 #include "MC.h"
 #include "SelectionStatus.h"
+#include "3DVariables.h"
 
 class AMSEventR;
 typedef std::vector<void (*)(AMSEventR *)> ROOTDataList;
@@ -34,5 +35,7 @@ void AddTOFVariables(ROOTDataList & data, TTree * tree);
 void AddMCVariables(ROOTDataList & data, TTree * tree);
 
 void AddSelectionVariables(ROOTDataList & data, TTree * tree);
+
+void Add3DVariables(ROOTDataList & data, TTree * tree);
 
 #endif //ROOTWRITER_H

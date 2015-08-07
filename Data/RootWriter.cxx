@@ -135,12 +135,14 @@ void AddTOFVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<int                , NTofClustersUsed>("NTofClustersUsed", tree));
     data.push_back(Wrap<std::vector<double>, EdepTOF         >("EdepTOF"         , tree));
     data.push_back(Wrap<double             , BetaTOF         >("BetaTOF"         , tree));
-    data.push_back(Wrap<double             , ChargeTOF       >("ChargeTOF"         , tree));
+    data.push_back(Wrap<double             , ChargeTOF       >("ChargeTOF"       , tree));
 }
 
 void AddECALVariable(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<double             , EnergyE         >("EnergyE"         , tree));
+    data.push_back(Wrap<double             , dedxECAL        >("dedxECAL"        , tree));
+    data.push_back(Wrap<int                , nlayMip         >("nlayMip"         , tree));
 }
 
 void AddMCVariables(ROOTDataList & data, TTree * tree)
@@ -149,6 +151,24 @@ void AddMCVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap< int               , GenParID    >("GenParID",    tree ));
     data.push_back(Wrap< std::vector<float>, GenCoo      >("GenCoo",      tree ));
     data.push_back(Wrap< std::vector<float>, GenDir      >("GenDir",      tree ));
+}
+
+
+void Add3DVariables(ROOTDataList & data, TTree * tree)
+{
+    data.push_back(Wrap<double, DistanceTOF_P      >("DistanceTOF_P"      , tree));
+    data.push_back(Wrap<double, DistanceTRD_P      >("DistanceTRD_P"      , tree));
+    data.push_back(Wrap<double, DistanceTracker_P  >("DistanceTracker_P"  , tree));
+    data.push_back(Wrap<double, MLRigidityTOF_P    >("MLRigidityTOF_P"    , tree));
+    data.push_back(Wrap<double, MLRigidityTRD_P    >("MLRigidityTRD_P"    , tree));
+    data.push_back(Wrap<double, MLRigidityTracker_P>("MLRigidityTracker_P", tree));
+
+    data.push_back(Wrap<double, DistanceTOF_D      >("DistanceTOF_D"      , tree));
+    data.push_back(Wrap<double, DistanceTRD_D      >("DistanceTRD_D"      , tree));
+    data.push_back(Wrap<double, DistanceTracker_D  >("DistanceTracker_D"  , tree));
+    data.push_back(Wrap<double, MLRigidityTOF_D    >("MLRigidityTOF_D"    , tree));
+    data.push_back(Wrap<double, MLRigidityTRD_D    >("MLRigidityTRD_D"    , tree));
+    data.push_back(Wrap<double, MLRigidityTracker_D>("MLRigidityTracker_D", tree));
 }
 
 

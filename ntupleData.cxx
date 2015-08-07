@@ -23,6 +23,7 @@
 #include "Data/Tracker.h"
 #include "Data/Ecal.h"
 #include "Data/SelectionStatus.h"
+#include "Data/3DVariables.h"
 #include "utils/rootUtils.hpp"
 
 
@@ -118,6 +119,10 @@ int main(int argc, char * argv[])
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
         if(!ev) continue;
+    
+        //That calculates Francesco's 3D variables
+        CalculateDistances(ev);
+
         // Fill the TTree 
         for(int idat=0; idat<data.size(); idat++) data[idat](ev);
         outTree->Fill();

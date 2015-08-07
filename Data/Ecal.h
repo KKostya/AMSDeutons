@@ -11,10 +11,9 @@
    /**
    * dedx in the ECAL for the event at stake
    * @param ev the event (duh)
-   * @param nlayers the number of layers of the shower at MIP (the more, the better; function will return 0 below 3 anyway)
    * @return the global sum(dE)/sum(dX) for the layers at MIP.
    */
-   float dedxECAL (AMSEventR * ev, int& nlayers);
+   double dedxECAL (AMSEventR * ev);
 
 
    /**

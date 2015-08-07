@@ -9,38 +9,31 @@ double EnergyE  (AMSEventR * ev){
 }
 
 
-float dedxECAL (AMSEventR * ev, int& nlayers){
+double dedxECAL (AMSEventR * ev){
 
    // nlayMip returns the number of layers at MIP (and takes care of "bad" events in the process)
 
-   nlayers= nlayMip(ev);
+   int nlayers= nlayMip(ev);
    if (nlayers==0) return 0;
 
    ParticleR* part=ev->pParticle(0);
-   float xe=part->EcalCoo[0][0]; // in cm
-   float ye=part->EcalCoo[0][1];
-   float ze=part->EcalCoo[0][2];
-   float xf=part->EcalCoo[2][0];
-   float yf=part->EcalCoo[2][1];
-   float zf=part->EcalCoo[2][2];
+   double xe = part->EcalCoo[0][0]; // in cm
+   double ye = part->EcalCoo[0][1];
+   double ze = part->EcalCoo[0][2];
+   double xf = part->EcalCoo[2][0];
+   double yf = part->EcalCoo[2][1];
+   double zf = part->EcalCoo[2][2];
    if (abs(xe)>66.285/2 || abs(ye)>66.285/2) return 0;
-   float dX=sqrt( (xf-xe)*(xf-xe) + (yf-ye)*(yf-ye) +(zf-ze)*(zf-ze) )*0.03*0.3923*1.1256*nlayers/18;
+   double dX=sqrt( (xf-xe)*(xf-xe) + (yf-ye)*(yf-ye) +(zf-ze)*(zf-ze) )*0.03*0.3923*1.1256*nlayers/18;
    // HAHAHA I know, rite :D 0.39 = mean lead density, 0.03 = fraction, 1.1256 =... not sure. (lulz)
 
-   float dE=0;
+   double dE = 0;
    for (int ihit=0 ; ihit<ev->nEcalHit(); ihit++)
       if (ev->EcalHit(ihit).Plane<int(nlayers))
          dE += ev->EcalHit(ihit).Edep;
 
    return dE/dX;
-
-
 }
-
-
-
-
-
 
 int nlayMip (AMSEventR * ev) {
 
@@ -119,6 +112,4 @@ int nlayMip (AMSEventR * ev) {
    } // End of loop on layers
 
    return 18; // All layers have been seen as MIP
-
-
 }
