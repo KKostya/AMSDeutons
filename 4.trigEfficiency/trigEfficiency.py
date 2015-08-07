@@ -1,5 +1,6 @@
 import bigQueryPlotting as b
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def main(argv):
     binArray=argv
@@ -28,7 +29,7 @@ def main(argv):
     # print "{0:b}".format(theMask)
 
     #whereClause="(Rfull > 0 && (selStatus&" + str(theMask)+ ")==" + str(theMask)+ " && " + mass + " > 0.8 && " + mass + " < 1.3 )"
-    whereClause="(Rfull > 0 && (selStatus&" + str(theMask)+ ")==" + str(theMask)+ " )"
+    whereClause="(Rfull > 0 && (selStatus&" + str(theMask)+ ")==" + str(theMask)+ " AND AMS.cutoffs.goodSecond == 1)"
     havingClause="( binX IS NOT NULL )"
 
     isPhysicsTrigger=" (PhysBPatt >> 1)&"+str(int('11111',2))+ " != 0 as isPhysicsTrigger "
@@ -38,21 +39,19 @@ def main(argv):
     variables='{} as binX, {},{},{},COUNT(1)'.format(b.binLowEdgeFromArray('Rfull', binArray),isPhysicsTrigger,isTof,isEcal)
 
     theCommand="""SELECT binX, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalNoTof*1000 + nTofAll*100),100), nTofAll, nEcalNoTof, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalAll*1000 + nTofNoEcal*100),100), nPhysics, nEcalAll, nTofNoEcal FROM (
-
         SELECT binX,
                     SUM(IF(isPhysicsTrigger==True  && isEcal IS NULL       && isTof IS NULL,CAST(f0_ AS INTEGER),0)) AS nPhysics,
                     SUM(IF(isPhysicsTrigger==false && isEcal==True         && isTof IS NULL,CAST(f0_ AS INTEGER),0)) AS nEcalAll,
                     SUM(IF(isPhysicsTrigger==false && isEcal==False        && isTof==True,  CAST(f0_ AS INTEGER),0)) AS nTofNoEcal,
                     SUM(IF(isPhysicsTrigger==false && isEcal IS NOT NULL   && isTof==True,  CAST(f0_ AS INTEGER),0)) AS nTofAll,
                     SUM(IF(isPhysicsTrigger==false && isEcal==True         && isTof==False, CAST(f0_ AS INTEGER),0)) AS nEcalNoTof 
+                FROM (SELECT """ + variables  + """ FROM [""" + theTable + """] JOIN EACH AMS.cutoffs ON AMS.Data.JMDCTime=AMS.cutoffs.JMDCTime WHERE """ + whereClause + """ GROUP BY ROLLUP (binX,isPhysicsTrigger, isEcal, isTof) HAVING """ + havingClause + """ ORDER BY binX) GROUP BY binX )"""
 
-                FROM (SELECT """ + variables  + """ FROM [""" + theTable + """] WHERE """ + whereClause + """ GROUP BY ROLLUP (binX,isPhysicsTrigger, isEcal, isTof) HAVING """ + havingClause + """ ORDER BY binX)
-
-                GROUP BY binX )"""
-
+    print "theQuery"
     print theCommand
-    df=b.executeQuery( theCommand)
+    print "end"
+    df=pd.read_gbq( theCommand, project_id='ams-test-kostya')
     return df
     
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main(range(1,20))
