@@ -215,8 +215,8 @@ public:
             double etrkDist = weightedDiff(etrkTrue, etrkMeasured, sigma_etrk->Eval(betaTrue));
 
             double CurrentTOF   = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etofDist,2), 0.5);
-            double CurrentTrack = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etrdDist,2), 0.5);
-            double CurrentTRD   = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etrkDist,2), 0.5);
+            double CurrentTRD   = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etrdDist,2), 0.5);
+            double CurrentTrack = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etrkDist,2), 0.5);
 
             if(CurrentTOF   < distance.TOF)   { DR1 = 0; distance.TOF   = CurrentTOF;   distance.rMinTOF   = rgdtTrue;} else DR1++;
             if(CurrentTRD   < distance.TRD)   { DR2 = 0; distance.TRD   = CurrentTRD;   distance.rMinTRD   = rgdtTrue;} else DR2++;
