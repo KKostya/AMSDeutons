@@ -101,6 +101,7 @@ int main(int argc, char * argv[])
     AddTRDVariables       (data, outTree);
     AddTOFVariables       (data, outTree);
     AddTrackerVariables   (data, outTree);
+    Add3DVariables        (data, outTree);
     
     if(isMC)
     {

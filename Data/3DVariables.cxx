@@ -171,9 +171,13 @@ public:
     DistanceMinimizer(AMSEventR * ev){
         rgdtMeasured = R(ev); // call to Tracker R(AMSEvent * ev)
         betaMeasured = BetaTOF(ev); 
-        etofMeasured = Sum(EdepTOF(ev));
-        etrdMeasured = EdepTRD(ev);
-        etrkMeasured = Sum(EDepTrackX(ev)) + Sum(EDepTrackY(ev));
+        etofMeasured = Sum(EdepTOF(ev))/4; // The average over 4 TOF planes
+        etrdMeasured = EdepTRD(ev) / NTRDclusters(ev);
+
+        std::vector<double> eTrackX = EDepLayerX(ev); eTrackX[0] = 0; eTrackX[8] = 0;
+        std::vector<double> eTrackY = EDepLayerY(ev); eTrackY[0] = 0; eTrackY[8] = 0;
+
+        etrkMeasured = (Sum(eTrackX) + Sum(eTrackY))/14;
     }
 
     DistanceData FindMinimum(TF1 * RvsB) 
@@ -200,9 +204,9 @@ public:
             double betaTrue = RvsB->Eval(rgdtTrue);
 
             // Thist uses splines for the "theoretical values"
-            double etofTrue = EdepTOFbeta   -> Eval(betaTrue);  
-            double etrdTrue = EdepTrackbeta -> Eval(betaTrue);  
-            double etrkTrue = EdepTRDbeta   -> Eval(betaTrue);  
+            double etofTrue = EdepTOFbeta  -> Eval(betaTrue);  
+            double etrdTrue = EdepTRDbeta  -> Eval(betaTrue);  
+            double etrkTrue = EdepTrackbeta-> Eval(betaTrue);  
 
             double rgdtDist = weightedDiff(rgdtTrue, rgdtMeasured, sigma_rgdt->Eval(rgdtTrue));
             double betaDist = weightedDiff(betaTrue, betaMeasured, sigma_beta->Eval(betaTrue));
