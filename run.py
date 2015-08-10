@@ -7,6 +7,7 @@ sys.path.insert(0,'3.acceptance')
 sys.path.insert(0,'4.trigEfficiency')
 
 import exposureTime
+import counting
 import acceptance
 import trigEfficiency
 
@@ -63,9 +64,10 @@ trackSelectionData=b.makeSelectionMask(mask) + " AND " + noEcalTriggerOnly
 #
 ########################################################################################
 # expTime=exposureTime.main(binning)
+counting.main(preselectionMC,trackSelectionMC)
 # acc=acceptance.main(binning,preselectionMC,tableMC)
-trigEfficiency=trigEfficiency.main(binning)
+# trigEfficiency=trigEfficiency.main(binning)
 
 # print expTime
 # print acc
-print trigEfficiency
+# print trigEfficiency

@@ -1,0 +1,10 @@
+notFirstTwo
+minimumbiasTOF
+minimumbiasTRIGG
+minimumbiasTRACKER
+oneParticle
+oneTrack
+chargeOne
+downGoing
+betaNotCrazy
+physicsTrigger
