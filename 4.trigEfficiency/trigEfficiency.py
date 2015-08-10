@@ -29,9 +29,10 @@ def main(argv):
     # print "{0:b}".format(theMask)
 
     #whereClause="(Rfull > 0 && (selStatus&" + str(theMask)+ ")==" + str(theMask)+ " && " + mass + " > 0.8 && " + mass + " < 1.3 )"
-    whereClause="(Rfull > 0 && (selStatus&" + str(theMask)+ ")==" + str(theMask)+ " AND AMS.cutoffs.goodSecond == 1)"
+    whereClause="(Rfull > 0 AND " + str(theMask)+ " )"
     havingClause="( binX IS NOT NULL )"
 
+#AMS.cutoffs.goodSecond == 1
     isPhysicsTrigger=" (PhysBPatt >> 1)&"+str(int('11111',2))+ " != 0 as isPhysicsTrigger "
     isTof="(JMembPatt>>4)&1 as isTof"
     isEcal="(JMembPatt>>11)&1 as isEcal"
@@ -45,12 +46,14 @@ def main(argv):
                     SUM(IF(isPhysicsTrigger==false && isEcal==False        && isTof==True,  CAST(f0_ AS INTEGER),0)) AS nTofNoEcal,
                     SUM(IF(isPhysicsTrigger==false && isEcal IS NOT NULL   && isTof==True,  CAST(f0_ AS INTEGER),0)) AS nTofAll,
                     SUM(IF(isPhysicsTrigger==false && isEcal==True         && isTof==False, CAST(f0_ AS INTEGER),0)) AS nEcalNoTof 
-                FROM (SELECT """ + variables  + """ FROM [""" + theTable + """] JOIN EACH AMS.cutoffs ON AMS.Data.JMDCTime=AMS.cutoffs.JMDCTime WHERE """ + whereClause + """ GROUP BY ROLLUP (binX,isPhysicsTrigger, isEcal, isTof) HAVING """ + havingClause + """ ORDER BY binX) GROUP BY binX )"""
+                FROM (SELECT """ + variables  + """ FROM (SELECT *,Floor(JMDCTime) as JMDCTimeInSec FROM [""" + theTable + """]  WHERE """ + whereClause + """) AS dataWithTimeInSec JOIN EACH AMS.cutoffs ON dataWithTimeInSec.JMDCTimeInSec=AMS.cutoffs.JMDCTime WHERE AMS.cutoffs.goodSecond == 1 GROUP BY ROLLUP (binX,isPhysicsTrigger, isEcal, isTof) HAVING """ + havingClause + """ ORDER BY binX) GROUP BY binX )"""
 
-    print "theQuery"
     print theCommand
-    print "end"
+    f=open('test.txt','w')
+    f.write(theCommand)
+
     df=pd.read_gbq( theCommand, project_id='ams-test-kostya')
+    print df
     return df
     
 if __name__ == "__main__":
