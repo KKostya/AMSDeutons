@@ -23,7 +23,7 @@ struct RealisticToyModel: public PDModel
     static const bool isToyMC = true;
 
     RealisticToyModel():
-       PDModel(PDModel::FromCSVS("datasets/B_resolution.csv", "datasets/R_resolution.csv","datasets/mask.csv" ))
+       PDModel(PDModel::FromCSVS("../datasets/B_resolution.csv", "../datasets/R_resolution.csv","../datasets/mask.csv" ))
     {
         // Set true values of the model
         for( int i = 0; i < getBetaBinsT().size() - 1; i++){
@@ -36,7 +36,7 @@ struct RealisticToyModel: public PDModel
         GenerateToyObservedData(realValues);
     }
 
-    virtual void saveMetaData(std::ofstream & myfile){
+    virtual void saveMetaData(std::ofstream & myfile) override {
         myfile << "isToyMC "        << isToyMC << std::endl;
         myfile << "bins " ;
         for(auto v :  getBetaBinsT()) myfile << v << " "; 
@@ -50,10 +50,10 @@ struct RealDataModel: public PDModel
     static const bool isToyMC = false;
 
     RealDataModel():
-        PDModel(PDModel::FromCSVS("datasets/B_resolution.csv", "datasets/R_resolution.csv", "datasets/mask.csv"))
+        PDModel(PDModel::FromCSVS("../datasets/B_resolution.csv", "../datasets/R_resolution.csv", "../datasets/mask.csv"))
     {
         // Get initial conditions
-        std::string fname = "datasets/initialConditions.txt";
+        std::string fname = "../datasets/initialConditions.txt";
         std::ifstream f(fname);
         if( !f ){
             std::cerr << "No file : " << fname << " found !\nExit !" << std::endl;
@@ -80,12 +80,12 @@ struct RealDataModel: public PDModel
         // }
 
         // Load real data
-        LoadObservedDataFromFile("datasets/observed_data.txt");
+        LoadObservedDataFromFile("../datasets/observed_data.txt");
     }
 
     ~RealDataModel(){}
 
-    virtual void saveMetaData(std::ofstream & myfile){
+    virtual void saveMetaData(std::ofstream & myfile) override {
         myfile << "isToyMC "        << isToyMC << std::endl;
         myfile << "bins " ;
         for(auto v :  getBetaBinsT()) myfile << v << " "; 

@@ -27,7 +27,7 @@ public:
 
 
     virtual float GetLogLikelihood(const SearchSpace & point) = 0;
-    virtual void saveMetaData(const std::ofstream & ){}
+    virtual void saveMetaData(std::ofstream & ){}
 
     const SearchSpace GetRealValues(){ return realValues; }
     const SearchSpace GetInitialConditions(){ return initialConditions; }

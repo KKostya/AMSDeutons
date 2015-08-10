@@ -7,77 +7,8 @@ from histQueryFactory import *
 import matplotlib.pyplot as plt
 import numpy as np
 
-def main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData):
-    #selectionStatus ="1972401"
-    #selectionStatus="2097137"
-    #selectionStatus=2097151
-
-    s.set(rc={'image.cmap': "jet"})
-    #matplotlib.figsize(12,10)
-    # rcParams['figure.facecolor'] = (1,1,1,1)
-    # rcParams['savefig.facecolor'] = (1,1,1,1)
-
-    ################################################################################
-    ##
-    ##  MAKE BINNINGS
-    ##
-    ################################################################################
-    #
-    # "Theoretical" binning (the one we will look the spectrum for)
-    #  is bootstrapped from R-vs-beta curves for D and P
-    #
-    def make_beta_bins(beta):
-        bbins = []
-        for i in range(10):
-            bbins.append(beta)
-            beta = beta_from_R(R_from_beta(beta,md),mp)
-        return bbins
-
-    bbins = make_beta_bins(0.5)
-    bbins += make_beta_bins((bbins[1]+bbins[0])/2)
-    bbins = sorted(bbins)
-
-    mid1,mid2 = (bbins[1]+bbins[0])/2,(bbins[2]+bbins[1])/2
-    bbins += make_beta_bins(mid1)
-    bbins += make_beta_bins(mid2)
-    bbins = np.array(sorted(bbins))
-
-    betaTheoretic, rgdtTheoretic = np.array([bbins, R_from_beta(bbins, mp)])
-
-    #rcParams['savefig.dpi'] = 160
-    #plt.figsize(8,4)
-    # for b in betaTheoretic:plot([0,10],[b,b],'k',lw=0.5)
-    # for R in rgdtTheoretic:plot([R,R], [0.5,1],'k',lw=0.5)
-    # xlabel("R theoretic")
-    # ylabel("$\\beta$ theoretic")
-    # xlim(rgdtTheoretic[0],10)
-    # ylim(0.49,1)
-
-    # x = np.linspace(0,10,100)
-    # plot(x, beta_from_R(x,mp),'r')
-    # plot(x, beta_from_R(x,md),'b')
-
-    #
-    # Measured values binnings are not very fancy
-    #
-    betaMeasured = 1/np.linspace(0.5,2,28)
-    betaMeasured.sort()
-
-    rgdtMeasured = np.logspace(-5.0 / 19, 1, 25)
-
-    # rcParams['savefig.dpi'] = 160
-    #plt.figsize(8,4)
-    # for b in betaMeasured:plot([0,10],[b,b],'k',lw=0.5)
-    # for R in rgdtMeasured:plot([R,R], [0.5,1.2],'k',lw=0.5)
-    # xlabel("R measured")
-    # ylabel("$\\beta$ measured")
-    # xlim(rgdtTheoretic[0],10)
-    # ylim(0.49,1.21)
-
-    # x = np.linspace(0,10,100)
-    # plot(x, beta_from_R(x,mp),'r')
-    # plot(x, beta_from_R(x,md),'b')
-
+def main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData,
+         binningBetaTheoretic, binningRgdtTheoretic, binningBetaMeasured, binningRgdtMeasured):
     ################################################################################
     ##
     ##  MAKING BQ CLEAR
@@ -118,8 +49,8 @@ def main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData)
     ##  BETA MATRIX
     ##
     ################################################################################
-    vs =  ",\n".join([ build_case_string("BetaTOF", "B_bin", betaMeasured),
-                       build_case_string("GenMomentum/SQRT(0.88022 + POW(GenMomentum,2))", "Gen_bin", betaTheoretic),
+    vs =  ",\n".join([ build_case_string("BetaTOF", "B_bin", binningBetaMeasured),
+                       build_case_string("GenMomentum/SQRT(0.88022 + POW(GenMomentum,2))", "Gen_bin", binningBetaTheoretic),
                        "COUNT(1) as count" ])
 
     h = "SELECT\n" + vs + """
@@ -134,11 +65,11 @@ def main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData)
     bq_table = client.ReadTableRows(tableid)
 
     frame = pd.DataFrame(bq_table, columns=['Bbin', 'GenBin', 'Count']).astype(int)
-    frame['Bbin'] = frame['Bbin'].map(lambda x: betaMeasured[x] )
-    frame['GenBin'] = frame['GenBin'].map(lambda x: betaTheoretic[x] )
+    frame['Bbin'] = frame['Bbin'].map(lambda x: binningBetaMeasured[x] )
+    frame['GenBin'] = frame['GenBin'].map(lambda x: binningBetaTheoretic[x] )
     frame = frame.set_index(list(frame.columns[:-1])).unstack()['Count'].fillna(0)
 
-    frame.T.to_csv("./datasets/B_resolution.csv")
+    frame.T.to_csv("2.counting/datasets/B_resolution.csv")
 
     #plt.figsize(5,4)
     # cc = plot_matrix(frame.ix[frame.index[:-1]][frame.columns[:-1]],
@@ -153,8 +84,8 @@ def main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData)
     ##  RIGIDITY MATRIX
     ##
     ################################################################################
-    vs =  ",\n".join([ build_case_string("R", "R_bin", rgdtMeasured),
-                                          build_case_string("GenMomentum", "Gen_bin", rgdtTheoretic),
+    vs =  ",\n".join([ build_case_string("R", "R_bin", binningRgdtMeasured),
+                                          build_case_string("GenMomentum", "Gen_bin", binningRgdtTheoretic),
                                           "COUNT(1) as count" ])
 
     h = "SELECT\n" + vs + """
@@ -168,10 +99,10 @@ def main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData)
     tableid = client.Query(str(h))['configuration']['query']['destinationTable']
     bq_table = client.ReadTableRows(tableid)
     frame = pd.DataFrame(bq_table, columns=['Rbin', 'GenBin', 'Count']).astype(int)
-    frame['Rbin'] = frame['Rbin'].map(lambda x: rgdtMeasured[x] )
-    frame['GenBin'] = frame['GenBin'].map(lambda x: rgdtTheoretic[x] )
+    frame['Rbin'] = frame['Rbin'].map(lambda x: binningRgdtMeasured[x] )
+    frame['GenBin'] = frame['GenBin'].map(lambda x: binningRgdtTheoretic[x] )
     frame = frame.set_index(list(frame.columns[:-1])).unstack()['Count'].fillna(0)
-    frame.T.to_csv("./datasets/R_resolution.csv")
+    frame.T.to_csv("2.counting/datasets/R_resolution.csv")
     #plt.figsize(5,4)
     # cc = plot_matrix(frame.ix[frame.index[:-1]][frame.columns[:-1]],
     #                             norm=LogNorm(vmin=1,vmax=10**6))
@@ -186,8 +117,8 @@ def main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData)
     ##
     ################################################################################
 
-    vs =  ",\n".join([ build_case_string("R", "R_bin", rgdtMeasured),
-                                          build_case_string("BetaTOF", "B_bin", betaMeasured),
+    vs =  ",\n".join([ build_case_string("R", "R_bin", binningRgdtMeasured),
+                                          build_case_string("BetaTOF", "B_bin", binningBetaMeasured),
                                           "COUNT(1) as count" ])
 
     h = "SELECT\n" + vs + """
@@ -205,8 +136,8 @@ def main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData)
     bq_table = client.ReadTableRows(tableid)
 
     frame = pd.DataFrame(bq_table, columns=['Rbin', 'Beta', 'Count']).astype(int)
-    frame['Rbin'] = frame['Rbin'].map(lambda x: rgdtMeasured[x] )
-    frame['Beta'] = frame['Beta'].map(lambda x: betaMeasured[x] )
+    frame['Rbin'] = frame['Rbin'].map(lambda x: binningRgdtMeasured[x] )
+    frame['Beta'] = frame['Beta'].map(lambda x: binningBetaMeasured[x] )
     frame = frame.set_index(list(frame.columns[:-1])).unstack()['Count'].fillna(0)
     frame = frame.T
 
@@ -219,4 +150,4 @@ def main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData)
     # xlim(0.5,5)
     # ylim(0.5,1.3)
 
-    np.savetxt("datasets/observed_data.txt",frame.values)
+    np.savetxt("2.counting/datasets/observed_data.txt",frame.values)
