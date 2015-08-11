@@ -9,7 +9,7 @@ def main(binning):
 
     queryOption=" --format json "
 
-    theCommand="""bq """ + globalOptions + """ query """ + queryOption + """'
+    theCommand="""
         SELECT
           SUM(Lifetime) OVER (ORDER BY binX),
           cut as binX
@@ -30,10 +30,7 @@ def main(binning):
             cut )
         WHERE
           cut > 0
-    '"""
-
-    f=open('log','w')
-    f.write(theCommand)
+    """
 
     df=b.histCustomCommand(theCommand)
     # h=b.Hist( df, 1, -50, 50 )

@@ -21,9 +21,9 @@ def main(binArray,preselectionMC,tableMC,plot=False):
     
     # Total number of generated events
     # is estimated as the sum of the differences between max and min event number in every run
-    theQueryTotalNumberOfEvents="bq --format json query 'SELECT SUM(biggestEventsPerRun-smallestEventsPerRun) FROM (SELECT MAX(Event) as biggestEventsPerRun, MIN(Event) as smallestEventsPerRun, AMS.protonsB1034.Run as runNumber FROM AMS.protonsB1034 GROUP BY runNumber ORDER BY runNumber )'"
-    jsonData=b.executeQuery(theQueryTotalNumberOfEvents)
-    nTotal=jsonData[0]['f0_']
+    theQueryTotalNumberOfEvents="SELECT SUM(biggestEventsPerRun-smallestEventsPerRun) FROM (SELECT MAX(Event) as biggestEventsPerRun, MIN(Event) as smallestEventsPerRun, AMS.protonsB1034.Run as runNumber FROM AMS.protonsB1034 GROUP BY runNumber ORDER BY runNumber )"
+    df=b.histCustomCommand(theQueryTotalNumberOfEvents)
+    nTotal=df['f0_'][0]
     print 'nTotal : {}'.format(nTotal)
 
     # Number of MC events passing the preselection cut
@@ -51,12 +51,11 @@ def main(binArray,preselectionMC,tableMC,plot=False):
     #       FROM AMS.protonsB1034 WHERE " + cut3TOFLayers + \
     #       "GROUP BY binX, nGenPerBin  HAVING binX >= 0 ORDER BY binX, nGenPerBin))'"
 
-    theQueryNumberPreselected="bq --format json query ' \
-    SELECT binX, nPreselPerBin, nGenPerBin, nPreselPerBin/nGenPerBin*3.9*3.9*PI() FROM (\
+    theQueryNumberPreselected="SELECT binX, nPreselPerBin, nGenPerBin, nPreselPerBin/nGenPerBin*3.9*3.9*PI() FROM (\
           SELECT "+b.binLowEdgeFromArray("GenMomentum",binArray) +"as binX, \
           COUNT(*) as nPreselPerBin, "+ nGenPerBin + " as nGenPerBin \
           FROM AMS.protonsB1034 WHERE " + preselectionMC + \
-          "GROUP BY binX, nGenPerBin  HAVING binX >= 0 ORDER BY binX, nGenPerBin)'"
+          "GROUP BY binX, nGenPerBin  HAVING binX >= 0 ORDER BY binX, nGenPerBin)"
 
     df=b.histCustomCommand(theQueryNumberPreselected)
 
