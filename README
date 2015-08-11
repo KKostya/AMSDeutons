@@ -1,3 +1,14 @@
 DEPENDANCE:
 _The bigQuery project: git@github.com:wizmer/bigQuery.git. Add it to your PYTHONPATH
 
+USAGE:
+1) If the tables 'AMS.cutoffs' and 'AMS.timeInSecInData' need to be recreated, delete them (this can be done at: https://bigquery.cloud.google.com/queries/ams-test-kostya) and then run:
+      ./tableManagement/createCutoffTable.sh 
+      ./tableManagement/createTimeInSecInDataTable.sh
+
+   These queries require to process the entire dataset and might be expensive in term of money (I am not so sure)
+
+2) python run.py
+
+
+
