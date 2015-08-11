@@ -105,9 +105,9 @@ import counting
 import acceptance
 import trigEfficiency
 
-# expTime=exposureTime.main(binningRgdtTheoretic)
-# countP, countD = counting.main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData, 
-#               binningBetaTheoretic, binningRgdtTheoretic, binningBetaMeasured, binningRgdtMeasured)
+expTime=exposureTime.main(binningRgdtTheoretic)
+countP, countD = counting.main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData, 
+              binningBetaTheoretic, binningRgdtTheoretic, binningBetaMeasured, binningRgdtMeasured)
 acc=acceptance.main(binningRgdtTheoretic,preselectionMC,tableMC)
 trigEfficiency=trigEfficiency.main(binningRgdtTheoretic)
 
@@ -117,7 +117,7 @@ trigEfficiency=trigEfficiency.main(binningRgdtTheoretic)
 # print preselectionData
 # print trackSelectionData, 
 
-# print expTime
+print expTime
 print countP, countD
 print acc
 print trigEfficiency
