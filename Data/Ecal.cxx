@@ -13,9 +13,15 @@ double dedxECAL (AMSEventR * ev){
 
    // nlayMip returns the number of layers at MIP (and takes care of "bad" events in the process)
 
+
    int nlayers= nlayMip(ev);
    if (nlayers==0) return 0;
 
+	// Computing dX
+	// Geometrical distance between entry and exit point through Pythagoras * "fraction" of layers hit * fraction of fibers (only place where ionization can occur), 39.23%
+  // That's the short, simple function. Has to be "recalibrated" to give the charge.
+  // There exists a "far more complicated" dX computing (and a "even far more uselessly complicated" one), that I can implement if we want precision here.
+  // Mainly, the most complicated one takes into account the events leaking outside the ECAL ; but abs(xe)>66.285/2 || abs(ye)>66.285/2 should take care of this.
    ParticleR* part=ev->pParticle(0);
    double xe = part->EcalCoo[0][0]; // in cm
    double ye = part->EcalCoo[0][1];
@@ -24,13 +30,16 @@ double dedxECAL (AMSEventR * ev){
    double yf = part->EcalCoo[2][1];
    double zf = part->EcalCoo[2][2];
    if (abs(xe)>66.285/2 || abs(ye)>66.285/2) return 0;
-   double dX=sqrt( (xf-xe)*(xf-xe) + (yf-ye)*(yf-ye) +(zf-ze)*(zf-ze) )*0.03*0.3923*1.1256*nlayers/18;
-   // HAHAHA I know, rite :D 0.39 = mean lead density, 0.03 = fraction, 1.1256 =... not sure. (lulz)
+   double dX=sqrt( (xf-xe)*(xf-xe) + (yf-ye)*(yf-ye) +(zf-ze)*(zf-ze) )*0.3923*nlayers/18;
+   
 
+   //Computing dE
    double dE = 0;
    for (int ihit=0 ; ihit<ev->nEcalHit(); ihit++)
-      if (ev->EcalHit(ihit).Plane<int(nlayers))
+      if (ev->EcalHit(ihit).Plane< nlayers)
          dE += ev->EcalHit(ihit).Edep;
+		dE*=0.03; // The infamous sampling fraction;
+
 
    return dE/dX;
 }
@@ -40,18 +49,22 @@ int nlayMip (AMSEventR * ev) {
    // Event sweeping
    // Adaptation of recommandations from the Twiki nuclei page
    // https://twiki.cern.ch/twiki/bin/view/AMS/Nuclei
+
    
    if (  ev==NULL
       || ev->nParticle()!=1
       || ev->IsInSAA()
-      || ev->GetRTIStat()!=0
+      //|| ev->GetRTIStat()!=0
       )
       return 0;
 
-   AMSSetupR::RTI rti;
-   ev->GetRTI(rti);
-   if ((rti.good&0x3F)!=0 || rti.lf < 0.5 || rti.zenith >40)
-      return 0;
+
+
+   //AMSSetupR::RTI rti;
+   //ev->GetRTI(rti);
+   //if ((rti.good&0x3F)!=0 || rti.lf < 0.5 || rti.zenith >40)
+      //return 0;
+
 
    AMSPoint pn1, pn9, pd1, pd9;
    ev->GetRTIdL1L9(0, pn1, pd1, ev->UTime(), 60);

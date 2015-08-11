@@ -60,9 +60,14 @@ int main(int argc, char * argv[])
     std::string outFname;
     std::string  inFname;
 
+   if (argc==1) std::cout
+	<< "Example:  ./ntupleData -o test.root -n 10000 $EOSPATH/ams/Data/AMS02/2014/ISS.B900/std/1439205227.00000001.root"
+	<< std::endl;
+
+
     while((c = getopt(argc, argv, "o:n:")) != -1) {
         if(c == 'o') outFname = std::string(optarg);
-        if(c == 'n') entries = atoi(optarg);
+        else if(c == 'n') entries = atoi(optarg);
     }
     if(outFname.empty()) outFname = std::string("ntuple.root");
     if (optind < argc) inFname = std::string(argv[optind++]); else return 1;
