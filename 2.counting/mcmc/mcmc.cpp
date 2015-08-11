@@ -83,6 +83,9 @@ template <class ProposalFunction > void MCMC<ProposalFunction >::loop(){
         
     std::cout << "chunkStepNumber : " << chunkStepNumber << std::endl;
     if( chunkStepNumber > 0 ) saveChunk();
+
+    model.endOfAlgoAction(filename,current_point);
+
 }
 
 template <class ProposalFunction > void MCMC<ProposalFunction>::setSpectator(std::function<float(const ModelBase&)> f){

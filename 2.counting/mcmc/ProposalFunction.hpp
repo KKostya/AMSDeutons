@@ -14,12 +14,11 @@ public:
         sigmaP(), sigmaD()
     {
         for(auto v : initialPoint.fluxP){
-            
-            sigmaP.push_back(sqrt(v)>1 ? sqrt(v) : 1);
+            sigmaP.push_back(sqrt(v)>1 ? sqrt(v)/2 : 1);
         }
 
         for(auto v : initialPoint.fluxD){
-            sigmaD.push_back(sqrt(v)>1 ? sqrt(v) : 1 );
+            sigmaD.push_back(sqrt(v)>1 ? sqrt(v)/2 : 1 );
         }
     }
 

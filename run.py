@@ -32,7 +32,7 @@ bbins = sorted(bbins)
 mid1,mid2 = (bbins[1]+bbins[0])/2,(bbins[2]+bbins[1])/2
 bbins += make_beta_bins(mid1)
 bbins += make_beta_bins(mid2)
-bbins = np.array([bbin for bbin in sorted(bbins) if 3 < pd_model.R_from_beta(bbin,pd_model.mp) < 30 ])
+bbins = np.array([bbin for bbin in sorted(bbins) if 1 < pd_model.R_from_beta(bbin,pd_model.mp) < 30 ])
 
 binningBetaTheoretic, binningRgdtTheoretic = np.array([bbins, pd_model.R_from_beta(bbins, pd_model.mp)])
 
@@ -79,6 +79,11 @@ mask.append("physicsTrigger")
 mask.append("betaNotCrazy")
 mask.append("chargeOne")
 mask.append("oneTrack")
+mask.append("goldenTOF")
+mask.append("goldenTRACKER")
+mask.append("goldenTRD")
+mask.append("oneParticle")
+
 
 
 # 2) Remove events only trigged by ECAL physics trigger
@@ -100,13 +105,19 @@ import counting
 import acceptance
 import trigEfficiency
 
-# expTime=exposureTime.main(binningRgdtMeasured)
-counting.main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData, 
+# expTime=exposureTime.main(binningRgdtTheoretic)
+countP, countD = counting.main(preselectionMC, trackSelectionMC, preselectionData, trackSelectionData, 
               binningBetaTheoretic, binningRgdtTheoretic, binningBetaMeasured, binningRgdtMeasured)
+acc=acceptance.main(binningRgdtTheoretic,preselectionMC,tableMC)
+trigEfficiency=trigEfficiency.main(binningRgdtTheoretic)
 
-# acc=acceptance.main(binning,preselectionMC,tableMC)
-# trigEfficiency=trigEfficiency.main(binningRgdtMeasured)
+
+# print preselectionMC
+# print trackSelectionMC
+# print preselectionData
+# print trackSelectionData, 
 
 # print expTime
-# print acc
-# print trigEfficiency
+print countP, countD
+print acc
+print trigEfficiency

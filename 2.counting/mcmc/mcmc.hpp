@@ -58,7 +58,7 @@ private:
 
     bool verbose;
 
-    static const int maxRAM = 1e9;
+    static const int maxRAM = 5e8;
 
     void saveMetaData()
     {

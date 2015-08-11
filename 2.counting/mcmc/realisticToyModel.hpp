@@ -62,6 +62,8 @@ struct RealDataModel: public PDModel
         while(true){
             float fluxP, fluxD;
             f >> fluxP >> fluxD;
+            std::cout << "fluxP : " << fluxP << std::endl;
+            std::cout << "fluxD : " << fluxD << std::endl;
             if( f.eof() ) break;
             initialConditions.fluxP.push_back(fluxP);
             initialConditions.fluxD.push_back(fluxD);

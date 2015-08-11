@@ -219,6 +219,11 @@ void PDModel::constructBaseMatrices(){
     }
 }
 
+void PDModel::savePredictedMatrix(const SearchSpace & point, const std::string & filename)
+{
+    MatrixF prediction = GetPrediction(point);
+    prediction.save(filename);
+}
 
 float PDModel::GetLogLikelihood(const SearchSpace & point)
 {

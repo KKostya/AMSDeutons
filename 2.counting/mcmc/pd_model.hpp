@@ -28,6 +28,7 @@ public:
 
     virtual float GetLogLikelihood(const SearchSpace & point) = 0;
     virtual void saveMetaData(std::ofstream & ){}
+    virtual void endOfAlgoAction(const std::string & filename, const SearchSpace & point){}
 
     const SearchSpace GetRealValues(){ return realValues; }
     const SearchSpace GetInitialConditions(){ return initialConditions; }
@@ -54,6 +55,10 @@ class PDModel: public ModelBase
     void constructBaseMatrices();
 
     void init(const MatrixF & _betaF, const MatrixF & _rgdtF);
+
+    // save predicted matrix for SearchSpace 'point' in file 'filename'
+    void savePredictedMatrix(const SearchSpace & point, const std::string & filename);
+
 public:
     static const float mp;
     static const float md;
@@ -85,7 +90,6 @@ public:
     
     // Regularization term
     void ComputeRegularizationTerm(const SearchSpace & point);
-
     
     void setRegularizationFactor(float _regularizationFactor){
         this -> regularizationFactor = _regularizationFactor;
@@ -97,9 +101,12 @@ public:
         observed = GetPrediction(point);
     }
 
+    void endOfAlgoAction(const std::string & filename, const SearchSpace & point) override {
+        savePredictedMatrix(point, filename+"/lastPointPredictedMatrix.txt");
+    }
+
     void SetMask(const std::string & maskFile);
     void SetMask(const MatrixB & _mask);
-
 };
 
 #endif //PD_MODEL_H

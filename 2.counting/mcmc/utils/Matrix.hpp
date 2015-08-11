@@ -130,7 +130,7 @@ public:
         }
     }
 
-    void save( std::string filename ){
+    void save( const std::string & filename ){
         std::cout << "filename : " << filename << std::endl;
         std::ofstream f( filename );
         for(int iRow = 0; iRow < nRows; iRow++){

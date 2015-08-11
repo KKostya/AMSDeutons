@@ -3,7 +3,7 @@ AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG
 LIBS=`root-config --cflags --libs | sed 's/-lPhysics//g' | sed 's/-lGraf3d//g' | sed 's/-lPostscript//g' `  -L$(amsUtils)/lib
 #LIBS=`root-config --cflags --libs`
 OPTIMIZATION=-O3
-CXXFLAGS=-Wall -Weffc++ -pedantic -Wno-sign-compare \
+CXXFLAGS=-Wall -Weffc++ -pedantic -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter\
     -pedantic-errors -Wextra -Wcast-align \
     -Wcast-qual  -Wchar-subscripts  -Wcomment \
     -Wdisabled-optimization \
