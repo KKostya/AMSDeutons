@@ -6,7 +6,7 @@ USAGE:
       ./tableManagement/createCutoffTable.sh 
       ./tableManagement/createTimeInSecInDataTable.sh
 
-   These queries require to process the entire dataset and might be expensive in term of money (I am not so sure)
+   The above queries require to process the entire dataset and might be expensive in term of money (I am not so sure)
 
 2) python run.py
 

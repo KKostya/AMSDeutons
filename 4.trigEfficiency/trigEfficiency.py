@@ -2,11 +2,31 @@ import bigQueryPlotting as b
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def main(argv):
-    binArray=argv
-    if binArray is None:
-        print "No binning array given !"
-        return
+# This script returns the physical trigger efficiency as a function of the rigidity from flight data
+# Note: since the variable 'Rfull' is used and not 'R', the efficiency is computed for FULL SPAN
+#
+# It is assumed that unbiased triggers have a 100% efficiency.
+# It means that they see everything but they only ask for the acquisition once every their prescaling factor
+#    Where:   _ Unbiased TOF is prescaled by 100
+#             _ Unbiased ECAL is prescaled by 1000
+#
+# One can distinguish two kinds of acquisition condition.
+#     1) The event has been seen by at least one physical trigger
+#     2) Otherwise, the acquisition must have been asked by an unbiased trigger
+#
+# If there are 'nPhysicsTrigger' events in group 1) and 'nUnbiased' events in group 2),
+# then the physiccal trigger effiency is defined as 'nPhysicsTrigger / (nPhysicsTrigger + nUnbiased*prescalingFactor)'
+# 
+# Here we have to unbiased trigger with different prescaling factor.
+# The only trick is not to count twice unbiased event trigged by both UnbiasedEcal and UnbiasedTOF
+# eff = nPhysicsTrigger / (nPhysicsTrigger + nTofAll*100   + nEcalNoTof*1000)'
+#     = nPhysicsTrigger / (nPhysicsTrigger + nEcalAll*1000 + nTofNoEcal*100 )'
+# TODO: understand why the second version currently gives wrong result
+#
+# @result: a pandas dataframe with a column 'binX' containing the bin low edge and a column
+#          'trigEff' containing the physical trigger efficiency for this bin
+
+def main(binArray):
 
     masks=[]
     masks.append("notFirstTwo")
@@ -26,8 +46,6 @@ def main(argv):
 
     theMask=b.makeSelectionMask(masks)
 
-    # print "{0:b}".format(theMask)
-
     #whereClause="(Rfull > 0 && (selStatus&" + str(theMask)+ ")==" + str(theMask)+ " && " + mass + " > 0.8 && " + mass + " < 1.3 )"
     whereClause="(Rfull > 0 AND " + str(theMask)+ " AND AMS.cutoffs.goodSecond == 1)"
     havingClause="( binX IS NOT NULL )"
@@ -38,7 +56,7 @@ def main(argv):
 
     variables='{} as binX, {},{},{},COUNT(1)'.format(b.binLowEdgeFromArray('Rfull', binArray),isPhysicsTrigger,isTof,isEcal)
 
-    theCommand="""SELECT binX, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalNoTof*1000 + nTofAll*100),100), nTofAll, nEcalNoTof, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalAll*1000 + nTofNoEcal*100),100), nPhysics, nEcalAll, nTofNoEcal FROM (
+    theCommand="""SELECT binX, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalNoTof*1000 + nTofAll*100),100) AS trigEff, nTofAll, nEcalNoTof, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalAll*1000 + nTofNoEcal*100),100) AS trigEff2, nPhysics, nEcalAll, nTofNoEcal FROM (
         SELECT binX,
                     SUM(IF(isPhysicsTrigger==True  && isEcal IS NULL       && isTof IS NULL,CAST(f0_ AS INTEGER),0)) AS nPhysics,
                     SUM(IF(isPhysicsTrigger==false && isEcal==True         && isTof IS NULL,CAST(f0_ AS INTEGER),0)) AS nEcalAll,
