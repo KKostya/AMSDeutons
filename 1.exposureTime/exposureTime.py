@@ -18,16 +18,17 @@ def main(binning):
 
     queryOption=" --format json "
 
+
     theCommand="""
         SELECT
-          SUM(Lifetime) OVER (ORDER BY binX) as expTime,
-          cut as binX
+          cut as binX,
+          SUM(Lifetime) OVER (ORDER BY binX) as expTime
         FROM (
           SELECT
             NTH_VALUE(Lifetime,1) OVER(ORDER BY cut) AS total,
-            SUM(Lifetime) AS Lifetime,
-            """ + b.binHighEdgeFromArray('IGRF40pos',binning) + """ as cut""" \ # binHighEdgeFromArray is not a mistake. It is NOT binLowEdgeFromArray
-          """ FROM """ + theTable + """
+            SUM(Lifetime) AS Lifetime, """ + \
+                b.binHighEdgeFromArray('IGRF40pos',binning) + """ as cut 
+            FROM """ + theTable + """
           JOIN AMS.timeInSecInData
           ON (AMS.timeInSecInData.JMDCTimeInSec = """ + theTable + """.JMDCTime)
           WHERE (

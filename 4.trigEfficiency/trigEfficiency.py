@@ -56,7 +56,7 @@ def main(binArray):
 
     variables='{} as binX, {},{},{},COUNT(1)'.format(b.binLowEdgeFromArray('Rfull', binArray),isPhysicsTrigger,isTof,isEcal)
 
-    theCommand="""SELECT binX, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalNoTof*1000 + nTofAll*100),100) AS trigEff, nTofAll, nEcalNoTof, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalAll*1000 + nTofNoEcal*100),100) AS trigEff2, nPhysics, nEcalAll, nTofNoEcal FROM (
+    theCommand="""SELECT binX, IF(nTofNoEcal + nEcalAll > 0,nPhysics/(nPhysics + nEcalNoTof*1000 + nTofAll*100),1) AS trigEff, nTofAll, nEcalNoTof, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalAll*1000 + nTofNoEcal*100),100) AS trigEff2, nPhysics, nEcalAll, nTofNoEcal FROM (
         SELECT binX,
                     SUM(IF(isPhysicsTrigger==True  && isEcal IS NULL       && isTof IS NULL,CAST(f0_ AS INTEGER),0)) AS nPhysics,
                     SUM(IF(isPhysicsTrigger==false && isEcal==True         && isTof IS NULL,CAST(f0_ AS INTEGER),0)) AS nEcalAll,
@@ -66,7 +66,6 @@ def main(binArray):
                 FROM (SELECT """ + variables  + """ FROM [""" + theTable + """] JOIN EACH AMS.cutoffs ON AMS.Data.UTime=AMS.cutoffs.JMDCTime WHERE """ + whereClause + """ GROUP BY ROLLUP (binX,isPhysicsTrigger, isEcal, isTof) HAVING """ + havingClause + """ ORDER BY binX) GROUP BY binX )"""
 
     df=pd.read_gbq( theCommand, project_id='ams-test-kostya')
-    print df
     return df
 
 

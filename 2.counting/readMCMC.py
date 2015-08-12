@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import struct
 
-plot=False
 
 def main(binningRgdtTheoretic):
     directory = "2.counting/mcmc/latestMCMC/"
@@ -27,7 +26,8 @@ def main(binningRgdtTheoretic):
     dataD.columns = bins[:-1]
 
     data.iloc[::1000].plot(legend=False)
-    
+
+    plot=False
     if plot:
         plt.subplot(121)
         dataP.boxplot();

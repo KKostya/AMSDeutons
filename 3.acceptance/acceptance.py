@@ -53,7 +53,7 @@ def main(binArray,preselectionMC,tableMC,plot=False):
     theQueryTotalNumberOfEvents="SELECT SUM(biggestEventsPerRun-smallestEventsPerRun) FROM (SELECT MAX(Event) as biggestEventsPerRun, MIN(Event) as smallestEventsPerRun, AMS.protonsB1034.Run as runNumber FROM AMS.protonsB1034 GROUP BY runNumber ORDER BY runNumber )"
     df=b.histCustomCommand(theQueryTotalNumberOfEvents)
     nTotal=df['f0_'][0]
-    print 'nTotal : {}'.format(nTotal)
+    #print 'nTotal : {}'.format(nTotal)
 
     # Number of MC events passing the preselection cut
 
