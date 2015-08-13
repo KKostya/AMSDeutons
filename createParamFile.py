@@ -80,12 +80,17 @@ mask.append("goldenTRACKER")
 mask.append("goldenTRD")
 mask.append("oneParticle")
 
-
 b.setTable(tableMC)
 trackSelectionMC=b.makeSelectionMask(mask)
 
 b.setTable(tableData)
 trackSelectionData=b.makeSelectionMask(mask)
+
+########################################################################################
+#
+# Write the JSON file: param.json
+#
+########################################################################################
 
 import json
 f=open('param.json','w')

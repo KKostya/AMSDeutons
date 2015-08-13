@@ -6,8 +6,9 @@ import bq
 from histQueryFactory import *
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 
-def main(params):
+def main(params, outFilename="2.counting/datasets/observed_data.txt"):
     ################################################################################
     ##
     ##  MAKING BQ CLEAR
@@ -68,15 +69,15 @@ def main(params):
     frame['GenBin'] = frame['GenBin'].map(lambda x: params['binningBetaTheoretic'][x] )
     frame = frame.set_index(list(frame.columns[:-1])).unstack()['Count'].fillna(0)
 
-    frame.T.to_csv("2.counting/datasets/B_resolution.csv")
+    frame.T.to_csv(os.path.dirname(outFilename)+"B_resolution.csv")
 
     ################################################################################
     ##
     ##  RIGIDITY MATRIX
     ##
     ################################################################################
-    vs =  ",\n".join([ build_case_string("R", "R_bin", binningRgdtMeasured),
-                                          build_case_string("GenMomentum", "Gen_bin", binningRgdtTheoretic),
+    vs =  ",\n".join([ build_case_string("R", "R_bin", params['binningRgdtMeasured']),
+                                          build_case_string("GenMomentum", "Gen_bin", params['binningRgdtTheoretic']),
                                           "COUNT(1) as count" ])
 
     h = "SELECT\n" + vs + """
@@ -93,7 +94,7 @@ def main(params):
     frame['Rbin'] = frame['Rbin'].map(lambda x: params['binningRgdtMeasured'][x] )
     frame['GenBin'] = frame['GenBin'].map(lambda x: params['binningRgdtTheoretic'][x] )
     frame = frame.set_index(list(frame.columns[:-1])).unstack()['Count'].fillna(0)
-    frame.T.to_csv("2.counting/datasets/R_resolution.csv")
+    frame.T.to_csv(os.path.dirname(outFilename)+"R_resolution.csv")
 
     ################################################################################
     ##
@@ -125,4 +126,4 @@ def main(params):
     frame = frame.set_index(list(frame.columns[:-1])).unstack()['Count'].fillna(0)
     frame = frame.T
 
-    np.savetxt("2.counting/datasets/observed_data.txt",frame.values)
+    np.savetxt(outFilename,frame.values)
