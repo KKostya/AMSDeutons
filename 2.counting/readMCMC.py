@@ -5,12 +5,13 @@ import numpy as np
 import struct
 
 
-def main(binningRgdtTheoretic):
+def main(params):
     directory = "2.counting/mcmc/latestMCMC/"
     files = sorted( glob.glob(directory + "par*.bin"), 
                     key=lambda x:int(x.split("/")[-1][3:].split('_')[0]))
 
-    bins = np.array(binningRgdtTheoretic)
+    print params['binningRgdtTheoretic']
+    bins = np.array(params['binningRgdtTheoretic'])
 
     data = {}
     for fname in files:

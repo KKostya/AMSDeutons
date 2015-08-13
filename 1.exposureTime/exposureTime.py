@@ -11,7 +11,9 @@ import sys
 #
 # @return: a pandas dataframe with a column 'binX' containing the bin low edge
 #          and a column 'expTime' giving the exposure time spent having Rcutoff >= binX
-def main(binning):
+def main(parameters):
+    binning=parameters['binningRgdtTheoretic']
+
     theTable="AMS.cutoffs"
     queryOption=str()
     globalOptions=str()
@@ -53,5 +55,5 @@ def main(binning):
 
 # for debugging only
 if __name__ == "__main__":
-    binning=range(0,20)
-    print main(binning)
+    import json
+    print main(json.load(open('param.json')))

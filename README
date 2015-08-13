@@ -8,7 +8,12 @@ USAGE:
 
    The above queries require to process the entire dataset and might be expensive in term of money (I am not so sure)
 
-2) python run.py
+2) Create the 'param.json' file containing all the parameters required (like binnings, cuts,...):
+   Run: python createParamFile.py
+
+3) Run the analysis
+   Run: python run.py
+
 
 
 

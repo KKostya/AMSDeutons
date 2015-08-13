@@ -26,20 +26,15 @@ import pandas as pd
 # @result: a pandas dataframe with a column 'binX' containing the bin low edge and a column
 #          'trigEff' containing the physical trigger efficiency for this bin
 
-def main(binArray):
+def main(params):
 
     masks=[]
-    masks.append("notFirstTwo")
-    masks.append("notInSaaCut")
-    masks.append("zenithCut")
-    masks.append("runtypeCut")
     #masks.append("oneTRDTrack")
     masks.append("goldenTRACKER")
     masks.append("oneTrack")
     masks.append("chargeOne")
     masks.append("downGoing")
     masks.append("betaNotCrazy")
-
 
     theTable="AMS.Data"
     b.setTable(theTable)
@@ -54,7 +49,7 @@ def main(binArray):
     isTof="(JMembPatt>>4)&1 as isTof"
     isEcal="(JMembPatt>>11)&1 as isEcal"
 
-    variables='{} as binX, {},{},{},COUNT(1)'.format(b.binLowEdgeFromArray('Rfull', binArray),isPhysicsTrigger,isTof,isEcal)
+    variables='{} as binX, {},{},{},COUNT(1)'.format(b.binLowEdgeFromArray('Rfull', params['binningRgdtTheoretic']),isPhysicsTrigger,isTof,isEcal)
 
     theCommand="""SELECT binX, IF(nTofNoEcal + nEcalAll > 0,nPhysics/(nPhysics + nEcalNoTof*1000 + nTofAll*100),1) AS trigEff, nTofAll, nEcalNoTof, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalAll*1000 + nTofNoEcal*100),100) AS trigEff2, nPhysics, nEcalAll, nTofNoEcal FROM (
         SELECT binX,
@@ -68,8 +63,6 @@ def main(binArray):
     df=pd.read_gbq( theCommand, project_id='ams-test-kostya')
     return df
 
-
-
 #for debugging only    
 if __name__ == "__main__":
-    main(range(1,20))
+    print main(range(1,20))

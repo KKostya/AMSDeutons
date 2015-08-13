@@ -31,8 +31,8 @@ import sys
 # @return: A pandas dataframe with a column 'AccEff' containing effective acceptance
 #          for the bin having low edge given by column 'binX'
 
-def main(binArray,preselectionMC,tableMC,plot=False):
-    b.setTable(tableMC)
+def main(params,plot=False):
+    b.setTable(params['tableMC'])
 
     # The MC Rig distrbution in uniform in log(R)
     # We know that on the range [Rmin,Rmax], nTotal events have been generated
@@ -42,7 +42,7 @@ def main(binArray,preselectionMC,tableMC,plot=False):
     # Since distribution is uniform in log(R) space, the number of event in bin [A,B] is
     # f * nTotal = (log(B)-log(A)) / (log(Rmax) - log(Rmin)) * nTotal
 
-    b.setTable(tableMC)
+    b.setTable(params['tableMC'])
 
     # The min and max rigidities used for the event generation
     Rmin=1
@@ -58,32 +58,32 @@ def main(binArray,preselectionMC,tableMC,plot=False):
     # Number of MC events passing the preselection cut
 
     nGenPerBin='CASE\n'
-    for i in range(len(binArray)-1):
+    for i in range(len(params['binningRgdtTheoretic'])-1):
         nGenPerBin+='    WHEN GenMomentum >= {} AND GenMomentum < {} THEN (log({}) - log({})) / (log({}) - log({})) * {}'.format(
-            binArray[i],
-            binArray[i+1],
-            binArray[i+1],
-            binArray[i],
+            params['binningRgdtTheoretic'][i],
+            params['binningRgdtTheoretic'][i+1],
+            params['binningRgdtTheoretic'][i+1],
+            params['binningRgdtTheoretic'][i],
             Rmax,Rmin,
             nTotal)
     nGenPerBin+='ELSE NULL END '
 
-    # nGenPerBin="(log({}) - log({})) / (log({}) - log({})) * {}".format(b.binHighEdgeFromArray("GenMomentum",binArray), 
-    #                                                                    b.binLowEdgeFromArray("GenMomentum",binArray),
+    # nGenPerBin="(log({}) - log({})) / (log({}) - log({})) * {}".format(b.binHighEdgeFromArray("GenMomentum",params['binningRgdtTheoretic']), 
+    #                                                                    b.binLowEdgeFromArray("GenMomentum",params['binningRgdtTheoretic']),
     #                                                                    Rmax,Rmin,
     #                                                                    nTotal)
 
     # theQueryNumberPreselected="bq --format json query ' \
     #  SELECT SUM(nGenPerBin) FROM(SELECT binX, nPreselPerBin, nGenPerBin, nPreselPerBin/nGenPerBin*3.9*3.9*PI() FROM (\
-    #       SELECT "+b.binLowEdgeFromArray("GenMomentum",binArray) +"as binX, \
+    #       SELECT "+b.binLowEdgeFromArray("GenMomentum",params['binningRgdtTheoretic']) +"as binX, \
     #       COUNT(*) as nPreselPerBin, "+ nGenPerBin + " as nGenPerBin \
     #       FROM AMS.protonsB1034 WHERE " + cut3TOFLayers + \
     #       "GROUP BY binX, nGenPerBin  HAVING binX >= 0 ORDER BY binX, nGenPerBin))'"
 
     theQueryNumberPreselected="SELECT binX, nPreselPerBin, nGenPerBin, nPreselPerBin/nGenPerBin*3.9*3.9*PI() AS AccEff FROM (\
-          SELECT "+b.binLowEdgeFromArray("GenMomentum",binArray) +"as binX, \
+          SELECT "+b.binLowEdgeFromArray("GenMomentum",params['binningRgdtTheoretic']) +"as binX, \
           COUNT(*) as nPreselPerBin, "+ nGenPerBin + " as nGenPerBin \
-          FROM AMS.protonsB1034 WHERE " + preselectionMC + \
+          FROM AMS.protonsB1034 WHERE " + params['preselectionMC'] + \
           "GROUP BY binX, nGenPerBin  HAVING binX >= 0 ORDER BY binX, nGenPerBin)"
 
     df=b.histCustomCommand(theQueryNumberPreselected)
@@ -96,13 +96,8 @@ def main(binArray,preselectionMC,tableMC,plot=False):
 
     return df
 
-
 # for debugging only
 if __name__ == "__main__":
-    binning =[1.08287816,   1.28085109,   1.51314916,   1.79713963,   2.16483296,   2.56061,
-       3.02500807,   3.59274685,   4.32781998,   5.11903658,   6.04743672,
-       7.18243018,   8.65194964,  10.23370818,  12.08971682,  14.35873592,
-       17.2965218,   20.45869011,  24.16912477,  28.7052282 ]
-    preselectionMC="((selStatus^262144)&262144)==0  AND  ( (EdepTOF_0>0.3)+(EdepTOF_1>0.3)+(EdepTOF_2>0.3)+(EdepTOF_3>0.3) >= 3)"
-    print main(binning,preselectionMC,"AMS.protonsB1034",plot=True)
+    import json
+    print main(json.load(open('param.json')),plot=True)
 
