@@ -144,7 +144,8 @@ TSpline3 * CorrRICH      = new TSpline3("",R_rich,Corr_rich,25);
 ///////////////////////////////////////////////////////
 
 // Utility functions
-double Sum(const std::vector<double> & v) 
+template<typename T>
+T Sum(const std::vector<T> & v) 
 { return std::accumulate(v.begin(),v.end(),0); }
 
 double weightedDiff(double xTrue, double xMeasured, double sigma)
@@ -174,8 +175,8 @@ public:
         etofMeasured = Sum(EdepTOF(ev))/4; // The average over 4 TOF planes
         etrdMeasured = EdepTRD(ev) / NTRDclusters(ev);
 
-        std::vector<double> eTrackX = EDepLayerX(ev); eTrackX[0] = 0; eTrackX[8] = 0;
-        std::vector<double> eTrackY = EDepLayerY(ev); eTrackY[0] = 0; eTrackY[8] = 0;
+        std::vector<float> eTrackX = EDepLayerX(ev); eTrackX[0] = 0; eTrackX[8] = 0;
+        std::vector<float> eTrackY = EDepLayerY(ev); eTrackY[0] = 0; eTrackY[8] = 0;
 
         etrkMeasured = (Sum(eTrackX) + Sum(eTrackY))/14;
     }

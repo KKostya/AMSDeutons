@@ -13,4 +13,11 @@ int NTofClustersUsed(AMSEventR * ev);
 std::vector<double> EdepTOF(AMSEventR * ev);
 double BetaTOF(AMSEventR * ev);
 double ChargeTOF(AMSEventR * ev);
+
+
+std::vector<double> TOFCoordsX(AMSEventR * ev);
+std::vector<double> TOFCoordsY(AMSEventR * ev);
+std::vector<double> TOFCoordsZ(AMSEventR * ev);
+
+
 #endif //TOF_H

@@ -6,7 +6,7 @@ int NTrackHits(AMSEventR * ev){ return ev->pTrTrack(0)?ev->pTrTrack(0)->NTrRecHi
 //  Various fits and chi2
 //////////////////////////////
 
-double getRigidity(AMSEventR *ev, int i, int j, int k)
+float getRigidity(AMSEventR *ev, int i, int j, int k)
 {
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return 0;
@@ -14,12 +14,12 @@ double getRigidity(AMSEventR *ev, int i, int j, int k)
     if(!track->ParExists(fitID)) return 0;
     return track->GetRigidity(fitID);
 }
-double RUp  (AMSEventR * ev) { return getRigidity(ev,1,1,1); }
-double RDown(AMSEventR * ev) { return getRigidity(ev,1,2,1); }
-double R    (AMSEventR * ev) { return getRigidity(ev,1,3,1); }
-double RL1  (AMSEventR * ev) { return getRigidity(ev,1,5,1); }
+float RUp  (AMSEventR * ev) { return getRigidity(ev,1,1,1); }
+float RDown(AMSEventR * ev) { return getRigidity(ev,1,2,1); }
+float R    (AMSEventR * ev) { return getRigidity(ev,1,3,1); }
+float RL1  (AMSEventR * ev) { return getRigidity(ev,1,5,1); }
 
-double getChisquare(AMSEventR * ev, int i, int j, int k)
+float getChisquare(AMSEventR * ev, int i, int j, int k)
 { 
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return 0;
@@ -27,19 +27,19 @@ double getChisquare(AMSEventR * ev, int i, int j, int k)
     if(!track->ParExists(fitID)) return 0;
     return track->GetChisq(fitID);
 }
-double ChiQUp  (AMSEventR * ev) { return getChisquare(ev,1,1,1); }
-double ChiQDown(AMSEventR * ev) { return getChisquare(ev,1,2,1); }
-double ChiQ    (AMSEventR * ev) { return getChisquare(ev,1,3,1); }
-double ChiQL1  (AMSEventR * ev) { return getChisquare(ev,1,5,1); }
+float ChiQUp  (AMSEventR * ev) { return getChisquare(ev,1,1,1); }
+float ChiQDown(AMSEventR * ev) { return getChisquare(ev,1,2,1); }
+float ChiQ    (AMSEventR * ev) { return getChisquare(ev,1,3,1); }
+float ChiQL1  (AMSEventR * ev) { return getChisquare(ev,1,5,1); }
 
 //////////////////////////////////////////
 // Total energy deposited in each layer //
 //////////////////////////////////////////
 
 template<int SIDE>
-std::vector<double> edepLayer(AMSEventR * ev)
+std::vector<float> edepLayer(AMSEventR * ev)
 {
-    std::vector<double> ret(9, 0);
+    std::vector<float> ret(9, 0);
     for (int i = 0; i < ev->NTrCluster(); i++) 
     {
         TrClusterR* cluster = ev->pTrCluster(i);
@@ -50,17 +50,17 @@ std::vector<double> edepLayer(AMSEventR * ev)
     return ret;
 }
 
-std::vector<double> EDepLayerX(AMSEventR * ev) { return edepLayer<0>(ev); }
-std::vector<double> EDepLayerY(AMSEventR * ev) { return edepLayer<1>(ev); }
+std::vector<float> EDepLayerX(AMSEventR * ev) { return edepLayer<0>(ev); }
+std::vector<float> EDepLayerY(AMSEventR * ev) { return edepLayer<1>(ev); }
 
 //////////////////////////////////////////
 //  Energy deposited along the track    //
 //////////////////////////////////////////
 
 template<int SIDE>
-std::vector<double> edepTrack(AMSEventR * ev)
+std::vector<float> edepTrack(AMSEventR * ev)
 {
-    std::vector<double> ret(9, 0);
+    std::vector<float> ret(9, 0);
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return ret;
     for (int i = 0; i < track->GetNhits(); i++) 
@@ -76,23 +76,64 @@ std::vector<double> edepTrack(AMSEventR * ev)
     return ret;
 }
 
-std::vector<double> EDepTrackX(AMSEventR * ev) { return edepTrack<0>(ev); }
-std::vector<double> EDepTrackY(AMSEventR * ev) { return edepTrack<1>(ev); }
+std::vector<float> EDepTrackX(AMSEventR * ev) { return edepTrack<0>(ev); }
+std::vector<float> EDepTrackY(AMSEventR * ev) { return edepTrack<1>(ev); }
+
+/////////////////////////
+//  Charge estimators  //
+/////////////////////////
+
+std::vector<float> LayerJQ(AMSEventR * ev)
+{
+    std::vector<float> ret(9, 0);
+    TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return ret;
+    for (int j = 0; j < 9; j++) 
+        ret[j] = track->GetLayerJQ(j+1);
+    return ret; 
+}
+
+float Q_all(AMSEventR * ev)
+{
+    TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return 0;
+    return track->GetQ_all().Mean;
+}
+
+float InnerQ_all(AMSEventR * ev)
+{
+    TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return 0;
+    return track->GetInnerQ_all().Mean;
+}
 
 ///////////////////////////////
 //  Hit coordinates 1 and 2  //
 ///////////////////////////////
+template <int J, int N>
+float coordHit(AMSEventR * ev)
+{
+    TrTrackR * track = ev->pTrTrack(0);
+    if(!track) return 0;
+    return track->GetHitCooLJ(J)[N];
+}
 
 
+float L1_Hit_X(AMSEventR * ev) { return coordHit<1,0>(ev); }
+float L1_Hit_Y(AMSEventR * ev) { return coordHit<1,1>(ev); }
+float L1_Hit_Z(AMSEventR * ev) { return coordHit<1,2>(ev); }
+float L2_Hit_X(AMSEventR * ev) { return coordHit<2,0>(ev); }
+float L2_Hit_Y(AMSEventR * ev) { return coordHit<2,1>(ev); }
+float L2_Hit_Z(AMSEventR * ev) { return coordHit<2,2>(ev); }
 
 ///////////////////
 //  Residuals    //
 ///////////////////
 
 template <int SIDE, int FID>
-std::vector<double> Residual(AMSEventR * ev)
+std::vector<float> Residual(AMSEventR * ev)
 {
-    std::vector<double> ret(9, -999999);
+    std::vector<float> ret(9, -999999);
     TrTrackR * track = ev->pTrTrack(0);
     if(!track) return ret;
     int fitID = track->iTrTrackPar(1,FID,1);
@@ -111,14 +152,14 @@ std::vector<double> Residual(AMSEventR * ev)
     return ret;
 }
 
-std::vector<double> ResidualX    (AMSEventR * ev) { return Residual<0,3>(ev); }
-std::vector<double> ResidualY    (AMSEventR * ev) { return Residual<1,3>(ev); }
-std::vector<double> ResidualUpX  (AMSEventR * ev) { return Residual<0,1>(ev); }
-std::vector<double> ResidualUpY  (AMSEventR * ev) { return Residual<1,1>(ev); }
-std::vector<double> ResidualDownX(AMSEventR * ev) { return Residual<0,2>(ev); }
-std::vector<double> ResidualDownY(AMSEventR * ev) { return Residual<1,2>(ev); }
-std::vector<double> ResidualL1X(AMSEventR * ev)   { return Residual<0,5>(ev); }
-std::vector<double> ResidualL1Y(AMSEventR * ev)   { return Residual<1,5>(ev); }
+std::vector<float> ResidualX    (AMSEventR * ev) { return Residual<0,3>(ev); }
+std::vector<float> ResidualY    (AMSEventR * ev) { return Residual<1,3>(ev); }
+std::vector<float> ResidualUpX  (AMSEventR * ev) { return Residual<0,1>(ev); }
+std::vector<float> ResidualUpY  (AMSEventR * ev) { return Residual<1,1>(ev); }
+std::vector<float> ResidualDownX(AMSEventR * ev) { return Residual<0,2>(ev); }
+std::vector<float> ResidualDownY(AMSEventR * ev) { return Residual<1,2>(ev); }
+std::vector<float> ResidualL1X(AMSEventR * ev)   { return Residual<0,5>(ev); }
+std::vector<float> ResidualL1Y(AMSEventR * ev)   { return Residual<1,5>(ev); }
 
 //////////////////////////////////////////
 // unused layers //
