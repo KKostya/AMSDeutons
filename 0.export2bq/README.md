@@ -1,8 +1,3 @@
-    git clone https://github.com/KKostya/AMSDeutons.git
-
-    cd AMSDeutons
-    git checkout production
-
     source amsvar.sh.lxplus
     make ntupleData
 

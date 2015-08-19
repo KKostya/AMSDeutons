@@ -1,9 +1,19 @@
-    git clone https://github.com/KKostya/AMSDeutons.git
+DEPENDANCE:
+_The bigQuery project: git@github.com:wizmer/bigQuery.git. Add it to your PYTHONPATH
 
-    cd AMSDeutons
-    git checkout production
+USAGE:
+1) If the tables 'AMS.cutoffs' and 'AMS.timeInSecInData' need to be recreated, delete them (this can be done at: https://bigquery.cloud.google.com/queries/ams-test-kostya) and then run:
+      ./tableManagement/createCutoffTable.sh 
+      ./tableManagement/createTimeInSecInDataTable.sh
 
-    source amsvar.sh.lxplus
-    make ntupleData
+   The above queries require to process the entire dataset and might be expensive in term of money (I am not so sure)
 
-    ./ntupleData -n 10000 -o test.root ~/eos/ams/Data/AMS02/2014/ISS.B800/pass5/1388159992.00000001.root
+2) Create the 'param.json' file containing all the parameters required (like binnings, cuts,...):
+   Run: python createParamFile.py
+
+3) Run the analysis
+   Run: python run.py
+
+
+
+
