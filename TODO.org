@@ -1,0 +1,10 @@
+* Adding a cut in preselection
+** Linearly extrapolated trajectory of the TOF hit positions passing both tracker layer 1 and 9
+But we need TOF cluster location in the data for that
+
+* Checking the new NTuple variables
+** Investigating Francesco's sigma distribution of TOF edep
+Francesco has produced sigma distribution of TOF Edep with MC but when plotted on our data the sigmas don't match
+** Francesco distance variables: why are there some peaks
+
+* Compare beta and rigidity resolution matrices obtain from proton MC and deuton MC
