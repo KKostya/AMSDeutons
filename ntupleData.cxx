@@ -23,10 +23,12 @@
 #include "Data/Tracker.h"
 #include "Data/Ecal.h"
 #include "Data/SelectionStatus.h"
+#include "Data/3DVariables.h"
 #include "utils/rootUtils.hpp"
 
 
 extern const char *gitversion;
+
 
 void registerSrcFilesInRootuple(){
     std::vector <std::string > files = rootUtils::getFilesInDir(".");
@@ -58,9 +60,14 @@ int main(int argc, char * argv[])
     std::string outFname;
     std::string  inFname;
 
+   if (argc==1) std::cout
+	<< "Example:  ./ntupleData -o test.root -n 10000 $EOSPATH/ams/Data/AMS02/2014/ISS.B900/std/1439205227.00000001.root"
+	<< std::endl;
+
+
     while((c = getopt(argc, argv, "o:n:")) != -1) {
         if(c == 'o') outFname = std::string(optarg);
-        if(c == 'n') entries = atoi(optarg);
+        else if(c == 'n') entries = atoi(optarg);
     }
     if(outFname.empty()) outFname = std::string("ntuple.root");
     if (optind < argc) inFname = std::string(argv[optind++]); else return 1;
@@ -71,6 +78,13 @@ int main(int argc, char * argv[])
     // Opening input file
     AMSChain  * ch = new AMSChain;
     ch->Add(inFname.c_str());
+
+    // Initializing RTI
+    AMSSetupR::RTI rti;rti.UseLatest(6);
+    TkDBc::UseFinal();
+    TRMCFFKEY_DEF::ReadFromFile = 0;
+    TRFITFFKEY_DEF::ReadFromFile = 0;
+    TRFITFFKEY.magtemp = 0;
 
     // Checking if MC
     ch->GetEvent(0);
@@ -92,6 +106,7 @@ int main(int argc, char * argv[])
     AddTRDVariables       (data, outTree);
     AddTOFVariables       (data, outTree);
     AddTrackerVariables   (data, outTree);
+    Add3DVariables        (data, outTree);
     
     if(isMC)
     {
@@ -110,6 +125,10 @@ int main(int argc, char * argv[])
         bool eventPasses = true;
         AMSEventR * ev = ch->GetEvent();
         if(!ev) continue;
+    
+        //That calculates Francesco's 3D variables
+        CalculateDistances(ev);
+
         // Fill the TTree 
         for(int idat=0; idat<data.size(); idat++) data[idat](ev);
         outTree->Fill();
