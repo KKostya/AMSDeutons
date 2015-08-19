@@ -32,14 +32,26 @@ bool downGoing(AMSEventR *ev)
 { 
     if(!ev->pParticle(0)) return false;
     if(!ev->pParticle(0)->pBetaH()) return false;
+<<<<<<< HEAD:0.export2bq/Selections/Preselect.cxx
     return ev->pParticle(0)->pBetaH()->Beta > 0;
+=======
+    return ev->pParticle(0)->pBetaH()->GetBeta() > 0;
+>>>>>>> production:Selections/Preselect.cxx
 }
 
 bool betaNotCrazy(AMSEventR *ev) 
 { 
     if(!ev->pParticle(0)) return false;
-    if(!ev->pParticle(0)->pBeta()) return false;
-    return ev->pParticle(0)->pBeta()->Beta < 8;
+    if(!ev->pParticle(0)->pBetaH()) return false;
+    return ev->pParticle(0)->pBetaH()->GetBeta() < 8;
+}
+
+// Ensure at least one physics trigger
+bool physicsTrigger(AMSEventR *ev)
+{
+    Level1R* level1 = ev->pLevel1(0);
+    if( level1 == NULL ) return false;
+    return ((level1->PhysBPatt >> 1)&0b11111);
 }
 
 // Ensure at least one physics trigger

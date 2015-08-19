@@ -4,7 +4,7 @@ CFLAGS= -g
 
 all: data.a
 
-data.a: Geo.o Provenance.o Tracker.o Ecal.o RootWriter.o TRD.o TOF.o SelectionStatus.o MC.o RICH.o
+data.a: Geo.o Provenance.o Tracker.o Ecal.o RootWriter.o TRD.o TOF.o SelectionStatus.o MC.o RICH.o 3DVariables.o
 	ar rvs $@ $?
 
 Geo.o: Geo.cxx  Geo.h

@@ -89,18 +89,48 @@ void AddSelectionVariables(ROOTDataList & data, TTree * tree)
 void AddTrackerVariables(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<int                , NTrackHits    >("NTrackHits"   , tree));
-    data.push_back(Wrap<double             , Rfull         >("Rfull"        , tree));
-    data.push_back(Wrap<double             , Rup           >("Rup"          , tree));
-    data.push_back(Wrap<double             , Rdown         >("Rdown"        , tree));
-    data.push_back(Wrap<double             , R             >("R"            , tree));
-    data.push_back(Wrap<double             , Chisquare     >("Chisquare"    , tree));
-    data.push_back(Wrap<std::vector<double>, R_            >("R_"           , tree));
-    data.push_back(Wrap<std::vector<double>, chiq          >("chiq"         , tree));
-    data.push_back(Wrap<std::vector<double>, ResiduiX      >("ResiduiX"     , tree));
-    data.push_back(Wrap<std::vector<double>, ResiduiY      >("ResiduiY"     , tree));
-    data.push_back(Wrap<std::vector<double>, ChargeTracker >("ChargeTracker", tree));
+
+    data.push_back(Wrap<float             , RL1           >("RL1"          , tree));
+    data.push_back(Wrap<float             , RUp           >("RUp"          , tree));
+    data.push_back(Wrap<float             , RDown         >("RDown"        , tree));
+    data.push_back(Wrap<float             , R             >("R"            , tree));
+
+    data.push_back(Wrap<float             , ChiQL1        >("ChiQL1"       , tree));
+    data.push_back(Wrap<float             , ChiQUp        >("ChiQUp"       , tree));
+    data.push_back(Wrap<float             , ChiQDown      >("ChiQDown"     , tree));
+    data.push_back(Wrap<float             , ChiQ          >("ChiQ"         , tree));
+
+    data.push_back(Wrap<std::vector<float>, EDepLayerX    >("EDepLayerX"   , tree));
+    data.push_back(Wrap<std::vector<float>, EDepLayerY    >("EDepLayerY"   , tree));
+    data.push_back(Wrap<std::vector<float>, EDepTrackX    >("EDepTrackX"   , tree));
+    data.push_back(Wrap<std::vector<float>, EDepTrackY    >("EDepTrackY"   , tree));
+
+    data.push_back(Wrap<float             , L1_Hit_X      >("L1_Hit_X"     , tree));
+    data.push_back(Wrap<float             , L1_Hit_Y      >("L1_Hit_Y"     , tree));
+    data.push_back(Wrap<float             , L1_Hit_Z      >("L1_Hit_Z"     , tree));
+    data.push_back(Wrap<float             , L2_Hit_X      >("L2_Hit_X"     , tree));
+    data.push_back(Wrap<float             , L2_Hit_Y      >("L2_Hit_Y"     , tree));
+    data.push_back(Wrap<float             , L2_Hit_Z      >("L2_Hit_Z"     , tree));
+
+    data.push_back(Wrap<std::vector<float>, LayerJQ       >("LayerJQ"      , tree));
+    data.push_back(Wrap<float             , Q_all         >("Q_all"        , tree));
+    data.push_back(Wrap<float             , InnerQ_all    >("InnerQ_all"   , tree));
+
+    data.push_back(Wrap<std::vector<float>, ResidualX     >("ResidualX"    , tree));
+    data.push_back(Wrap<std::vector<float>, ResidualY     >("ResidualY"    , tree));
+    data.push_back(Wrap<std::vector<float>, ResidualUpX   >("ResidualUpX"  , tree));
+    data.push_back(Wrap<std::vector<float>, ResidualUpY   >("ResidualUpY"  , tree));
+    data.push_back(Wrap<std::vector<float>, ResidualDownX >("ResidualDownX", tree));
+    data.push_back(Wrap<std::vector<float>, ResidualDownY >("ResidualDownY", tree));
+    data.push_back(Wrap<std::vector<float>, ResidualL1X   >("ResidualL1X"  , tree));
+    data.push_back(Wrap<std::vector<float>, ResidualL1Y   >("ResidualL1Y"  , tree));
+
     data.push_back(Wrap<int                , unusedLayers  >("unusedLayers" , tree));
-    data.push_back(Wrap<double             , EdepTrack     >("EdepTrack"    , tree));
+
+    data.push_back(Wrap<int                , LayerBits     >("LayerBits"    , tree));
+    data.push_back(Wrap<int                , LayerBitsUp   >("LayerBitsUp"  , tree));
+    data.push_back(Wrap<int                , LayerBitsDown >("LayerBitsDown", tree));
+    data.push_back(Wrap<int                , LayerBitsL1   >("LayerBitsL1"  , tree));
 }
 
 void AddTRDVariables(ROOTDataList & data, TTree * tree)
@@ -115,13 +145,18 @@ void AddTOFVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<int                , NTofClusters    >("NTofClusters"    , tree));    
     data.push_back(Wrap<int                , NTofClustersUsed>("NTofClustersUsed", tree));
     data.push_back(Wrap<std::vector<double>, EdepTOF         >("EdepTOF"         , tree));
+    data.push_back(Wrap<std::vector<double>, TOFCoordsX      >("TOFCoordsX"      , tree));
+    data.push_back(Wrap<std::vector<double>, TOFCoordsY      >("TOFCoordsY"      , tree));
+    data.push_back(Wrap<std::vector<double>, TOFCoordsZ      >("TOFCoordsZ"      , tree));
     data.push_back(Wrap<double             , BetaTOF         >("BetaTOF"         , tree));
-    data.push_back(Wrap<double             , ChargeTOF       >("ChargeTOF"         , tree));
+    data.push_back(Wrap<double             , ChargeTOF       >("ChargeTOF"       , tree));
 }
 
 void AddECALVariable(ROOTDataList & data, TTree * tree)
 {
     data.push_back(Wrap<double             , EnergyE         >("EnergyE"         , tree));
+    data.push_back(Wrap<double             , dedxECAL        >("dedxECAL"        , tree));
+    data.push_back(Wrap<int                , nlayMip         >("nlayMip"         , tree));
 }
 
 void AddMCVariables(ROOTDataList & data, TTree * tree)
@@ -130,6 +165,24 @@ void AddMCVariables(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap< int               , GenParID    >("GenParID",    tree ));
     data.push_back(Wrap< std::vector<float>, GenCoo      >("GenCoo",      tree ));
     data.push_back(Wrap< std::vector<float>, GenDir      >("GenDir",      tree ));
+}
+
+
+void Add3DVariables(ROOTDataList & data, TTree * tree)
+{
+    data.push_back(Wrap<double, DistanceTOF_P      >("DistanceTOF_P"      , tree));
+    data.push_back(Wrap<double, DistanceTRD_P      >("DistanceTRD_P"      , tree));
+    data.push_back(Wrap<double, DistanceTracker_P  >("DistanceTracker_P"  , tree));
+    data.push_back(Wrap<double, MLRigidityTOF_P    >("MLRigidityTOF_P"    , tree));
+    data.push_back(Wrap<double, MLRigidityTRD_P    >("MLRigidityTRD_P"    , tree));
+    data.push_back(Wrap<double, MLRigidityTracker_P>("MLRigidityTracker_P", tree));
+
+    data.push_back(Wrap<double, DistanceTOF_D      >("DistanceTOF_D"      , tree));
+    data.push_back(Wrap<double, DistanceTRD_D      >("DistanceTRD_D"      , tree));
+    data.push_back(Wrap<double, DistanceTracker_D  >("DistanceTracker_D"  , tree));
+    data.push_back(Wrap<double, MLRigidityTOF_D    >("MLRigidityTOF_D"    , tree));
+    data.push_back(Wrap<double, MLRigidityTRD_D    >("MLRigidityTRD_D"    , tree));
+    data.push_back(Wrap<double, MLRigidityTracker_D>("MLRigidityTracker_D", tree));
 }
 
 
