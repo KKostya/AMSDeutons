@@ -22,19 +22,16 @@ cd $UUID
 echo reading eosdir
 /afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select -b fuse mount ${eosRoot}
 
-${executable} ${ROOTUPLES}
-code=0
+cp ${executable} main
+ls -lrt
 
-if [[ "$isWorkFolder" == "1" ]]; then
-    if [[ "" != "" ]]; then
-        
-        code=${code} || $?
-    fi
-fi
+for inputFile in ${ROOTUPLES[@]}; do
+    filename=`basename "$inputFile"`
+    filenameNoExt="${filename%.*}"
+    cp $inputFile . 
+    ./main $filename -b -o ntupleData_"${filenameNoExt}".root
+    rm -f $filename
+done
+cp -R *.root ${eosRoot}/ams/user/${initial}/${USER}/NTupleData/${jobName}
 
-if [[ "$isEosFolder" == "1" ]]; then
-    if [[ "cp -R *.root ${eosRoot}/ams/user/${initial}/${USER}/NTupleData/${jobName}" != "" ]]; then
-        cp -R *.root ${eosRoot}/ams/user/${initial}/${USER}/NTupleData/${jobName}
-    fi
-fi
 

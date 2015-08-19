@@ -168,7 +168,7 @@ class DistanceMinimizer
     TSpline3 * CorrRICH;
 
     // the singleton
-    DistanceMinimizer* gDistanceMinimizer;
+    static DistanceMinimizer* gDistanceMinimizer;
 
     DistanceMinimizer() : rgdtMeasured(0), 
                           betaMeasured(0),
@@ -196,7 +196,7 @@ class DistanceMinimizer
     }
 
 public:
-    DistanceMinimizer* getDistanceMinimizer(AMSEventR * ev){
+    static DistanceMinimizer* getDistanceMinimizer(AMSEventR * ev){
         if( gDistanceMinimizer == NULL ) gDistanceMinimizer = new DistanceMinimizer();
         
         gDistanceMinimizer -> reset(ev);
@@ -262,6 +262,9 @@ public:
     }
 };
 
+// Initialization of the singleton
+DistanceMinimizer* DistanceMinimizer::gDistanceMinimizer = NULL;
+
 
 //////////////////////// Theoretic curves /////////////////////////////
 TF1 * protons = new TF1("f1","((x)^2/0.938^2/(1 + (x)^2/0.938^2))^0.5",0.1,100);
@@ -277,7 +280,7 @@ DistanceData protonDists, deutonDists;
 //That claculates distances and populates the globals
 void CalculateDistances(AMSEventR * ev)
 {
-    DistanceMinimizer* minimizer = getDistanceMinimizer(ev);
+    DistanceMinimizer* minimizer = DistanceMinimizer::getDistanceMinimizer(ev);
     protonDists = minimizer -> FindMinimum(protons);
     deutonDists = minimizer -> FindMinimum(deutons);
 }

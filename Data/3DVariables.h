@@ -1,6 +1,6 @@
 
 
-//That claculates distances and populates the globals
+//that claculates distances and populates the globals
 void CalculateDistances(AMSEventR * ev);
 
 double DistanceTOF_P      (AMSEventR * ev); 
