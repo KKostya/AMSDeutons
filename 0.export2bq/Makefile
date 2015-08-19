@@ -34,7 +34,7 @@ SelectionsTable.o: SelectionsTable.cxx
 %.o : %.cxx
 	g++ $(CFLAGS) -o $@ -c $< $(ROOTINC) $(AMSINC)
 
-gitversion.c: .git/HEAD .git/index
+gitversion.c: ../.git/HEAD ../.git/index
 	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
 
 clean:
