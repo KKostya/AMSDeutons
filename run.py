@@ -32,10 +32,10 @@ funct=[exposureTime.main,
 dfs=map(lambda f: f(param), funct)
 
 # Saving intermediate DataFrames
-map(lambda df,f: df.to_csv(inspect.getmodule(f).__name__+'.pd')  , dfs, funct)
+map(lambda df,f: df.to_csv('6.output/'+inspect.getmodule(f).__name__+'.pd')  , dfs, funct)
 
 # Reading them back lol
-dfs=map(lambda f: pd.read_csv(inspect.getmodule(f).__name__+'.pd')  , funct)
+dfs=map(lambda f: pd.read_csv('6.output/'+inspect.getmodule(f).__name__+'.pd')  , funct)
 
 # Merging them altogether
 df=reduce(lambda left, right: left.merge(right,on='binX',how='inner'), dfs)
@@ -50,6 +50,6 @@ df['fluxD'] = df['countD'] / (df['AccEff'] * df['expTime'] * df['trigEff'] * df[
 # Adding a binCenter column (centered in a logarithmic way)
 df['binCenter'] = (df['binX']*(df['binX']+df['deltaR'])).apply(np.sqrt)
 
-df.to_csv('flux.pd')
+df.to_csv('6.output/flux.pd')
 
 print 'Done !'

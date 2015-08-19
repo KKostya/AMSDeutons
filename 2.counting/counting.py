@@ -22,13 +22,11 @@ import pandas as pd
 # @return: A pandas dataframe with columns 'countP' and 'countD' containing the number of counts
 #          for the bin having low edge given by column 'binX'
 
-redoMCMC=False
-redoMatrices=False
 
 def main(params):
 
-    if redoMCMC:
-        if redoMatrices: produceMatrices.main(params)
+    if params['redoMCMC']:
+        if params['redoMatrices']: produceMatrices.main(params)
         os.system("cd 2.counting/mcmc; rm -rf latestMCMC; make -B; ./mcmc -f latestMCMC -n 1000000")
         
     fluxP,fluxD=readMCMC.main(params)

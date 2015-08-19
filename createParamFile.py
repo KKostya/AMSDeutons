@@ -103,7 +103,9 @@ l={'binningBetaTheoretic':binningBetaTheoretic.tolist(),
    'trackSelectionMC':trackSelectionMC,
    'trackSelectionData':trackSelectionData,
    'tableMC':tableMC,
-   'tableData':tableData
+   'tableData':tableData,
+   'redoMCMC':False,
+   'redoMatrices':False
 }
 
 #map(lambda obj: json.dump(obj,f), l)
