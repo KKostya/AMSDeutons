@@ -123,25 +123,6 @@ double CorrTRD[30] = {
     1.34156,1.34009,1.33849,1.33596,1.33436,1.32501,1.29415,1.2545,1.22218,1.20732,
 };
 
-////////////// Defining splines  //////////////////
-TSpline3 * sigma_rgdt  = new TSpline3("Cubic Spline", valorecent, sigmaRinv,      23);
-TSpline3 * sigma_beta  = new TSpline3("Cubic Spline", betacent,   sigmabetainv,   30);
-TSpline3 * sigma_etof  = new TSpline3("Cubic Spline", Beta_cent,  sigmaEtofinv,   30);
-TSpline3 * sigma_etrk  = new TSpline3("Cubic Spline", Beta_cent,  sigmaEtrackinv, 30);
-TSpline3 * sigma_etrd  = new TSpline3("Cubic Spline", Beta_cent,  sigmaETRDinv,   30);
-
-
-TSpline3 * EdepTOFbeta   = new TSpline3("Cubic Spline",Beta_cent,ETOF,30);
-TSpline3 * EdepTrackbeta = new TSpline3("Cubic Spline",Beta_cent,ETrack,30);
-TSpline3 * EdepTRDbeta   = new TSpline3("Cubic Spline",Beta_cent,ETRD,30);
-
-TSpline3 * Corr_TOF      = new TSpline3("Cubic Spline",Beta_cent,CorrTOF,30);
-TSpline3 * Corr_Track    = new TSpline3("Cubic Spline",Beta_cent,CorrTrack,30);
-TSpline3 * Corr_TRD      = new TSpline3("Cubic Spline",Beta_cent,CorrTRD,30);
-
-TSpline3 * Rgenmis       = new TSpline3("",R_mis,R_gen,34);
-TSpline3 * CorrRICH      = new TSpline3("",R_rich,Corr_rich,25);
-///////////////////////////////////////////////////////
 
 // Utility functions
 template<typename T>
@@ -158,7 +139,7 @@ struct DistanceData {
     double  rMinTOF,  rMinTRD,  rMinTrack;
 };
 
-// This class does all the work -- it reads the measured data 
+// This singleton class does all the work -- it reads the measured data 
 // in the constructor. And then finds minimal "distance" by scanning
 // true rigidity variable.
 class DistanceMinimizer
@@ -168,8 +149,61 @@ class DistanceMinimizer
     double etofMeasured; 
     double etrdMeasured; 
     double etrkMeasured; 
+
+    TSpline3 * sigma_rgdt;
+    TSpline3 * sigma_beta;
+    TSpline3 * sigma_etof;
+    TSpline3 * sigma_etrk;
+    TSpline3 * sigma_etrd;
+
+    TSpline3 * EdepTOFbeta;
+    TSpline3 * EdepTrackbeta;
+    TSpline3 * EdepTRDbeta;
+
+    TSpline3 * Corr_TOF;
+    TSpline3 * Corr_Track;
+    TSpline3 * Corr_TRD;
+
+    TSpline3 * Rgenmis;
+    TSpline3 * CorrRICH;
+
+    // the singleton
+    DistanceMinimizer* gDistanceMinimizer;
+
+    DistanceMinimizer() : rgdtMeasured(0), 
+                          betaMeasured(0),
+                          etofMeasured(0),
+                          etrdMeasured(0),
+                          etrkMeasured(0)
+    {
+        ////////////// Defining splines  //////////////////
+        sigma_rgdt  = new TSpline3("Cubic Spline", valorecent, sigmaRinv,      23);
+        sigma_beta  = new TSpline3("Cubic Spline", betacent,   sigmabetainv,   30);
+        sigma_etof  = new TSpline3("Cubic Spline", Beta_cent,  sigmaEtofinv,   30);
+        sigma_etrk  = new TSpline3("Cubic Spline", Beta_cent,  sigmaEtrackinv, 30);
+        sigma_etrd  = new TSpline3("Cubic Spline", Beta_cent,  sigmaETRDinv,   30);
+
+        EdepTOFbeta   = new TSpline3("Cubic Spline",Beta_cent,ETOF,30);
+        EdepTrackbeta = new TSpline3("Cubic Spline",Beta_cent,ETrack,30);
+        EdepTRDbeta   = new TSpline3("Cubic Spline",Beta_cent,ETRD,30);
+
+        Corr_TOF      = new TSpline3("Cubic Spline",Beta_cent,CorrTOF,30);
+        Corr_Track    = new TSpline3("Cubic Spline",Beta_cent,CorrTrack,30);
+        Corr_TRD      = new TSpline3("Cubic Spline",Beta_cent,CorrTRD,30);
+
+        Rgenmis       = new TSpline3("",R_mis,R_gen,34);
+        CorrRICH      = new TSpline3("",R_rich,Corr_rich,25);
+    }
+
 public:
-    DistanceMinimizer(AMSEventR * ev){
+    DistanceMinimizer* getDistanceMinimizer(AMSEventR * ev){
+        if( gDistanceMinimizer == NULL ) gDistanceMinimizer = new DistanceMinimizer();
+        
+        gDistanceMinimizer -> reset(ev);
+        return gDistanceMinimizer;
+    }
+
+    void reset(AMSEventR * ev){
         rgdtMeasured = R(ev); // call to Tracker R(AMSEvent * ev)
         betaMeasured = BetaTOF(ev); 
         etofMeasured = Sum(EdepTOF(ev))/4; // The average over 4 TOF planes
@@ -243,9 +277,9 @@ DistanceData protonDists, deutonDists;
 //That claculates distances and populates the globals
 void CalculateDistances(AMSEventR * ev)
 {
-    DistanceMinimizer minimizer(ev);
-    protonDists = minimizer.FindMinimum(protons);
-    deutonDists = minimizer.FindMinimum(deutons);
+    DistanceMinimizer* minimizer = getDistanceMinimizer(ev);
+    protonDists = minimizer -> FindMinimum(protons);
+    deutonDists = minimizer -> FindMinimum(deutons);
 }
 
 double DistanceTOF_P      (AMSEventR * ev) { return protonDists.TOF;       }
