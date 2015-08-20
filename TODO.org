@@ -7,6 +7,8 @@ But we need TOF cluster location in the data for that
 Francesco has produced sigma distribution of TOF Edep with MC but when plotted on our data the sigmas don't match
 ** Francesco distance variables: why are there some peaks
 
-* Compare beta and rigidity resolution matrices obtain from proton MC and deuton MC
 
-SELECT ROUND( (JMDCtime - 1307303263)/10000) as timeBinning, COUNT(*), AVG(goodSecond) as avgGoodSecond FROM [AMS.cutoffs] GROUP BY timeBinning HAVING (timeBinning>0 AND avgGoodSecond>0.85)  ORDER BY timeBinning
+* Systematics
+** Compare beta and rigidity resolution matrices obtain from proton MC and deuton MC
+
+
