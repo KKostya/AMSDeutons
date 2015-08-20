@@ -1,11 +1,4 @@
 * Adding a cut in preselection
-<<<<<<< HEAD
-  Linearly extrapolated trajectory of the TOF hit positions passing both tracker layer 1 and 9
-* Checking the new NTuple variables
-** Investigating Francesco's sigma distribution of TOF edep
-Francesco has produced sigma distribution of TOF Edep with MC but when plotted on our data the sigmas don't match
-** Francesco distance variable: why are there some peaks
-=======
 ** Linearly extrapolated trajectory of the TOF hit positions passing both tracker layer 1 and 9
 But we need TOF cluster location in the data for that
 
@@ -15,4 +8,5 @@ Francesco has produced sigma distribution of TOF Edep with MC but when plotted o
 ** Francesco distance variables: why are there some peaks
 
 * Compare beta and rigidity resolution matrices obtain from proton MC and deuton MC
->>>>>>> production
+
+SELECT ROUND( (JMDCtime - 1307303263)/10000) as timeBinning, COUNT(*), AVG(goodSecond) as avgGoodSecond FROM [AMS.cutoffs] GROUP BY timeBinning HAVING (timeBinning>0 AND avgGoodSecond>0.85)  ORDER BY timeBinning
