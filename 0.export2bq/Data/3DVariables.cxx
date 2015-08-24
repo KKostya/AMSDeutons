@@ -73,20 +73,20 @@ class DistanceMinimizer
                           etrkMeasured(0)
     {
         ////////////// Bin centers //////////////////
-        double Beta_cent[30] = {
+        double betaTrueArray[30] = {
             0.41,0.43,0.45,0.47,0.49,0.51,0.53,0.55,0.57,0.59,
             0.61,0.63,0.65,0.67,0.69,0.71,0.73,0.75,0.77,0.79,
             0.81,0.83,0.85,0.87,0.89,0.91,0.93,0.95,0.97,0.99,
         };
 
-        double betacent[30] = {
+        double betaTrueArrayForSigmaBetaInv[30] = {
             0,0.01,0.02,0.03,0.04,0.05,0.415919,0.453355,0.488411,0.520469,
             0.550179,0.578353,0.605235,0.631148,0.656092,0.680222,0.703866,
             0.726883,0.749455,0.771762,0.793729, 0.81529,0.836695,0.857886,
             0.878908,0.899705,0.920224,0.940778,0.961202,0.981896,
         };
 
-        double valorecent[24] = {
+        double rgdtTrueArray[24] = {
             0.620376,0.79053,1.28364,1.63572,2.08435,2.65604,3.38452,4.31281,
             5.49571,7.00304,8.9238,11.3714,14.4903,18.4646,23.5289,29.9823,
             38.2058,48.6846,62.0376,79.053,100.735,128.364,162.378,0,
@@ -186,19 +186,19 @@ class DistanceMinimizer
         };
 
         ////////////// Defining splines  //////////////////
-        sigma_rgdt  = new TSpline3("Cubic Spline", valorecent, sigmaRinv,      23);
-        sigma_beta  = new TSpline3("Cubic Spline", betacent,   sigmabetainv,   30);
-        sigma_etof  = new TSpline3("Cubic Spline", Beta_cent,  sigmaEtofinv,   30);
-        sigma_etrk  = new TSpline3("Cubic Spline", Beta_cent,  sigmaEtrackinv, 30);
-        sigma_etrd  = new TSpline3("Cubic Spline", Beta_cent,  sigmaETRDinv,   30);
+        sigma_rgdt  = new TSpline3("Cubic Spline", rgdtTrueArray, sigmaRinv,      23);
+        sigma_beta  = new TSpline3("Cubic Spline", betaTrueArrayForSigmaBetaInv,   sigmabetainv,   30);
+        sigma_etof  = new TSpline3("Cubic Spline", betaTrueArray,  sigmaEtofinv,   30);
+        sigma_etrk  = new TSpline3("Cubic Spline", betaTrueArray,  sigmaEtrackinv, 30);
+        sigma_etrd  = new TSpline3("Cubic Spline", betaTrueArray,  sigmaETRDinv,   30);
 
-        EdepTOFbeta   = new TSpline3("Cubic Spline",Beta_cent,ETOF,30);
-        EdepTrackbeta = new TSpline3("Cubic Spline",Beta_cent,ETrack,30);
-        EdepTRDbeta   = new TSpline3("Cubic Spline",Beta_cent,ETRD,30);
+        EdepTOFbeta   = new TSpline3("Cubic Spline",betaTrueArray,ETOF,30);
+        EdepTrackbeta = new TSpline3("Cubic Spline",betaTrueArray,ETrack,30);
+        EdepTRDbeta   = new TSpline3("Cubic Spline",betaTrueArray,ETRD,30);
 
-        Corr_TOF      = new TSpline3("Cubic Spline",Beta_cent,CorrTOF,30);
-        Corr_Track    = new TSpline3("Cubic Spline",Beta_cent,CorrTrack,30);
-        Corr_TRD      = new TSpline3("Cubic Spline",Beta_cent,CorrTRD,30);
+        Corr_TOF      = new TSpline3("Cubic Spline",betaTrueArray,CorrTOF,30);
+        Corr_Track    = new TSpline3("Cubic Spline",betaTrueArray,CorrTrack,30);
+        Corr_TRD      = new TSpline3("Cubic Spline",betaTrueArray,CorrTRD,30);
 
         Rgenmis       = new TSpline3("",R_mis,R_gen,34);
         CorrRICH      = new TSpline3("",R_rich,Corr_rich,25);
