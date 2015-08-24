@@ -135,7 +135,7 @@ void AddTrackerVariables(ROOTDataList & data, TTree * tree)
 
 void AddTRDVariables(ROOTDataList & data, TTree * tree)
 {
-    data.push_back(Wrap<int    , NTRDclusters>("NTRDclusters", tree));
+    data.push_back(Wrap<int    , NTRDclusters>("NTRDClusters", tree));
     data.push_back(Wrap<double , EdepTRD     >("EdepTRD"     , tree));
     data.push_back(Wrap<double , ChargeTRD   >("ChargeTRD"     , tree));
 }
