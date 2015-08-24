@@ -16,5 +16,5 @@ We need to build a toy model to investigate the effect of these uncertainties on
 1. Generate toy matrices by applying fluctuation in every cell of our beta/rigidity matrices
 2. run the MCMC and look at how the output varies
 
-*** Compare beta and rigidity resolution matrices obtain from proton MC and deuton MC
+*** Compare beta and rigidity resolution matrices obtained from proton MC and deuton MC
 
