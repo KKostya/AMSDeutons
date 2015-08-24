@@ -3,12 +3,18 @@
 But we need TOF cluster location in the data for that
 
 * Checking the new NTuple variables
-** Investigating Francesco's sigma distribution of TOF edep
+** DONE Investigating Francesco's sigma distribution of TOF edep
 Francesco has produced sigma distribution of TOF Edep with MC but when plotted on our data the sigmas don't match
 ** Francesco distance variables: why are there some peaks
 
 
 * Systematics
-** Compare beta and rigidity resolution matrices obtain from proton MC and deuton MC
+** MCMC systematics
+*** Investigate the effect of uncertainties on beta and rigidity matrices resolutions on the MCMC output
+The beta and rigidity matrices are known with uncertainties on their content.
+We need to build a toy model to investigate the effect of these uncertainties on the MCMC output.
+1. Generate toy matrices by applying fluctuation in every cell of our beta/rigidity matrices
+2. run the MCMC and look at how the output varies
 
+*** Compare beta and rigidity resolution matrices obtained from proton MC and deuton MC
 
