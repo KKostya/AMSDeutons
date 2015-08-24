@@ -13,8 +13,8 @@ Francesco has produced sigma distribution of TOF Edep with MC but when plotted o
 *** Investigate the effect of uncertainties on beta and rigidity matrices resolutions on the MCMC output
 The beta and rigidity matrices are known with uncertainties on their content.
 We need to build a toy model to investigate the effect of these uncertainties on the MCMC output.
-_ Generate toy matrices by applying fluctuation in every cell of our beta/rigidity matrices
-_ run the MCMC and look at how the output varies
+1. Generate toy matrices by applying fluctuation in every cell of our beta/rigidity matrices
+2. run the MCMC and look at how the output varies
 
 *** Compare beta and rigidity resolution matrices obtain from proton MC and deuton MC
 
