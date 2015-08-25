@@ -5,10 +5,8 @@ if [ "$#" -lt 1 ]; then
 fi
 
 jobName=$1
-chunkSize=20
-MAXJOB=1
-#queue=ams1nd
-queue=8nm
+MAXJOB=200
+queue=ams1nd
 
 initial="$(echo $USER | head -c 1)"
 
