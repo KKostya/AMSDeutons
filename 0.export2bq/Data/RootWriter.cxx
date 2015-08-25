@@ -54,7 +54,7 @@ void AddSelectionVariables(ROOTDataList & data, TTree * tree)
     //data.push_back(Wrap< mySelStatus , selStatus2 >("selStatus" , tree));
     //data.push_back(Wrap<TBits , selStatus2 >("selStatus2" , tree));
 
-    data.push_back(Wrap<double             , BetaTOF                     >("BetaTOF"   , tree));
+//    data.push_back(Wrap<double             , BetaTOF                     >("BetaTOF"   , tree));
     data.push_back(Wrap<double             , BetaRICH                    >("betaRICH"  , tree));
 
     // Rich variables

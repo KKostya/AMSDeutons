@@ -10,7 +10,7 @@ def get_data(filename, treename="data"):
     tfile = ROOT.TFile(filename)
 
     tree = tfile.Get(treename)
-    data = root_numpy.tree2rec(tree)
+    data = root_numpy.tree2rec(tree, branches=set([b.GetName() for b in tree.GetListOfBranches()]) )
     data = pd.DataFrame(data)
     row = data.ix[0]
 
