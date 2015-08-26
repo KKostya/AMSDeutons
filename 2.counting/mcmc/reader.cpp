@@ -31,7 +31,6 @@ public:
         
         isAlreadyAnalysed = generalUtils::fileExists(filename+"/.ana");
         init();
-
     }
 
     void setMaxSteps(int _maxSteps){
@@ -106,6 +105,7 @@ public:
         float val = 0;
         int nVarToPlot = nVar;
         //        if(index.size() > 0)
+
         for(int iVar = 0; iVar<nVar+1 ;iVar++){
             float sum = 0;
             float sum2 = 0;
@@ -486,10 +486,22 @@ protected:
 
 int main(int argc, char** argv){
     TApplication app("app",&argc,argv,0,-1);
-
+    if(argc == 1){
+        std::cout << "Usage : ./reader filename [options]" << std::endl;
+        std::cout << "options:" << std::endl;
+        std::cout << "-t: reader type" << std::endl;
+        std::cout << "\tfull: Full reader" << std::endl;
+        std::cout << "\tlik: Likelihood distributions" << std::endl;
+        std::cout << "\ttrace: Parameters Vs step number " << std::endl;
+        std::cout << "\tvalue: Print parameters value at the end of the chain " << std::endl << std::endl;
+        std::cout << "-c: maximum number of chunks to process" << std::endl;
+        std::cout << "-f: first chunk to use" << std::endl;
+        std::cout << "-v: restricted set of variables to look up" << std::endl;
+        exit(-1);
+    }
+    
     int c;
     std::string dirname = "test";
-    std::cout << "argv[1] : " << argv[1] << std::endl;
     int maxChunk = -1, firstChunk = 0, correlationLength = 1;
     std::vector<int> restrictedSet;
 

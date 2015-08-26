@@ -99,6 +99,15 @@ void PDModel::init(const MatrixF & _betaF, const MatrixF & _rgdtF){
 PDModel PDModel::FromCSVS(const std::string & betaFile, const std::string & rgdtFile, const std::string & maskFile, int nTrueBins )
 {
     std::fstream beta(betaFile), rgdt(rgdtFile);
+    if( ! beta.good() ){
+        std::cout << "The file : " << betaFile << " does not exist or is corrupted" << std::endl;
+        exit(-1);
+    }
+    if( ! rgdt.good() ){
+        std::cout << "The file : " << rgdtFile << " does not exist or is corrupted" << std::endl;
+        exit(-1);
+    }
+    
     std::vector<float> rT, rM, bT, bM;
 
     MatrixF _rgdtF = getMatrixAndBins(rgdt, rT, rM).subMatrix(nTrueBins);

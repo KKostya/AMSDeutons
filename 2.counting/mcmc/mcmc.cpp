@@ -93,6 +93,17 @@ template <class ProposalFunction > void MCMC<ProposalFunction>::setSpectator(std
 }
 
 int main(int argc, char** argv){
+    if( argc == 1 ){
+        std::cout << "Usage : " << std::endl;
+        std::cout << "./mcmc filename [options] " << std::endl;
+        std::cout << "\nOptions are:" << std::endl;
+        std::cout << "-n : number of entries" << std::endl;
+        std::cout << "-f : output file name" << std::endl;
+        std::cout << "-v : verbose level" << std::endl;
+        std::cout << "-a : regularization parameter" << std::endl;
+        std::cout << "-m : mask file for target matrix" << std::endl;
+    }
+    
     int c;
     int nStep = 0;
     std::string name = "test";
