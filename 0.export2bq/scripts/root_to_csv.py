@@ -5,12 +5,17 @@ import pandas as pd
 import ROOT
 import root_numpy
 
+def unique(seq):
+    seen = set()
+    seen_add = seen.add
+    return [ x for x in seq if not (x in seen or seen_add(x))]
+
 def get_data(filename, treename="data"):
     """ Converts a ROOT tree to a pandas dataframe. Unwraps vectors."""
     tfile = ROOT.TFile(filename)
 
     tree = tfile.Get(treename)
-    data = root_numpy.tree2rec(tree)
+    data = root_numpy.tree2rec(tree, branches=unique([b.GetName() for b in tree.GetListOfBranches()]) )
     data = pd.DataFrame(data)
     row = data.ix[0]
 
