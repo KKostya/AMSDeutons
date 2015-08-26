@@ -23,13 +23,13 @@ import pandas as pd
 #          for the bin having low edge given by column 'binX'
 
 
-def main(params):
+def main(params,directory=None):
 
     if params['redoMCMC']:
         if params['redoMatrices']: produceMatrices.main(params)
         os.system("cd 2.counting/mcmc; rm -rf latestMCMC; make -B; ./mcmc -f latestMCMC -n 1000000")
         
-    fluxP,fluxD=readMCMC.main(params)
+    fluxP,fluxD=readMCMC.main(params,directory)
 
     df=pd.DataFrame({'countP':fluxP.mean(), 'countD':fluxD.mean()})
     df.reset_index(level=0, inplace=True)

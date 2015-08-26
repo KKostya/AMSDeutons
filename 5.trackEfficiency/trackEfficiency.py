@@ -1,31 +1,37 @@
 import bigQueryPlotting as b
 import matplotlib.pyplot as plt
 import sys
+import json
 
-def main(argv,plot=False):
-    binArray=argv
-    if binArray is None:
-        print "No binning array given !"
-        return
+def main(params,plot=False):
 
-
-    theQuery="bq --format json query ' \
+    mask = ["physicsTrigger",
+            "betaNotCrazy",
+            "chargeOne",
+            "oneTrack",
+            "goldenTOF",
+            "goldenTRACKER",
+            "goldenTRD",
+            "oneParticle"]
     
-    '"
+    l=b.getSelectionsFromMask(1754880)
 
-    df=b.histCustomCommand(theQueryNumberPreselected)
+    # theQuery="bq --format json query ' \
+    
+    # '"
 
-    if plot:
-        print df
-        h=b.Hist(df,50,0,50)
-        nPreselected=jsonData[0]['f0_']
-        h.plot(y='f0_')
-        plt.show()
+    # df=b.histCustomCommand(theQueryNumberPreselected)
 
-    return df
+    # if plot:
+    #     print df
+    #     h=b.Hist(df,50,0,50)
+    #     nPreselected=jsonData[0]['f0_']
+    #     h.plot(y='f0_')
+    #     plt.show()
 
+    # return df
+    return None
 
 if __name__ == "__main__":
     # Define a binning
-    binning=range(1,200,2)
-    print main(binning,plot=True)
+    print main(json.load(open('../param.json')),plot=True)

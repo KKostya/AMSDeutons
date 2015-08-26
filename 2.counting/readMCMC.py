@@ -5,8 +5,9 @@ import numpy as np
 import struct
 
 
-def main(params):
-    directory = "2.counting/mcmc/latestMCMC/"
+def main(params,directory=None, plot=False):
+    if directory is None:
+        directory = "2.counting/mcmc/latestMCMC/"
     files = sorted( glob.glob(directory + "par*.bin"), 
                     key=lambda x:int(x.split("/")[-1][3:].split('_')[0]))
 
@@ -28,7 +29,6 @@ def main(params):
 
     data.iloc[::1000].plot(legend=False)
 
-    plot=False
     if plot:
         plt.subplot(121)
         dataP.boxplot();
