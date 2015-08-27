@@ -63,18 +63,40 @@ PDModel::PDModel(
     matrixBase((bT.size()-1)*2),
     betaBinsT(bT), betaBinsM(bM), 
     rgdtBinsT(rT), rgdtBinsM(rM),
-    rgdtF_transposed(rM.size()-1, rT.size()-1), betaF(bT.size()-1, bM.size()-1),
-    deltaP(bT.size()-1, rT.size()-1), deltaD(bT.size()-1, rT.size()-1),
-                                                                     observed(bM.size()-1,rM.size()-1), 
-                                                                     mask(bM.size()-1,rM.size()-1),
-                                                                     regularizationFactor(0),
-                                                                     regularizationTerm(0)
+    rgdtF_transposed(), betaF(),
+    deltaP(), deltaD(),
+    observed(bM.size()-1,rM.size()-1), 
+    mask(bM.size()-1,rM.size()-1),
+    regularizationFactor(0),
+    regularizationTerm(0)
 {
     SetMask(_mask);
-    init(_betaF,_rgdtF);
+    init();
+
+    SetRigidityResolution(_rgdtF);
+    SetBetaResolution(_betaF);
 }
 
-void PDModel::init(const MatrixF & _betaF, const MatrixF & _rgdtF){
+
+PDModel::PDModel( 
+                 const std::vector<float> & bT, const std::vector<float> & bM,  
+                 const std::vector<float> & rT, const std::vector<float> & rM,
+                 const std::vector<MatrixF> & _betaVsRig, const MatrixB & _mask):
+    matrixBase(_betaVsRig),
+    betaBinsT(bT), betaBinsM(bM), 
+    rgdtBinsT(rT), rgdtBinsM(rM),
+    rgdtF_transposed(rM.size()-1, rT.size()-1), betaF(bT.size()-1, bM.size()-1),
+    deltaP(bT.size()-1, rT.size()-1), deltaD(bT.size()-1, rT.size()-1),
+    observed(bM.size()-1,rM.size()-1), 
+    mask(bM.size()-1,rM.size()-1),
+    regularizationFactor(0),
+    regularizationTerm(0)
+{
+    SetMask(_mask);
+}
+
+
+void PDModel::init(){
     for(int bBin=0; bBin < betaBinsT.size() - 1; bBin++)
         {
             for(int rBin=0; rBin < rgdtBinsT.size() - 1; rBin++)
@@ -90,10 +112,7 @@ void PDModel::init(const MatrixF & _betaF, const MatrixF & _rgdtF){
                 }
         }
     
-    SetRigidityResolution(_rgdtF);
-    SetBetaResolution(_betaF);
 
-    constructBaseMatrices();
 }
 
 PDModel PDModel::FromCSVS(const std::string & betaFile, const std::string & rgdtFile, const std::string & maskFile, int nTrueBins )
@@ -122,6 +141,54 @@ PDModel PDModel::FromCSVS(const std::string & betaFile, const std::string & rgdt
 
     PDModel model(bT,bM,rT,rM,_betaF,_rgdtF,_mask);
 
+    return model;
+}
+
+std::tuple<float,float> getGenBin(std::fstream & fs){
+    fs.clear();
+    fs.seekg(0, std::ios::beg);
+    std::string line;
+    std::getline(fs,line);
+    size_t beg=line.find("[");
+    size_t middle=line.find(";");
+    size_t end=line.find("]");
+
+    std::tuple<float,float> res;
+    std::get<0>(res) = generalUtils::stringTo<float>(line.substr(beg+1,middle-beg));
+    std::get<1>(res) = generalUtils::stringTo<float>(line.substr(middle+1,end-middle));
+    return res;
+}
+
+PDModel PDModel::FromCSVSBiDim(const std::vector<std::string> & matricesFiles, const std::string & maskFile )
+{
+
+    std::vector<float> rT, rM, bT, bM;
+    std::vector<MatrixF> betaVsRig;
+    std::tuple<float, float> betaTrueBinTuple;
+    for(int i = 0;i<matricesFiles.size();i++){
+        std::fstream file(matricesFiles[i]);        
+
+        if( ! file.good() ){
+            std::cout << "The file : " << matricesFiles[i] << " does not exist or is corrupted" << std::endl;
+            exit(-1);
+        }
+
+        betaVsRig.push_back( getMatrixAndBins(file, bM, rM) );
+        std::cout << "rM.size() : " << rM.size() << std::endl;
+        betaTrueBinTuple = getGenBin(file);
+        bT.push_back( std::get<0>(betaTrueBinTuple) );
+        file.close();
+    }
+
+    bT.push_back( std::get<1>(betaTrueBinTuple) );
+    rT.push_back(0);
+    
+    MatrixB _mask(bM.size()-1,rM.size()-1,true);
+    if( maskFile != "" ) _mask = getMask(maskFile);
+
+
+    PDModel model(bT,bM,rT,rM,betaVsRig,_mask);
+    
     return model;
 }
 
@@ -173,6 +240,10 @@ void PDModel::SetMask(const MatrixB & _mask)
                       << "," << _mask.getNcolums() << ")\n";
             std::cout <<"is incompatible with measured beta or rgdt binning size"
                       << (betaBinsM.size() - 1) << "," << (rgdtBinsM.size() - 1) << ".\n";
+
+            for(int i = 0;i<rgdtBinsM.size();i++){
+                std::cout << "rgdtBinsM[i] : " << rgdtBinsM[i] << std::endl;
+            }
             exit(-1);
         }
 
@@ -211,22 +282,6 @@ MatrixF PDModel::GetPredictionFast(const SearchSpace & point)
     return output;
 }
 
-void PDModel::constructBaseMatrices(){
-    long unsigned int nVar = rgdtBinsT.size()-1;
-    SearchSpace base;
-    base.fluxP = std::vector<float>(nVar,0);
-    base.fluxD = std::vector<float>(nVar,0);
-
-    for(int i = 0;i<nVar;i++){
-        base.fluxP[i] = 1;
-        matrixBase[i] = GetPrediction(base);
-        base.fluxP[i] = 0;
-
-        base.fluxD[i] = 1;
-        matrixBase[i+nVar] = GetPrediction(base);
-        base.fluxD[i] = 0;
-    }
-}
 
 void PDModel::savePredictedMatrix(const SearchSpace & point, const std::string & filename)
 {

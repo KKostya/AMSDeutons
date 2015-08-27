@@ -18,12 +18,34 @@
 //     return derivative;
 // }
 
+std::string files[] = {
+    "beta_vs_rgdt_GenBin0.pd", 
+    "beta_vs_rgdt_GenBin1.pd", 
+    "beta_vs_rgdt_GenBin2.pd", 
+    "beta_vs_rgdt_GenBin3.pd", 
+    "beta_vs_rgdt_GenBin4.pd", 
+    "beta_vs_rgdt_GenBin5.pd", 
+    "beta_vs_rgdt_GenBin7.pd", 
+    "beta_vs_rgdt_GenBin6.pd", 
+    "beta_vs_rgdt_GenBin8.pd", 
+    "beta_vs_rgdt_GenBin9.pd", 
+    "beta_vs_rgdt_GenBin10.pd",
+    "beta_vs_rgdt_GenBin11.pd",
+    "beta_vs_rgdt_GenBin12.pd",
+    "beta_vs_rgdt_GenBin13.pd",
+    "beta_vs_rgdt_GenBin14.pd",
+    "beta_vs_rgdt_GenBin16.pd",
+    "beta_vs_rgdt_GenBin15.pd",
+    "beta_vs_rgdt_GenBin17.pd",
+    "beta_vs_rgdt_GenBin18.pd"};
+
 struct RealisticToyModel: public PDModel
 {
     static const bool isToyMC = true;
 
     RealisticToyModel():
-       PDModel(PDModel::FromCSVS("../datasets/B_resolution.csv", "../datasets/R_resolution.csv","../datasets/mask.csv" ))
+        //PDModel(PDModel::FromCSVS("../datasets/B_resolution.csv", "../datasets/R_resolution.csv","../datasets/mask.csv" ))
+        PDModel(PDModel::FromCSVSBiDim( std::vector<std::string>(begin(files),end(files)), "../datasets/mask.csv" ))
     {
         // Set true values of the model
         for( int i = 0; i < getBetaBinsT().size() - 1; i++){
@@ -31,6 +53,9 @@ struct RealisticToyModel: public PDModel
             realValues.fluxD.push_back(10000);
         }
 
+        
+
+        exit(-1);
         // Generate fake data
 
         GenerateToyObservedData(realValues);
@@ -50,7 +75,8 @@ struct RealDataModel: public PDModel
     static const bool isToyMC = false;
 
     RealDataModel():
-        PDModel(PDModel::FromCSVS("../datasets/B_resolution.csv", "../datasets/R_resolution.csv", "../datasets/mask.csv"))
+        PDModel(PDModel::FromCSVSBiDim( std::vector<std::string>(begin(files),end(files)), "../datasets/mask.csv" ))
+        //PDModel(PDModel::FromCSVS("../datasets/B_resolution.csv", "../datasets/R_resolution.csv", "../datasets/mask.csv"))
     {
         // Get initial conditions
         std::string fname = "../datasets/initialConditions.txt";

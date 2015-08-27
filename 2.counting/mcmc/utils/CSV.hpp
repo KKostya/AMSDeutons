@@ -13,6 +13,7 @@ std::vector<float> getRow(float & first, std::string str)
 
     getline(ss, entry, ',');
 
+
     {
         std::stringstream se(entry);
         if(!(se >> first)) first = 0;
@@ -24,6 +25,7 @@ std::vector<float> getRow(float & first, std::string str)
         if(!(se >> value)) value = 0;
         row.push_back(value);
     }
+
     return row;
 }
 
@@ -36,6 +38,7 @@ MatrixF getMatrixAndBins( std::fstream & fs,
 
     getline(fs,line);
     binsM = getRow(first, line);
+    binsT.clear();
 
     while (getline(fs,line))
         {
