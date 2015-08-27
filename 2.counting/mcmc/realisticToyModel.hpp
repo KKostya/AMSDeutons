@@ -37,7 +37,27 @@ std::string files[] = {
     "beta_vs_rgdt_GenBin16.pd",
     "beta_vs_rgdt_GenBin15.pd",
     "beta_vs_rgdt_GenBin17.pd",
-    "beta_vs_rgdt_GenBin18.pd"};
+    "beta_vs_rgdt_GenBin18.pd"
+    "beta_vs_rgdt_GenBin19.pd", 
+    "beta_vs_rgdt_GenBin20.pd", 
+    "beta_vs_rgdt_GenBin21.pd", 
+    "beta_vs_rgdt_GenBin22.pd", 
+    "beta_vs_rgdt_GenBin23.pd", 
+    "beta_vs_rgdt_GenBin24.pd", 
+    "beta_vs_rgdt_GenBin26.pd", 
+    "beta_vs_rgdt_GenBin25.pd", 
+    "beta_vs_rgdt_GenBin27.pd", 
+    "beta_vs_rgdt_GenBin28.pd", 
+    "beta_vs_rgdt_GenBin29.pd",
+    "beta_vs_rgdt_GenBin30.pd",
+    "beta_vs_rgdt_GenBin31.pd",
+    "beta_vs_rgdt_GenBin32.pd",
+    "beta_vs_rgdt_GenBin33.pd",
+    "beta_vs_rgdt_GenBin35.pd",
+    "beta_vs_rgdt_GenBin34.pd",
+    "beta_vs_rgdt_GenBin36.pd",
+    "beta_vs_rgdt_GenBin37.pd"
+};
 
 struct RealisticToyModel: public PDModel
 {

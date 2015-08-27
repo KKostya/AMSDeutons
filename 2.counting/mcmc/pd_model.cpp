@@ -275,7 +275,11 @@ MatrixF PDModel::GetPredictionFast(const SearchSpace & point)
     MatrixF output(betaBinsM.size()-1,rgdtBinsM.size()-1);
     long unsigned int nBinsBetaT = betaBinsT.size()-1;
     for(int i = 0;i<nBinsBetaT;i++){
+        std::cout << "i : " << i << std::endl;
+        std::cout << "matrixBase[i].getNcolums() : " << matrixBase[i].getNcolums() << std::endl;
+        std::cout << "matrixBase[i].getNrows() : " << matrixBase[i].getNrows() << std::endl;
         output += (matrixBase[i]*point.fluxP[i]);
+        std::cout << "nBinsBetaT+i : " << nBinsBetaT+i << std::endl;
         output += (matrixBase[i+nBinsBetaT]*point.fluxD[i]);
     }
 
@@ -291,10 +295,13 @@ void PDModel::savePredictedMatrix(const SearchSpace & point, const std::string &
 
 float PDModel::GetLogLikelihood(const SearchSpace & point)
 {
-    MatrixF prediction = GetPrediction(point);
+    MatrixF prediction = GetPredictionFast(point);
+    prediction.dump();
+    exit(-1);
     float ret = prediction.applyAndSum(
                                        [this](float expected , int n, int m){
                                            if( std::abs(expected) < 1e-99 ) return 0.;
+                                           //std::cout << expected << "\t" << observed.get(n,m) << std::endl;
                                            return observed.get(n,m) * log(expected) - expected;
                                        }
                                        );
