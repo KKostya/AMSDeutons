@@ -22,7 +22,8 @@ def get_data(filename, treename="data"):
     for c, t in data.dtypes.iteritems():
         if c == "fStatus": continue
         if not t == np.object: continue
-        for i in range(len(row[c])):
+        size = len(row[c]) if c != "rich_getTrackEmissionPoint"  else 5
+        for i in range(size):
             newc = "{0}_{1}".format(c,i)
             data[newc] = data[c].str.get(i)
         del data[c]
