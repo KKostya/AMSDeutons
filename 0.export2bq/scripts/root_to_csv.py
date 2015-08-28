@@ -19,8 +19,26 @@ def get_data(filename, treename="data"):
     data = pd.DataFrame(data)
     row = data.ix[0]
 
+    to_delete = [
+        "DistanceTOF_P",
+        "DistanceTRD_P",
+        "DistanceTracker_P",
+        "MLRigidityTOF_P",
+        "MLRigidityTRD_P",
+        "MLRigidityTracker_P",
+        "DistanceTOF_D",
+        "DistanceTRD_D",
+        "DistanceTracker_D",
+        "MLRigidityTOF_D",
+        "MLRigidityTRD_D",
+        "MLRigidityTracker_D",
+    ]
+
     for c, t in data.dtypes.iteritems():
         if c == "fStatus": continue
+        if c in to_delete: 
+            del data[c]
+            continue
         if not t == np.object: continue
         size = len(row[c]) if c != "rich_getTrackEmissionPoint"  else 5
         for i in range(size):
