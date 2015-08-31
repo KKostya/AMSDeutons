@@ -5,40 +5,49 @@ import pandas as pd
 import ROOT
 import root_numpy
 
-def unique(seq):
-    seen = set()
-    seen_add = seen.add
-    return [ x for x in seq if not (x in seen or seen_add(x))]
+def get_vars_filename():
+    mypath = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(mypath, "varlist.txt")
+
+def update_schema(rootBranches, branches):
+    # First pass -- check that all vars are present
+    missing = set(branches) - rootBranches
+    # Second pass -- check if missing vars are actually vecotor names 
+    missing = {'_'.join(n.split('_')[:-1]) if '_' in n else n for n in missing } 
+    missing = missing - rootBranches
+
+    if missing: 
+        print "The following branches are missing in the tree:",
+        print sorted(missing)
+        raise ValueError("Missing branches found.")  
+    
+    removed = rootBranches - set(branches)
+    removed = removed - {'_'.join(n.split('_')[:-1]) for n in branches }
+    if removed:
+        print "The following branches will not be exported to the csv:",
+        print sorted(removed)
+
+    return rootBranches - removed
 
 def get_data(filename, treename="data"):
     """ Converts a ROOT tree to a pandas dataframe. Unwraps vectors."""
     tfile = ROOT.TFile(filename)
 
     tree = tfile.Get(treename)
-    data = root_numpy.tree2rec(tree, branches=unique([b.GetName() for b in tree.GetListOfBranches()]) )
+    rootBranches = {b.GetName() for b in tree.GetListOfBranches()}
+
+    varFile = open(get_vars_filename(), "r")
+    branches = [v.strip() for v in varFile.readlines()]
+    varFile.close()
+
+    rootBranches = update_schema(rootBranches, branches)
+
+    data = root_numpy.tree2rec(tree, branches=rootBranches)
     data = pd.DataFrame(data)
     row = data.ix[0]
 
-    to_delete = [
-        "DistanceTOF_P",
-        "DistanceTRD_P",
-        "DistanceTracker_P",
-        "MLRigidityTOF_P",
-        "MLRigidityTRD_P",
-        "MLRigidityTracker_P",
-        "DistanceTOF_D",
-        "DistanceTRD_D",
-        "DistanceTracker_D",
-        "MLRigidityTOF_D",
-        "MLRigidityTRD_D",
-        "MLRigidityTracker_D",
-    ]
-
     for c, t in data.dtypes.iteritems():
         if c == "fStatus": continue
-        if c in to_delete: 
-            del data[c]
-            continue
         if not t == np.object: continue
         size = len(row[c]) if c != "rich_getTrackEmissionPoint"  else 5
         for i in range(size):
@@ -46,7 +55,7 @@ def get_data(filename, treename="data"):
             data[newc] = data[c].str.get(i)
         del data[c]
 
-    return data
+    return data[branches]
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Convert a root file to a csv file.')
