@@ -8,6 +8,8 @@ bool chargeOne   (AMSEventR * );
 bool downGoing   (AMSEventR * ); 
 bool betaNotCrazy(AMSEventR * );
 bool physicsTrigger(AMSEventR *);
+bool basicBetaH(AMSEventR *);
+bool isolatedBetaH(AMSEventR *);
 
 template <int N>
 bool fitExists(AMSEventR * ); 

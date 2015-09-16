@@ -59,19 +59,24 @@ bool fitExists(AMSEventR *ev)
     return track->ParExists(fitID);
 }
 
-bool goodBetaH(AMSEventR *ev)
+// 
+bool basicBetaH(AMSEventR *ev)
 {
     ParticleR * particle = ev->pParticle(0);
     if(!particle) return false;
-    if(!particle->pBetaH()) return false;
-    return particle->pBetaH()->NTofClusterH() >= 3;
+    BetaH* betaH = particle->pBetaH();
+    if(!betaH) return false;
+    if(betaH->GetBeta()==0) return false;
+    return betaH->NTofClusterH() >= 3;
 }
 
 bool isolatedBetaH(AMSEventR *ev)
 {
     ParticleR * particle = ev->pParticle(0);
     if(!particle) return false;
-    if(!particle->pBetaH()) return false;
-    return (particle->pBetaH()->NTofClusterH() == 4 && ev->NTofClusterH() == 4);
+    BetaH* betaH = particle->pBetaH();
+    if(!betaH) return false;
+    if(betaH->GetBeta()==0) return false;
+    return (betaH->NTofClusterH() == 4 && ev->NTofClusterH() == 4);
 }
 

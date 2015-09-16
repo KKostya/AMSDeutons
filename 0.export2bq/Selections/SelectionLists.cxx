@@ -36,6 +36,8 @@ void AddPreSelections(SelectionList & selections)
     selections.push_back( SelectionItem("downGoing", downGoing));
     selections.push_back( SelectionItem("betaNotCrazy", betaNotCrazy));
     selections.push_back( SelectionItem("physicsTrigger", physicsTrigger));
+    selections.push_back( SelectionItem("basicBetaH", basicBetaH));
+    selections.push_back( SelectionItem("isolatedBetaH", isolatedBetaH));
 }
 
 void AddOldRICHSelections(SelectionList & selections)
