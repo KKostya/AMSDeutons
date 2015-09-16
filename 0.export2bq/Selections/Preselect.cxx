@@ -67,3 +67,11 @@ bool goodBetaH(AMSEventR *ev)
     return particle->pBetaH()->NTofClusterH() >= 3;
 }
 
+bool isolatedBetaH(AMSEventR *ev)
+{
+    ParticleR * particle = ev->pParticle(0);
+    if(!particle) return false;
+    if(!particle->pBetaH()) return false;
+    return (particle->pBetaH()->NTofClusterH() == 4 && ev->NTofClusterH() == 4);
+}
+

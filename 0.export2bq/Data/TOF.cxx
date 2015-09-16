@@ -1,7 +1,6 @@
 #include "TOF.h"
 
-
-int NTofClusters(AMSEventR * ev)    { return ev?ev->NTofCluster():0; }
+int NTofClusters(AMSEventR * ev)    { return ev?ev->NTofClusterH():0; }
 int NTofClustersUsed(AMSEventR * ev){ return ev?(ev->pBetaH(0)?ev->pBetaH(0)->NTofClusterH():0):0; }
 
 // TOF energy deposit
@@ -9,8 +8,8 @@ std::vector<double> EdepTOF(AMSEventR * ev)
 {
     std::vector<double> ret(4);
     for(int j=0; j<4; j++) ret[j] = 0;
-    for(int j=0; j<ev->NTofCluster(); j++)
-        ret[(ev->pTofCluster(j)->Layer)-1] = ev->pTofCluster(j)->Edep;
+    for(int j=0; j<ev->NTofClusterH(); j++)
+        ret[(ev->pTofClusterH(j)->Layer)-1] = ev->pTofClusterH(j)->GetEdep();
     return ret;
 }
 
@@ -40,8 +39,8 @@ std::vector<double> tofCoords(AMSEventR * ev)
 {
     std::vector<double> ret(4);
     for(int j=0; j<4; j++) ret[j] = 0;
-    for(int j=0; j<ev->NTofCluster(); j++)
-        ret[(ev->pTofCluster(j)->Layer)-1] = ev->pTofCluster(j)->Coo[I];
+    for(int j=0; j<ev->NTofClusterH(); j++)
+        ret[(ev->pTofClusterH(j)->Layer)-1] = ev->pTofClusterH(j)->Coo[I];
     return ret;
 }
 

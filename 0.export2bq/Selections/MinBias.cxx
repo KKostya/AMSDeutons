@@ -20,12 +20,12 @@
 bool minimumbiasTOF(AMSEventR *ev)
 {
     if(ev->nParticle()   == 0) return false;
-    if(ev->nTofCluster() == 0) return false;
+    if(ev->nTofClusterH() == 0) return false;
     bool goodlayer[4]={false,false,false,false};
     
-    for(int ic=0;ic<ev->nTofCluster();ic++)
+    for(int ic=0;ic<ev->nTofClusterH();ic++)
     {
-        TofClusterR * cluster = ev->pTofCluster(ic);
+        TofClusterHR * cluster = ev->pTofClusterH(ic);
         if(!cluster) continue;
 
 	// bit3(4)  -> ambig

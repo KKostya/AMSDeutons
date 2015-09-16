@@ -45,7 +45,7 @@ bool goldenTOF(AMSEventR *ev)
                            14. , 6. , 6. , 6. , 6. , 6. , 6. , 14. , 0. , 0.  , 
                            10. , 6. , 6. , 6. , 6. , 6. , 6. , 6.  , 6. , 10. , 
                            14. , 6. , 6. , 6. , 6. , 6. , 6. , 14. , 0. , 0.  ,};
-    TofClusterR* cluster;
+    TofClusterHR* cluster;
     bool good_match=false;
     double tlen;
     AMSPoint pnt;
@@ -54,9 +54,9 @@ bool goldenTOF(AMSEventR *ev)
     int tranit[4]={1,0,0,1};
     double dlong,dtran;
     bool goodlayer[4]={false,false,false,false};
-    for(int i=0; i<ev->nTofCluster();i++) 
+    for(int i=0; i<ev->nTofClusterH();i++) 
     {
-        cluster=ev->pTofCluster(i);
+        cluster=ev->pTofClusterH(i);
         if(cluster>0)
         {
             int layer=cluster->Layer-1;
