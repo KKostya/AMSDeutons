@@ -3,3 +3,9 @@ log
 *.o
 *.json
 *.csv
+*.pd
+2.counting/mcmc/*/
+*.dat
+*.a
+0.export2bq/gitversion.c
+*.root

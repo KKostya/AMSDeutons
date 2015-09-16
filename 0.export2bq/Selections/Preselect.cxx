@@ -58,3 +58,12 @@ bool fitExists(AMSEventR *ev)
     int fitID = track->iTrTrackPar(1,FIT,1);
     return track->ParExists(fitID);
 }
+
+bool goodBetaH(AMSEventR *ev)
+{
+    ParticleR * particle = ev->pParticle(0);
+    if(!particle) return false;
+    if(!particle->pBetaH()) return false;
+    return particle->pBetaH()->NTofClusterH() >= 3;
+}
+
