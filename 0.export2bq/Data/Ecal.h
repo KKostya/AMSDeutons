@@ -1,11 +1,13 @@
 #ifndef ECAL_H
 #define ECAL_H
 
+#ifndef _PGTRACK_
+#define _PGTRACK_
+#include "TrTrack.h"
+#endif
+#include "TrCharge.h"
 
-//#include <amschain.h>
-#include "root_RVSP.h"
-#include "AmsEcalQ_mod.h"
-
+#include <amschain.h>
 
 
    double EnergyE  (AMSEventR * ev);
@@ -34,6 +36,9 @@
    * @param ev the event
    * @return the MIPQ object derived by his AmsEcalQ class 
    */
-    MIPQ MIPQLi (AMSEventR * ev);
-   
+
+    float MIPQLi_Mean (AMSEventR * ev) {return MIPQLi(ev).Mean; }
+    float MIPQLi_RMS  (AMSEventR * ev) {return MIPQLi(ev).RMS;  }
+      int MIPQLi_NPnt (AMSEventR * ev) {return MIPQLi(ev).NPnt; }
+       
 #endif //ECAL_H

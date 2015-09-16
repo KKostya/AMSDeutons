@@ -1,5 +1,10 @@
 #include "Ecal.h"
 
+#include "root_RVSP.h"
+#include "AmsEcalQ_mod.h"
+
+
+
 double EnergyE  (AMSEventR * ev){
     EcalShowerR* shower = ev -> pEcalShower(0);
     if( shower == NULL ){
@@ -138,7 +143,6 @@ int nlayMip (AMSEventR * ev) {
 
 
 MIPQ MIPQLi (AMSEventR * ev) {
-
 	MIPQ MQ;
 	MQ.Clear();
 
@@ -160,6 +164,8 @@ MIPQ MIPQLi (AMSEventR * ev) {
 	AmsEcalQ AEQ(p_trk, p_show);
 	MQ=AEQ.GetMIPQ();
 	return MQ;
-	
 }
 
+float MIPQLi_Mean (AMSEventR * ev) {return MIPQLi(ev).Mean; }
+float MIPQLi_RMS  (AMSEventR * ev) {return MIPQLi(ev).RMS;  }
+  int MIPQLi_NPnt (AMSEventR * ev) {return MIPQLi(ev).NPnt; }
