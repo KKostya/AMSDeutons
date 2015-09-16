@@ -13,7 +13,6 @@ double dedxECAL (AMSEventR * ev){
 
    // nlayMip returns the number of layers at MIP (and takes care of "bad" events in the process)
 
-
    int nlayers= nlayMip(ev);
    if (nlayers==0) return 0;
 
@@ -32,7 +31,6 @@ double dedxECAL (AMSEventR * ev){
    if (abs(xe)>66.285/2 || abs(ye)>66.285/2) return 0;
    double dX=sqrt( (xf-xe)*(xf-xe) + (yf-ye)*(yf-ye) +(zf-ze)*(zf-ze) )*0.3923*nlayers/18;
    
-
    //Computing dE
    double dE = 0;
    for (int ihit=0 ; ihit<ev->nEcalHit(); ihit++)
@@ -40,16 +38,15 @@ double dedxECAL (AMSEventR * ev){
          dE += ev->EcalHit(ihit).Edep;
 		dE*=0.03; // The infamous sampling fraction;
 
-
    return dE/dX;
 }
+
 
 int nlayMip (AMSEventR * ev) {
 
    // Event sweeping
    // Adaptation of recommandations from the Twiki nuclei page
    // https://twiki.cern.ch/twiki/bin/view/AMS/Nuclei
-
    
    if (  ev==NULL
       || ev->nParticle()!=1
@@ -59,19 +56,16 @@ int nlayMip (AMSEventR * ev) {
       return 0;
 
 
-
    //AMSSetupR::RTI rti;
    //ev->GetRTI(rti);
    //if ((rti.good&0x3F)!=0 || rti.lf < 0.5 || rti.zenith >40)
       //return 0;
-
 
    AMSPoint pn1, pn9, pd1, pd9;
    ev->GetRTIdL1L9(0, pn1, pd1, ev->UTime(), 60);
    ev->GetRTIdL1L9(1, pn9, pd9, ev->UTime(), 60);
    if (pd1.y() > 35 || pd9.y() > 45)
       return 0;   
-
 
    // Variables init.
 	
@@ -92,15 +86,11 @@ int nlayMip (AMSEventR * ev) {
 	hPlane[6][50]=0;
 
 
-	
 	for (char plane=0; plane<18; plane++) {
-		
 		max =	thres;
 		cellmax = -1;
 		isAdjPrev=isAdj;
 		isAdj=false; 
-		
-		
 		
 		for (int cell=0;cell<72;cell++) {
 			if (hPlane[int(plane)][cell]>max) {
@@ -109,7 +99,6 @@ int nlayMip (AMSEventR * ev) {
 			}
 		}
 
-	
 		if (cellmax==-1 && plane !=6) {
 			if (isEmpty) return plane;
 			else {
@@ -118,22 +107,17 @@ int nlayMip (AMSEventR * ev) {
 			}
 		}
 	
-
 		float S3=hPlane[int(plane)][cellmax];
 
 		if (cellmax>0) { // pas tout à gauche
-			//if (hPlane[plane][cellmax-1]>7) return 0; else
 			S3+=hPlane[int(plane)][cellmax-1];
 			for (int cell=0;cell<cellmax-1;cell++ ) if (hPlane[plane][cell]>thres) return plane-(int)isAdjPrev;
 			if (hPlane[int(plane)][cellmax-1]) isAdj=true;
-			
 		}
 
 		if (cellmax<71) { // pas tout à droite
-			//if (hPlane[plane][cellmax+1]>7) return 0;
 			S3+=hPlane[int(plane)][cellmax+1];
 			for (int cell=cellmax+2;cell<72;cell++ )  if (hPlane[plane][cell]>thres) return plane-(int)isAdjPrev;
-
 			if (hPlane[int(plane)][cellmax+1]) {
 				if (isAdj) return plane -1;
 				isAdj=true;
@@ -145,12 +129,13 @@ int nlayMip (AMSEventR * ev) {
 		if (cellmax<70) S5+=hPlane[int(plane)][cellmax+2];
 		if (S3/S5<0.99) return plane;
 		
-
-
 	} // Tous les plans ok
 
 	return 18; // Si tous les critères sont remplis, on renvoie vrai
 }
+
+
+
 
 MIPQ MIPQLi (AMSEventR * ev) {
 
