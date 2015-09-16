@@ -37,8 +37,8 @@
    * @return the MIPQ object derived by his AmsEcalQ class 
    */
 
-    float MIPQLi_Mean (AMSEventR * ev) {return MIPQLi(ev).Mean; }
-    float MIPQLi_RMS  (AMSEventR * ev) {return MIPQLi(ev).RMS;  }
-      int MIPQLi_NPnt (AMSEventR * ev) {return MIPQLi(ev).NPnt; }
+    float MIPQLi_Mean (AMSEventR * ev);
+    float MIPQLi_RMS  (AMSEventR * ev);
+      int MIPQLi_NPnt (AMSEventR * ev);
        
 #endif //ECAL_H
