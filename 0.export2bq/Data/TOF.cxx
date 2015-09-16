@@ -2,7 +2,7 @@
 
 
 int NTofClusters(AMSEventR * ev)    { return ev?ev->NTofCluster():0; }
-int NTofClustersUsed(AMSEventR * ev){ return ev?(ev->pBeta(0)?ev->pBeta(0)->NTofCluster():0):0; }
+int NTofClustersUsed(AMSEventR * ev){ return ev?(ev->pBetaH(0)?ev->pBetaH(0)->NTofClusterH():0):0; }
 
 // TOF energy deposit
 std::vector<double> EdepTOF(AMSEventR * ev)
