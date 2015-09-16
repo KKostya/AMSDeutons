@@ -2,7 +2,9 @@
 #define ECAL_H
 
 
-#include <amschain.h>
+//#include <amschain.h>
+#include "root_RVSP.h"
+#include "AmsEcalQ_mod.h"
 
 
 
@@ -23,4 +25,15 @@
    */
    int nlayMip (AMSEventR * ev);
 
+
+   /**
+   * Q. Li's MIPQ Structure for nuclei charge estimator, with methods:
+   * MIPQ::Mean : float, best value of the estimator
+   * MIPQ::RMS  : float, associated RMS
+   * MIPQ::NPnt : int, number of layers used in the computation
+   * @param ev the event
+   * @return the MIPQ object derived by his AmsEcalQ class 
+   */
+    MIPQ MIPQLi (AMSEventR * ev);
+   
 #endif //ECAL_H
