@@ -50,9 +50,32 @@ tableData="AMS.Data"
 # Define preselection
 #
 ########################################################################################
-# 1) Asking for at least 3 TOF layers with some deposited energy
-cut3TOFLayers = " ( (EdepTOF_0>0.3)+(EdepTOF_1>0.3)+(EdepTOF_2>0.3)+(EdepTOF_3>0.3) >= 3) "
 
+
+# Track extrapolation to L1, L9
+# Might be usefull one day for full span
+# https://twiki.cern.ch/twiki/bin/view/AMS/PHeFluxStandardSelection
+#
+# upperX=' (TOFCoordsX_0+TOFCoordsX_1)/((TOFCoordsX_0!=0) + (TOFCoordsX_1!=0)) '
+# lowerX=' (TOFCoordsX_2+TOFCoordsX_3)/((TOFCoordsX_2!=0) + (TOFCoordsX_3!=0)) '
+# upperY=' (TOFCoordsY_0+TOFCoordsY_1)/((TOFCoordsY_0!=0) + (TOFCoordsY_1!=0)) '
+# lowerY=' (TOFCoordsY_2+TOFCoordsY_3)/((TOFCoordsY_2!=0) + (TOFCoordsY_3!=0)) '
+# upperZ=' (TOFCoordsZ_0+TOFCoordsZ_1)/((TOFCoordsZ_0!=0) + (TOFCoordsZ_1!=0)) '
+# lowerZ=' (TOFCoordsZ_2+TOFCoordsZ_3)/((TOFCoordsZ_2!=0) + (TOFCoordsZ_3!=0)) '
+
+# slopeX='({}-{})/({}-{})'.format(upperX,lowerX,upperZ,lowerZ)
+# offsetZX='({} - {}*{})'.format(upperX,slopeX,upperZ)
+
+
+# print 'SELECT ' \
+#     + slopeX + ' as slopeX, ' \
+#     + offsetZX + ' as offsetZX, ' \
+#     + upperX + ' as upperX, ' \
+#     + lowerX + ' as lowerX ' \
+#     + 'FROM ' + tableMC
+
+# 1)
+cut3TOFLayers=' NTofClustersUsed >= 3 '
 # 2) Asking for downgoing particle
 mask=[]
 mask.append("downGoing")
@@ -72,17 +95,15 @@ preselectionData=b.makeSelectionMask(mask) + " AND " + cut3TOFLayers
 # 1) Mask defined cuts
 mask=[]
 mask.append("physicsTrigger")
-mask.append("betaNotCrazy")
 mask.append("chargeOne")
 mask.append("oneTrack")
 mask.append("goldenTOF")
 mask.append("goldenTRACKER")
-mask.append("goldenTRD")
 mask.append("oneParticle")
 
 b.setTable(tableMC)
 trackSelectionMC=b.makeSelectionMask(mask)
-
+print 'trackSelectionMC : '+trackSelectionMC
 b.setTable(tableData)
 trackSelectionData=b.makeSelectionMask(mask)
 
