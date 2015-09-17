@@ -9,8 +9,16 @@ sys.path.insert(0,'1.exposureTime')
 sys.path.insert(0,'2.counting')
 sys.path.insert(0,'3.acceptance')
 sys.path.insert(0,'4.trigEfficiency')
+sys.path.insert(0,'5.trackEfficiency')
 
-param=json.load(open('param.json'))
+try:
+    f=open('param.json')
+except IOError:
+    print 'param.json not found'
+    print 'run createParamFile.py to create it !'
+    sys.exit()
+    
+param=json.load(f)
 
 ########################################################################################
 #
@@ -21,12 +29,14 @@ import exposureTime
 import counting
 import acceptance
 import trigEfficiency
+import trackEfficiency
 
 # Functions to call
 funct=[exposureTime.main,
        counting.main,
        acceptance.main,
-       trigEfficiency.main]
+       trigEfficiency.main,
+       trackEfficiency.main]
 
 # Creating the list of output DataFrames
 dfs=map(lambda f: f(param), funct)
@@ -45,7 +55,8 @@ df['deltaR']=df.binX.diff().shift(-1)
 
 # Computing the flux
 df['fluxP'] = df['countP'] / (df['AccEff'] * df['expTime'] * df['trigEff'] * df['deltaR'] )
-df['fluxD'] = df['countD'] / (df['AccEff'] * df['expTime'] * df['trigEff'] * df['deltaR'] )
+df['fluxD'] = df['countD'] / (df['AccEff'] * df['expTime'] * df['trigEff'] * df['trackEff'] * df['deltaR'] )
+df['ratio'] = df['fluxD'] / df['fluxP']
 
 # Adding a binCenter column (centered in a logarithmic way)
 df['binCenter'] = (df['binX']*(df['binX']+df['deltaR'])).apply(np.sqrt)

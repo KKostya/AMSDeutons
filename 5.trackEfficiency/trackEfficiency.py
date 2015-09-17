@@ -46,7 +46,7 @@ def main(params,plot=False):
     #     plt.show()
 
     # return df
-    return None
+    return df
 
 if __name__ == "__main__":
     # Define a binning
