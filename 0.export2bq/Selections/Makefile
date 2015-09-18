@@ -16,6 +16,6 @@ clean:
 	rm -rf *.o *.a
 
 %.o: %.cxx
-	g++ $(CFLAGS) -o $@ -c $< $(ROOTINC) $(AMSINC)
+	g++ -D_PGTRACK_ $(CFLAGS) -o $@ -c $< $(ROOTINC) $(AMSINC)
 
 .PHONY: selections

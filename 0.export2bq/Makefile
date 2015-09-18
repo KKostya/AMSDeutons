@@ -3,6 +3,7 @@ ROOTINC=`root-config --cflags`
 ROOTLIB=`root-config --libs`
 AMSINC=-I$(AMSSRC)/include
 
+
 ntupleData: ntupleData.o Data Selections gitversion.c utils gitversion.c
 	g++ -o $@ $(AMSLIBso) $(ROOTLIB) ntupleData.o Data/data.a  Selections/selections.a utils/utils.a gitversion.c
 
@@ -32,7 +33,7 @@ CreateDataTree.o: CreateDataTree.cxx  Data.h
 SelectionsTable.o: SelectionsTable.cxx 
 
 %.o : %.cxx
-	g++ $(CFLAGS) -o $@ -c $< $(ROOTINC) $(AMSINC)
+	g++ $(CFLAGS) -D_PGTRACK_ -o $@ -c $< $(ROOTINC) $(AMSINC)
 
 gitversion.c: ../.git/HEAD ../.git/index
 	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
