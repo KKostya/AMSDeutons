@@ -44,6 +44,8 @@ def main(params,plot=False):
 
     b.setTable(params['tableMC'])
 
+    print params['preselectionMC']
+
     # The min and max rigidities used for the event generation
     Rmin=1
     Rmax=200
