@@ -72,12 +72,10 @@ preselectionData=b.makeSelectionMask(mask) + " AND " + cut3TOFLayers
 # 1) Mask defined cuts
 mask=[]
 mask.append("physicsTrigger")
-mask.append("betaNotCrazy")
 mask.append("chargeOne")
 mask.append("oneTrack")
 mask.append("goldenTOF")
 mask.append("goldenTRACKER")
-mask.append("goldenTRD")
 mask.append("oneParticle")
 
 b.setTable(tableMC)
