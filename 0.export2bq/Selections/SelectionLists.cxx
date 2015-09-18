@@ -38,6 +38,11 @@ void AddPreSelections(SelectionList & selections)
     selections.push_back( SelectionItem("physicsTrigger", physicsTrigger));
     selections.push_back( SelectionItem("basicBetaH", basicBetaH));
     selections.push_back( SelectionItem("isolatedBetaH", isolatedBetaH));
+
+    // tofTrackInsideInnerTracker must be called FIRST !!
+    selections.push_back( SelectionItem("tofTrackInsideInnerTracker", tofTrackInsideInnerTracker));
+    selections.push_back( SelectionItem("tofTrackInsideFullSpan", tofTrackInsideFullSpan));
+
 }
 
 void AddOldRICHSelections(SelectionList & selections)

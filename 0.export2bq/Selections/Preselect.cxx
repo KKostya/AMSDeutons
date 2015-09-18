@@ -1,12 +1,3 @@
-#include <math.h>
-
-// AMS includes
-#ifndef _PGTRACK_
-#define _PGTRACK_
-#include "TrTrack.h"
-#endif
-#include <amschain.h>
-
 // Local includes
 #include "Preselect.h"
 
@@ -80,3 +71,24 @@ bool isolatedBetaH(AMSEventR *ev)
     return (betaH->NTofClusterH() == 4 && ev->NTofClusterH() == 4);
 }
 
+bool tofTrackInsideInnerTracker(AMSEventR *ev){
+    TofRecon::BuildTofTracks(ev);
+    if( TofRecon::TofTracksList.size() == 0) return false;
+
+    // Ask that extrapolation crosses Tracker layers L2 to L8 with a safety margin of 0
+    int isInsideBit = TofRecon::TofTracksList[0] -> GetPatternInsideTracker(0);
+
+    if( (isInsideBit&0b011111110) != 0b011111110 ) return false;
+    return true;
+}
+
+bool tofTrackInsideFullSpan(AMSEventR *ev){
+    if( TofRecon::TofTracksList.size() == 0) return false;
+
+    // Ask that extrapolation crosses Tracker layers L2 to L8 with a safety margin of 0
+    int isInsideBit = TofRecon::TofTracksList[0] -> GetPatternInsideTracker(0);
+
+    if( (isInsideBit&0b111111111) != 0b111111111 ) return false;
+
+    return true;
+}
