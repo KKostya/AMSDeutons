@@ -5,6 +5,16 @@
 
 using namespace rootUtils;
 
+// Search for line containing the given substring 
+std::string extractFromDatacard(std::string datacards, std::string sub)
+{
+    vector<size_t> positions; // holds all the positions that sub occurs within str
+
+    size_t pos = datacards.find(sub, 0);
+    size_t pos2 = datacards.find('\n', pos+1);
+    return datacards.substr( pos+sub.length(), pos2-(pos+sub.length()) );
+}
+
 void Acceptance::init(){
     maxRootFiles = 2;
     maxEntries = 10000000;
@@ -20,12 +30,22 @@ void Acceptance::init(){
     biggest = 0;
     smallest = INT_MAX;
 
+    TObjString* d = (TObjString*)rootUtils::get(data[0],"DataCards");
+    std::string datacards( d->GetString() );
+
+    pMin = generalUtils::stringTo<float>( extractFromDatacard(datacards,"\nPMIN=") );
+    pMax = generalUtils::stringTo<float>( extractFromDatacard(datacards,"\nPMAX=") );
+
+    if( pMin <= 0 || pMin > 1e10){
+        std::cerr << "Wrong value for pMin : " << pMin << std::endl;
+    }
+
+    if( pMax <= 0 || pMax > 1e10){
+        std::cerr << "Wrong value for pMax : " << pMax << std::endl;
+    }
 }
 
-
-
 bool Acceptance::process(){
-    
     int num =  ev -> Event();
     if( num > biggest ) biggest = num;
     if( num < smallest ) smallest = num;
@@ -53,7 +73,7 @@ void Acceptance::draw(){
     std::cout << "biggest : " << biggest << std::endl;
 
     for(int i = 1; i <= h["acc"]->GetNbinsX();i++){
-        float nGenPerBin = (log10(h["acc"]->GetBinLowEdge(i+1)) - log10(h["acc"]->GetBinLowEdge(i))) / (log10(200) - log10(1)) * (biggest-smallest);
+        float nGenPerBin = (log10(h["acc"]->GetBinLowEdge(i+1)) - log10(h["acc"]->GetBinLowEdge(i))) / (log10(pMax) - log10(pMin)) * (biggest-smallest);
         float content = h["acc"] -> GetBinContent(i);
         float error = h["acc"] -> GetBinError(i);
         h["acc"] -> SetBinError(i, error / nGenPerBin  * pow(3.9,2) * TMath::Pi() );

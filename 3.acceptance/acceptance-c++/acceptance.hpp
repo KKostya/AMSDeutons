@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "TParameter.h"
+#include "TObjString.h"
 
 #include "Loop.hpp"
 #include "rootUtils.hpp"
@@ -32,6 +33,8 @@ private:
     int biggest = 0;
     int smallest = INT_MAX;
 
+    float pMin;
+    float pMax;
   
 protected:
     virtual bool process();
