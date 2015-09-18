@@ -17,7 +17,7 @@
 int main(int argc, char** argv){
     TApplication app("app",&argc,argv);
 
-    std::vector <std::string > files =  generalUtils::getFilesInDirWithPattern("/afs/cern.ch/work/b/bcoste/acceptance-c++/gogo/","ana");
+    std::vector <std::string > files =  generalUtils::getFilesInDirWithPattern("/afs/cern.ch/work/b/bcoste/acceptance-c++/d.pl1.0_520_GG_Blic/","ana");
 
     std::cout << "files.size() : " << files.size() << std::endl;
 
