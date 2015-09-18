@@ -55,7 +55,7 @@ bool basicBetaH(AMSEventR *ev)
 {
     ParticleR * particle = ev->pParticle(0);
     if(!particle) return false;
-    BetaH* betaH = particle->pBetaH();
+    BetaHR* betaH = particle->pBetaH();
     if(!betaH) return false;
     if(betaH->GetBeta()==0) return false;
     return betaH->NTofClusterH() >= 3;
@@ -65,7 +65,7 @@ bool isolatedBetaH(AMSEventR *ev)
 {
     ParticleR * particle = ev->pParticle(0);
     if(!particle) return false;
-    BetaH* betaH = particle->pBetaH();
+    BetaHR* betaH = particle->pBetaH();
     if(!betaH) return false;
     if(betaH->GetBeta()==0) return false;
     return (betaH->NTofClusterH() == 4 && ev->NTofClusterH() == 4);

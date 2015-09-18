@@ -1,3 +1,5 @@
+#ifndef PRESELECT_H
+#define PRESELECT_H
 #include <math.h>
 
 // AMS includes
@@ -26,3 +28,5 @@ bool tofTrackInsideInnerTracker(AMSEventR *);
 
 template <int N>
 bool fitExists(AMSEventR * ); 
+
+#endif //PRESELECT_H
