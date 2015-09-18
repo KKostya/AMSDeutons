@@ -35,8 +35,8 @@ cd tmp
 cp ${executable} main
 cp ${reader} reader
 
-./main -f mcmcJob_${jobName}_${jobNumber} -n 500000000
-./reader mcmcJob_${jobName}_${jobNumber}
+./main -f mcmcJob_${jobName}_${jobNumber} -n 100000000
+#./reader mcmcJob_${jobName}_${jobNumber}
 
 cp -R mcmcJob_* ${eosRoot}/ams/user/${initial}/${USER}/lsf_mcmc/${jobName}
 

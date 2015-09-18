@@ -45,6 +45,32 @@ void Acceptance::init(){
     }
 }
 
+// Laurent Derome's stuff
+// the array IsTrkLayer[9] tells which tracker layer is crossed by the track
+// void LxPart::SetTrackerLayersCrossedByTofTrack(AMSPoint pnt, AMSDir dir, float margin,bool EcalWindow0,bool* IsTrkLayer) {
+//     for(int ilayer=0;ilayer<9;ilayer++){
+//         AMSPoint pint = pnt+dir*(tracker_layers_z[ilayer]-pnt.z())/dir.z();
+//         // rectangle & circle
+//         IsTrkLayer[ilayer] = false;
+//         if(ilayer==8 && EcalWindow0) {
+//             if( (pint.x()>tracker_planes_edges[ilayer+1][0]+margin)&&
+//                 (pint.x()<tracker_planes_edges[ilayer+1][2]-margin)&&
+//                 (pint.y()>tracker_planes_edges[ilayer+1][1]+margin)&&
+//                 (pint.y()<tracker_planes_edges[ilayer+1][3]-margin)
+//                 ) IsTrkLayer[ilayer] = true;
+//         } else {
+//             if( (pint.x()>tracker_planes_edges[ilayer][0]+margin)&&
+//                 (pint.x()<tracker_planes_edges[ilayer][2]-margin)&&
+//                 (pint.y()>tracker_planes_edges[ilayer][1]+margin)&&
+//                 (pint.y()<tracker_planes_edges[ilayer][3]-margin)&&
+//                 (sqrt(pint.x()*pint.x()+pint.y()*pint.y())<tracker_planes_edges[ilayer][2]-margin)
+//                 ){
+//                 IsTrkLayer[ilayer] = true;
+//             }
+//         }
+//     }
+// }
+
 bool Acceptance::process(){
     int num =  ev -> Event();
     if( num > biggest ) biggest = num;
@@ -57,6 +83,14 @@ bool Acceptance::process(){
     if ( !betaH ) return false;
     if ( betaH -> NTofClusterH() < 3) return false;
     if ( betaH -> GetBeta() <= 0 ) return false;
+
+    TofRecon::BuildTofTracks(ev);
+    if( TofRecon::TofTracksList.size() == 0) return false;
+
+    // Ask that extrapolation crosses Tracker layers L2 to L8 with a safety margin of 0
+    int isInsideBit = TofRecon::TofTracksList[0] -> GetPatternInsideTracker(0);
+    
+    if( (isInsideBit&0b011111110) != 0b011111110 ) return false;
 
     h["raw"] -> Fill( ev -> GetPrimaryMC() -> Momentum);
 }
