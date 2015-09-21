@@ -6,7 +6,7 @@
 
 // ROOT includes
 #include "TObjString.h"
-n#include "TMacro.h"
+#include "TMacro.h"
 
 // AMS includes
 #ifndef _PGTRACK_
