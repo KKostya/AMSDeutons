@@ -147,7 +147,7 @@ int main(int argc, char * argv[])
 
     TObjString gitVersion(gitversion);
     gitVersion.Write("gitVersion");
-    ;lsakdjf
+
     TObjString inFileName(inFname.c_str());
     inFileName.Write("inputFileName");
 
