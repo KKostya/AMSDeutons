@@ -54,13 +54,15 @@ bool goldenTOF(AMSEventR *ev)
     int tranit[4]={1,0,0,1};
     double dlong,dtran;
     bool goodlayer[4]={false,false,false,false};
-    for(int i=0; i<ev->nTofClusterH();i++) 
+    for(int i=0; i<ev->NTofClusterH();i++) 
     {
         cluster=ev->pTofClusterH(i);
         if(cluster>0)
         {
-            int layer=cluster->Layer-1;
-            int bar=cluster->Bar-1;
+            int layer=cluster->Layer;
+            int bar=cluster->Bar;
+            //int layer=cluster->Layer-1; // -1 is class is TofCluster and not TofClusterH
+            //int bar=cluster->Bar-1; // -1 is class is TofCluster and not TofClusterH
             tlen=track->Interpolate(cluster->Coo[2],pnt,dir,fitID);
             dlong=cluster->Coo[longit[layer]]-pnt[longit[layer]];
             dtran=cluster->Coo[tranit[layer]]-pnt[tranit[layer]];

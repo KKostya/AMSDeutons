@@ -9,7 +9,8 @@ std::vector<double> EdepTOF(AMSEventR * ev)
     std::vector<double> ret(4);
     for(int j=0; j<4; j++) ret[j] = 0;
     for(int j=0; j<ev->NTofClusterH(); j++)
-        ret[(ev->pTofClusterH(j)->Layer)-1] = ev->pTofClusterH(j)->GetEdep();
+        //ret[(ev->pTofClusterH(j)->Layer)-1] = ev->pTofClusterH(j)->GetEdep();
+        ret[ev->pTofClusterH(j)->Layer] = ev->pTofClusterH(j)->GetEdep();
     return ret;
 }
 
@@ -40,7 +41,8 @@ std::vector<double> tofCoords(AMSEventR * ev)
     std::vector<double> ret(4);
     for(int j=0; j<4; j++) ret[j] = 0;
     for(int j=0; j<ev->NTofClusterH(); j++)
-        ret[(ev->pTofClusterH(j)->Layer)-1] = ev->pTofClusterH(j)->Coo[I];
+        //ret[(ev->pTofClusterH(j)->Layer)-1] = ev->pTofClusterH(j)->Coo[I];
+        ret[ev->pTofClusterH(j)->Layer] = ev->pTofClusterH(j)->Coo[I];
     return ret;
 }
 
