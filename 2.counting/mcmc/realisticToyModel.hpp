@@ -37,7 +37,7 @@ std::string files[] = {
     "beta_vs_rgdt_GenBin16.pd",
     "beta_vs_rgdt_GenBin15.pd",
     "beta_vs_rgdt_GenBin17.pd",
-    "beta_vs_rgdt_GenBin18.pd"
+    "beta_vs_rgdt_GenBin18.pd",
     "beta_vs_rgdt_GenBin19.pd", 
     "beta_vs_rgdt_GenBin20.pd", 
     "beta_vs_rgdt_GenBin21.pd", 
@@ -117,7 +117,13 @@ struct RealDataModel: public PDModel
 
         if( initialConditions.fluxP.size() != getBetaBinsT().size()-1 || initialConditions.fluxD.size() != getBetaBinsT().size()-1 ){
             std::cerr << "Wrong initialConditions in initialConditions.txt" << std::endl;
-            std::cerr << "Size do not match: model.getBetaBinsT().size()-1" << std::endl;
+            std::cerr << "Size do not match: " << std::endl;
+            std::cout << "model.getBetaBinsT().size()-1 : " << getBetaBinsT().size()-1 << std::endl;
+            std::cout << "initialConditions.fluxP.size() : " << initialConditions.fluxP.size() << std::endl;
+            std::cout << "initialConditions.fluxD.size() : " << initialConditions.fluxD.size() << std::endl;
+            for(int i = 0;i<getBetaBinsT().size();i++){
+                std::cout << "getBetaBinsT()[i] : " << getBetaBinsT()[i] << std::endl;
+            }
             exit(-1);
         }
 

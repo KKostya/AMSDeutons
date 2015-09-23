@@ -2,7 +2,7 @@ INCLUDE=-I./utils -I$(amsUtils)/include -I.
 AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG
 LIBS=`root-config --cflags --libs | sed 's/-lPhysics//g' | sed 's/-lGraf3d//g' | sed 's/-lPostscript//g' `  -L$(amsUtils)/lib
 #LIBS=`root-config --cflags --libs`
-OPTIMIZATION=-g
+OPTIMIZATION=-O3
 CXXFLAGS=-Wall -Weffc++ -pedantic -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter\
     -pedantic-errors -Wextra -Wcast-align \
     -Wcast-qual  -Wchar-subscripts  -Wcomment \
@@ -44,8 +44,12 @@ test_matrix: tests/test_matrix.cpp utils/Matrix.hpp  generalUtils.o
 	g++ ${INCLUDE} $(CXXFLAGS) -o $@ $< -std=c++11 
 
 test_model: tests/test_model.cpp pd_model.o generalUtils.o
-	g++ ${INCLUDE} $(CXXFLAGS) -o $@ $^ -std=c++11 
+	g++ ${INCLUDE} $(CXXFLAGS) -o $@ $^ -std=c++11
+
+gui: gui.cpp gui.hpp pd_model.o generalUtils.o
+	rootcint -f guiLinkDef.cpp -c ${INCLUDE} gui.hpp guiLinkDef.hpp
+	g++ ${INCLUDE} `root-config --cflags --glibs` gui.cpp guiLinkDef.cpp -o gui pd_model.o generalUtils.o `root-config --glibs`
 
 clean:
-	rm -f mcmc reader test_model test_matrix *.o
+	rm -f mcmc reader test_model test_matrix *.o guiLinkDef.cpp guiLinkDef_rdict.pcm
 

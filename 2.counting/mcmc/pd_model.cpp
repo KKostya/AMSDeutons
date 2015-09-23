@@ -166,26 +166,27 @@ PDModel PDModel::FromCSVSBiDim(const std::vector<std::string> & matricesFiles, c
     std::vector<MatrixF> betaVsRig;
     std::tuple<float, float> betaTrueBinTuple;
     for(int i = 0;i<matricesFiles.size();i++){
-        std::fstream file(matricesFiles[i]);        
+        std::fstream file(matricesFiles[i%19]);        
 
         if( ! file.good() ){
-            std::cout << "The file : " << matricesFiles[i] << " does not exist or is corrupted" << std::endl;
+            std::cout << "i%19 : " << i%19 << std::endl;
+            std::cout << "The file : " << matricesFiles[i%19] << " does not exist or is corrupted" << std::endl;
             exit(-1);
         }
 
         betaVsRig.push_back( getMatrixAndBins(file, bM, rM) );
         std::cout << "rM.size() : " << rM.size() << std::endl;
         betaTrueBinTuple = getGenBin(file);
-        bT.push_back( std::get<0>(betaTrueBinTuple) );
+        if(i<matricesFiles.size()/2)  bT.push_back( std::get<0>(betaTrueBinTuple) );
         file.close();
     }
 
     bT.push_back( std::get<1>(betaTrueBinTuple) );
-    rT.push_back(0);
+
+    for(int i = 0;i<bT.size();i++) rT.push_back( R_from_beta(bT[i], PDModel::mp) );
     
     MatrixB _mask(bM.size()-1,rM.size()-1,true);
     if( maskFile != "" ) _mask = getMask(maskFile);
-
 
     PDModel model(bT,bM,rT,rM,betaVsRig,_mask);
     
@@ -262,7 +263,9 @@ MatrixF PDModel::GetPrediction(const SearchSpace & point)
 
     MatrixF smearP = betaF.Dot(fluxMatrixFP.Dot(rgdtF_transposed));
     MatrixF smearD = betaF.Dot(fluxMatrixFD.Dot(rgdtF_transposed));
-
+    std::cout << "fluxMatrixFP.getNcolums() : " << fluxMatrixFP.getNcolums() << std::endl;
+    std::cout << "fluxMatrixFP.getNrows() : " << fluxMatrixFP.getNrows() << std::endl;
+    
     smearP.map([&smearD,this](float v, int b, int r){return (v + smearD.get(b,r))*mask.get(b,r);});
 
     // std::cout << "Time : " << (std::clock() - start) / (float)(CLOCKS_PER_SEC) << " s" << std::endl;
@@ -275,11 +278,11 @@ MatrixF PDModel::GetPredictionFast(const SearchSpace & point)
     MatrixF output(betaBinsM.size()-1,rgdtBinsM.size()-1);
     long unsigned int nBinsBetaT = betaBinsT.size()-1;
     for(int i = 0;i<nBinsBetaT;i++){
-        std::cout << "i : " << i << std::endl;
-        std::cout << "matrixBase[i].getNcolums() : " << matrixBase[i].getNcolums() << std::endl;
-        std::cout << "matrixBase[i].getNrows() : " << matrixBase[i].getNrows() << std::endl;
+        // std::cout << "i : " << i << std::endl;
+        // std::cout << "matrixBase[i].getNcolums() : " << matrixBase[i].getNcolums() << std::endl;
+        // std::cout << "matrixBase[i].getNrows() : " << matrixBase[i].getNrows() << std::endl;
         output += (matrixBase[i]*point.fluxP[i]);
-        std::cout << "nBinsBetaT+i : " << nBinsBetaT+i << std::endl;
+        // std::cout << "nBinsBetaT+i : " << nBinsBetaT+i << std::endl;
         output += (matrixBase[i+nBinsBetaT]*point.fluxD[i]);
     }
 
@@ -289,15 +292,21 @@ MatrixF PDModel::GetPredictionFast(const SearchSpace & point)
 
 void PDModel::savePredictedMatrix(const SearchSpace & point, const std::string & filename)
 {
-    MatrixF prediction = GetPrediction(point);
+    MatrixF prediction = GetPredictionFast(point);
     prediction.save(filename);
 }
 
 float PDModel::GetLogLikelihood(const SearchSpace & point)
 {
     MatrixF prediction = GetPredictionFast(point);
-    prediction.dump();
-    exit(-1);
+
+    // std::cout << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl;
+    // observed.dump();
+    // exit(-1);
+    // point.dump();
+    // prediction.dump();
+
+    
     float ret = prediction.applyAndSum(
                                        [this](float expected , int n, int m){
                                            if( std::abs(expected) < 1e-99 ) return 0.;
@@ -306,13 +315,14 @@ float PDModel::GetLogLikelihood(const SearchSpace & point)
                                        }
                                        );
 
-    ComputeRegularizationTerm(point);
-    ret -= regularizationTerm;
+    // ComputeRegularizationTerm(point);
+    // ret -= regularizationTerm;
     return ret;
 }
 
 void PDModel::ComputeRegularizationTerm(const SearchSpace & point){
     regularizationTerm = 0;
+    return;
 
     std::vector<std::pair<float,float>> pairFluxEnergyP(point.fluxP.size()), pairFluxEnergyD(point.fluxD.size());
     for(int i = 0;i<pairFluxEnergyP.size();i++)
