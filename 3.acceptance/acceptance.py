@@ -44,6 +44,8 @@ def main(params,plot=False):
 
     b.setTable(params['tableMC'])
 
+    print params['preselectionMC']
+
     # The min and max rigidities used for the event generation
     Rmin=1
     Rmax=200
@@ -66,7 +68,7 @@ def main(params,plot=False):
             params['binningRgdtTheoretic'][i],
             Rmax,Rmin,
             nTotal)
-    nGenPerBin+='ELSE NULL END '
+    nGenPerBin+=' ELSE NULL END '
 
     # nGenPerBin="(log({}) - log({})) / (log({}) - log({})) * {}".format(b.binHighEdgeFromArray("GenMomentum",params['binningRgdtTheoretic']), 
     #                                                                    b.binLowEdgeFromArray("GenMomentum",params['binningRgdtTheoretic']),
@@ -80,9 +82,10 @@ def main(params,plot=False):
     #       FROM AMS.protonsB1034 WHERE " + cut3TOFLayers + \
     #       "GROUP BY binX, nGenPerBin  HAVING binX >= 0 ORDER BY binX, nGenPerBin))'"
 
+#    theQueryNumberPreselected="SELECT binX, nPreselPerBin, nGenPerBin, nPreselPerBin/nGenPerBin AS AccEff FROM (\
     theQueryNumberPreselected="SELECT binX, nPreselPerBin, nGenPerBin, nPreselPerBin/nGenPerBin*3.9*3.9*PI() AS AccEff FROM (\
           SELECT "+b.binLowEdgeFromArray("GenMomentum",params['binningRgdtTheoretic']) +"as binX, \
-          COUNT(*) as nPreselPerBin, "+ nGenPerBin + " as nGenPerBin \
+          COUNT(1) as nPreselPerBin, "+ nGenPerBin + " as nGenPerBin \
           FROM AMS.protonsB1034 WHERE " + params['preselectionMC'] + \
           "GROUP BY binX, nGenPerBin  HAVING binX >= 0 ORDER BY binX, nGenPerBin)"
 
@@ -99,5 +102,5 @@ def main(params,plot=False):
 # for debugging only
 if __name__ == "__main__":
     import json
-    print main(json.load(open('param.json')),plot=True)
+    print main(json.load(open('../param.json')),plot=True)
 

@@ -157,6 +157,10 @@ void AddECALVariable(ROOTDataList & data, TTree * tree)
     data.push_back(Wrap<double             , EnergyE         >("EnergyE"         , tree));
     data.push_back(Wrap<double             , dedxECAL        >("dedxECAL"        , tree));
     data.push_back(Wrap<int                , nlayMip         >("nlayMip"         , tree));
+
+    data.push_back(Wrap<float              , MIPQLi_Mean     >("MIPQLi_Mean"     , tree));
+    data.push_back(Wrap<float              , MIPQLi_RMS      >("MIPQLi_RMS"      , tree));
+    data.push_back(Wrap<int                , MIPQLi_NPnt     >("MIPQLi_NPnt"     , tree));
 }
 
 void AddMCVariables(ROOTDataList & data, TTree * tree)

@@ -1,3 +1,6 @@
+* Current tasks
+** implement gradient method
+
 * Cuts
 ** To be added in preselection:
 Linearly extrapolated trajectory of the TOF hit positions passing both tracker layer 1 and 9.

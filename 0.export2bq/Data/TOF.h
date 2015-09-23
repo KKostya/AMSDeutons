@@ -8,12 +8,14 @@
 #endif
 #include <amschain.h>
 
+#include "TofRecon.h"
+
 int NTofClusters(AMSEventR * ev);    
 int NTofClustersUsed(AMSEventR * ev);
 std::vector<double> EdepTOF(AMSEventR * ev);
 double BetaTOF(AMSEventR * ev);
 double ChargeTOF(AMSEventR * ev);
-
+int TrackTof(AMSEventR * ev);
 
 std::vector<double> TOFCoordsX(AMSEventR * ev);
 std::vector<double> TOFCoordsY(AMSEventR * ev);

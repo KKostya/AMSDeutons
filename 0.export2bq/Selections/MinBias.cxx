@@ -20,19 +20,20 @@
 bool minimumbiasTOF(AMSEventR *ev)
 {
     if(ev->nParticle()   == 0) return false;
-    if(ev->nTofCluster() == 0) return false;
+    if(ev->NTofClusterH() == 0) return false;
     bool goodlayer[4]={false,false,false,false};
     
-    for(int ic=0;ic<ev->nTofCluster();ic++)
+    for(int ic=0;ic<ev->NTofClusterH();ic++)
     {
-        TofClusterR * cluster = ev->pTofCluster(ic);
+        TofClusterHR * cluster = ev->pTofClusterH(ic);
         if(!cluster) continue;
 
 	// bit3(4)  -> ambig
 	// bit5(16) -> BAD((bit9 | bit10) & !bit12))
 	// bit8 is ORed over cluster-members
         if(cluster->Status & 0x1f94) continue; // 0b1111110010100
-        goodlayer[cluster->Layer-1]=true;
+        //goodlayer[cluster->Layer-1]=true;
+        goodlayer[cluster->Layer]=true;
     }
     
     int nGoodLayers = 0;

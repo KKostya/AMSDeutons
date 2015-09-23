@@ -1,16 +1,16 @@
 #include "TOF.h"
 
-
-int NTofClusters(AMSEventR * ev)    { return ev?ev->NTofCluster():0; }
-int NTofClustersUsed(AMSEventR * ev){ return ev?(ev->pBeta(0)?ev->pBeta(0)->NTofCluster():0):0; }
+int NTofClusters(AMSEventR * ev)    { return ev?ev->NTofClusterH():0; }
+int NTofClustersUsed(AMSEventR * ev){ return ev?(ev->pBetaH(0)?ev->pBetaH(0)->NTofClusterH():0):0; }
 
 // TOF energy deposit
 std::vector<double> EdepTOF(AMSEventR * ev)
 {
     std::vector<double> ret(4);
     for(int j=0; j<4; j++) ret[j] = 0;
-    for(int j=0; j<ev->NTofCluster(); j++)
-        ret[(ev->pTofCluster(j)->Layer)-1] = ev->pTofCluster(j)->Edep;
+    for(int j=0; j<ev->NTofClusterH(); j++)
+        //ret[(ev->pTofClusterH(j)->Layer)-1] = ev->pTofClusterH(j)->GetEdep();
+        ret[ev->pTofClusterH(j)->Layer] = ev->pTofClusterH(j)->GetEdep();
     return ret;
 }
 
@@ -40,12 +40,21 @@ std::vector<double> tofCoords(AMSEventR * ev)
 {
     std::vector<double> ret(4);
     for(int j=0; j<4; j++) ret[j] = 0;
-    for(int j=0; j<ev->NTofCluster(); j++)
-        ret[(ev->pTofCluster(j)->Layer)-1] = ev->pTofCluster(j)->Coo[I];
+    for(int j=0; j<ev->NTofClusterH(); j++)
+        //ret[(ev->pTofClusterH(j)->Layer)-1] = ev->pTofClusterH(j)->Coo[I];
+        ret[ev->pTofClusterH(j)->Layer] = ev->pTofClusterH(j)->Coo[I];
     return ret;
+}
+
+int TrackTof(AMSEventR * ev){
+    if( TofRecon::TofTracksList.size() == 0) return 0;
+
+    // Ask that extrapolation crosses Tracker layers L2 to L8 with a safety margin of 0
+    return TofRecon::TofTracksList[0] -> GetPatternInsideTracker(0);
 }
 
 std::vector<double> TOFCoordsX(AMSEventR * ev) { return tofCoords<0>(ev); }
 std::vector<double> TOFCoordsY(AMSEventR * ev) { return tofCoords<1>(ev); }
 std::vector<double> TOFCoordsZ(AMSEventR * ev) { return tofCoords<2>(ev); }
+
 
