@@ -5,38 +5,35 @@
 #      
 #       source /afs/cern.ch/user/k/kostams/public/VirtualEnv/env.sh
 
-# In[2]:
 import sys
 import pandas as pd
 import numpy  as np
+import matplotlib.pyplot as plt
 
 
-# In[3]:
 
 import seaborn as s
 from matplotlib.colors import LogNorm
 s.set(rc={'image.cmap': "jet"})
-figsize(12,10)
-rcParams['figure.facecolor'] = (1,1,1,1)
-rcParams['savefig.facecolor'] = (1,1,1,1)
+#plt.figsize(12,10)
+# rcParams['figure.facecolor'] = (1,1,1,1)
+# rcParams['savefig.facecolor'] = (1,1,1,1)
 
 
-# In[4]:
 
 def plot_matrix(frame, **args):
     from matplotlib.colors import LogNorm
     x,y = np.meshgrid(np.array(frame.index,   dtype=float),
                       np.array(frame.columns, dtype=float))
     z = frame.T.values.astype(float)
-    ret = gca().pcolor(y,x,z, **args)
-    (lambda x: xlim(x[0],x[-1]))(frame.columns)
-    (lambda x: ylim(x[0],x[-1]))(frame.index  ) 
+    ret = plt.gca().pcolor(y,x,z, **args)
+    (lambda x: plt.xlim(x[0],x[-1]))(frame.columns)
+    (lambda x: plt.ylim(x[0],x[-1]))(frame.index  ) 
     return ret
 
 
 # # This creates the resolution tensors and writes them to csvs
 
-# In[5]:
 
 # There are the bins from the JS app
 betaTheoretic = np.array([ 
@@ -66,19 +63,16 @@ mp, md = 0.9382, 1.8756
 rgdtTheoretic = mp * betaTheoretic / np.sqrt(1 - betaTheoretic**2)
 
 
-# In[6]:
 
 sys.path.insert(0,'../../doc/Statistics')
 from bq_hist import get_hist_series
 
 
-# In[7]:
 
 betaMeasured=np.linspace(0.4,1.5,100)
 rgdtMeasured=np.linspace(0.0, 15,151)
 
 
-# In[18]:
 
 genBeta = "GenMomentum/SQRT(0.88022 + POW(GenMomentum,2))"
 varNames = [('BetaTOF',  'Beta',   betaMeasured ),
@@ -100,9 +94,10 @@ seriesDeut = get_hist_series('AMS.dB1030_GG_Blic',varNames)
 seriesData = get_hist_series('AMS.Data',varNames[:-1])
 
 
-# In[19]:
 
-save = True
+save = False
+load = True
+
 if save:
     import gzip
     seriesB1034.to_csv(gzip.open("seriesB1034.csv.gz","w"))
@@ -113,9 +108,7 @@ if save:
 
 # # Load the csvs and do the work
 
-# In[20]:
 
-load = False
 if load:
     import gzip 
     args = { "header":None, "index_col": [0,1,2]}
@@ -134,7 +127,6 @@ if load:
     seriesData.index.names = ['Beta','R']
 
 
-# In[21]:
 
 def expectedCounts(resolutions,fluxes,mask=None):
     """ Makes expectd counts given a list of fluxes and a list of resolution matrices"""
@@ -162,7 +154,6 @@ def gradLogLikelihood(obs, resolutions, fluxes, mask=None):
     return [res.unstack(level=[0,1]).dot(v) for res in resolutions] 
 
 
-# In[22]:
 
 # Numerical check that the gradient is ok
 # Takes about 2 minutes
@@ -190,15 +181,12 @@ frame
 
 # # Masking (inclomplete)
 
-# In[69]:
 
 # proton "flux" is  flat 1
 # deuteron is flat 0.1 
 fluxP = pd.Series(1.0,seriesB1034.index.levels[2])
 fluxD = pd.Series(0.1,seriesB1034.index.levels[2])
 
-
-# In[70]:
 
 mp,md = 0.938, 1.875
 def R_from_beta(beta, m=mp):
