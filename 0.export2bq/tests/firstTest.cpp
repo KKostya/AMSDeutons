@@ -69,7 +69,7 @@ protected:  // You should make the members protected s.t. they can be
                 outTree -> Fill();
             }
 
-        // EXPECT_GT(outTree->GetEntries(), 0);
+        EXPECT_GT(outTree->GetEntries(), 0);
     }
 
 
@@ -83,55 +83,47 @@ TEST_F(QueueTest,AddProvenanceVariables ) {
     // You can access data in the test fixture here.
     //EXPECT_EQ(0u, q0_.Size());
     loop100Events(AddProvenanceVariables);
-    EXPECT_EQ(1,1);
 }
 
 TEST_F(QueueTest,AddGeoVariables ) {
     // You can access data in the test fixture here.
     //EXPECT_EQ(0u, q0_.Size());
     loop100Events(AddGeoVariables);
-    EXPECT_EQ(1,1);
 }
 
 TEST_F(QueueTest,AddSelectionVariables ) {
     // You can access data in the test fixture here.
     //EXPECT_EQ(0u, q0_.Size());
     loop100Events(AddSelectionVariables);
-    EXPECT_EQ(1,1);
 }
 
 TEST_F(QueueTest,AddECALVariable ) {
     // You can access data in the test fixture here.
     //EXPECT_EQ(0u, q0_.Size());
     loop100Events(AddECALVariable);
-    EXPECT_EQ(1,1);
 }
 
 TEST_F(QueueTest,AddTRDVariables ) {
     // You can access data in the test fixture here.
     //EXPECT_EQ(0u, q0_.Size());
     loop100Events(AddTRDVariables);
-    EXPECT_EQ(1,1);
 }
 
 TEST_F(QueueTest,AddTOFVariables ) {
     // You can access data in the test fixture here.
     //EXPECT_EQ(0u, q0_.Size());
     loop100Events(AddTOFVariables);
-    EXPECT_EQ(1,1);
 }
 
 TEST_F(QueueTest,AddTrackerVariables ) {
     // You can access data in the test fixture here.
     //EXPECT_EQ(0u, q0_.Size());
     loop100Events(AddTrackerVariables);
-    EXPECT_EQ(1,1);
 }
 
 TEST_F(QueueTest,Add3DVariables ) {
     // You can access data in the test fixture here.
     //EXPECT_EQ(0u, q0_.Size());
     loop100Events(Add3DVariables);
-    EXPECT_EQ(1,1);
 }
 
