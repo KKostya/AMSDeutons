@@ -79,8 +79,7 @@ def main(params, outFilename="2.counting/datasets/observed_data.txt"):
         bin='GenBin: ['+str(params['binningBetaTheoretic'][i])+';'+str(params['binningBetaTheoretic'][i+1])+']; '
         df=frame[frame['Gen_bin']==i][['R_bin','B_bin','count']].set_index(['R_bin','B_bin']).unstack().fillna(0)['count']
         print df.sum().sum()
-        df.to_csv('beta_vs_rgdt_GenBin'+str(i)+'.pd',index_label=bin+ 'R_bin/B_bin')
-
+        
         df = df/df.sum().sum()
         
         df=df.drop(-1,axis=0).drop(-1,axis=1)
@@ -97,11 +96,12 @@ def main(params, outFilename="2.counting/datasets/observed_data.txt"):
         df=df.transpose()
         addMissingColumns(params['binningRgdtMeasured'])
 
-        df.to_csv('beta_vs_rgdt_GenBin'+str(i)+'.pd',index_label=bin+ 'R_bin/B_bin')
+        df.to_csv('2.counting/mcmc/beta_vs_rgdt_GenBin'+str(i)+'.pd',index_label=bin+ 'R_bin/B_bin')
     return frame
 
 # for debugging only
 if __name__ == "__main__":
     import json
-    print main(json.load(open('../../param.json')))
+    os.chdir("../..")
+    print main(json.load(open('param.json')))
 

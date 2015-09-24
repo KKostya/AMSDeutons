@@ -286,6 +286,7 @@ MatrixF PDModel::GetPredictionFast(const SearchSpace & point)
         output += (matrixBase[i+nBinsBetaT]*point.fluxD[i]);
     }
 
+    output.map([this](float v, int b, int r){return v*mask.get(b,r);});
     return output;
 }
 
@@ -385,6 +386,7 @@ MatrixF PDModel::getObservedDataFromFile(const std::string & fname)
 
     MatrixF obs(betaBinsM.size()-1,rgdtBinsM.size()-1);
     obs.Fill(data);
+    obs.map([this](float v, int b, int r){return v*mask.get(b,r);});
     return obs;
 }
 
