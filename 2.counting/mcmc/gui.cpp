@@ -1,50 +1,11 @@
 #include "gui.hpp"
 
-std::string files[] = {
-    "beta_vs_rgdt_GenBin0.pd", 
-    "beta_vs_rgdt_GenBin1.pd", 
-    "beta_vs_rgdt_GenBin2.pd", 
-    "beta_vs_rgdt_GenBin3.pd", 
-    "beta_vs_rgdt_GenBin4.pd", 
-    "beta_vs_rgdt_GenBin5.pd", 
-    "beta_vs_rgdt_GenBin7.pd", 
-    "beta_vs_rgdt_GenBin6.pd", 
-    "beta_vs_rgdt_GenBin8.pd", 
-    "beta_vs_rgdt_GenBin9.pd", 
-    "beta_vs_rgdt_GenBin10.pd",
-    "beta_vs_rgdt_GenBin11.pd",
-    "beta_vs_rgdt_GenBin12.pd",
-    "beta_vs_rgdt_GenBin13.pd",
-    "beta_vs_rgdt_GenBin14.pd",
-    "beta_vs_rgdt_GenBin16.pd",
-    "beta_vs_rgdt_GenBin15.pd",
-    "beta_vs_rgdt_GenBin17.pd",
-    "beta_vs_rgdt_GenBin18.pd",
-    "beta_vs_rgdt_GenBin19.pd", 
-    "beta_vs_rgdt_GenBin20.pd", 
-    "beta_vs_rgdt_GenBin21.pd", 
-    "beta_vs_rgdt_GenBin22.pd", 
-    "beta_vs_rgdt_GenBin23.pd", 
-    "beta_vs_rgdt_GenBin24.pd", 
-    "beta_vs_rgdt_GenBin26.pd", 
-    "beta_vs_rgdt_GenBin25.pd", 
-    "beta_vs_rgdt_GenBin27.pd", 
-    "beta_vs_rgdt_GenBin28.pd", 
-    "beta_vs_rgdt_GenBin29.pd",
-    "beta_vs_rgdt_GenBin30.pd",
-    "beta_vs_rgdt_GenBin31.pd",
-    "beta_vs_rgdt_GenBin32.pd",
-    "beta_vs_rgdt_GenBin33.pd",
-    "beta_vs_rgdt_GenBin35.pd",
-    "beta_vs_rgdt_GenBin34.pd",
-    "beta_vs_rgdt_GenBin36.pd",
-    "beta_vs_rgdt_GenBin37.pd"
-};
 
 void readFlux(std::string filename, std::vector<float> & fluxP, std::vector<float> & fluxD){
     std::ifstream f("flux.txt");
     if( ! f.good() ){
-        std::cout << "The file : " << filename << " does not exist or is corrupted" << std::endl;
+        std::cerr << "ERROR IN gui.cpp:readFlux" << std::endl;
+        std::cerr << "The file : " << filename << " does not exist or is corrupted" << std::endl;
         exit(-1);
     }
 
@@ -63,7 +24,7 @@ void readFlux(std::string filename, std::vector<float> & fluxP, std::vector<floa
 }
 
 MyMainFrame::MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h)
-    : TGMainFrame(p,w,h, kHorizontalFrame), model(PDModel::FromCSVSBiDim( std::vector<std::string>(begin(files),end(files)), "../datasets/mask.csv" )), rightMargin(0.2) {
+    : nGenBins(39), TGMainFrame(p,w,h, kHorizontalFrame), model(PDModel::FromCSVSBiDim( "beta_vs_rgdt_GenBin0.pd", nGenBins, "../datasets/mask.csv" )), rightMargin(0.2) {
     // Creates widgets of the example
 
     initPoint();
@@ -164,8 +125,7 @@ void MyMainFrame::addMain(TGCompositeFrame* frParent){
     observedMatrixFrame(fr);
     predictedMatrixFrame(fr);
     
-    std::vector<std::string> theFiles(begin(files),end(files));
-    fluxFrame=new TGHorizontalFrame(fr);
+    fluxFrame=new TGHorizontalFrame(fr,200);
     {
         std::map<std::string, TGVerticalFrame*> flux;
         std::map<std::string, std::vector<float>> value;
@@ -180,7 +140,7 @@ void MyMainFrame::addMain(TGCompositeFrame* frParent){
 
         
         for(auto it=flux.begin();it!=flux.end();it++){
-            for(int i = 0;i<theFiles.size()/2;i++){
+            for(int i = 0;i<nGenBins;i++){
                 TGHorizontalFrame *binFrame=new TGHorizontalFrame(it->second);
                 
                 TGLabel* binNumber = new TGLabel(binFrame, ("#"+generalUtils::toString(i)).c_str() );

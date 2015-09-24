@@ -25,6 +25,7 @@ private:
     std::map<std::string, TH2F*> h;
     std::map<std::string, std::vector<TGNumberEntry*>> bin;
 
+    int nGenBins;
     PDModel model;
     SearchSpace point;
     TGHorizontalFrame *fluxFrame;
@@ -33,6 +34,7 @@ private:
     void initPoint();
 
     float zAxisMin, zAxisMax;
+
 public:
     MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h);
     void DoDraw() {

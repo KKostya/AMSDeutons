@@ -106,14 +106,18 @@ int main(int argc, char** argv){
     
     int c;
     int nStep = 0;
+    int nGenBin = 0;
     std::string name = "test";
     std::string maskFile = ""; 
     bool verbose = false;
     float alphaRegularization = 0;
-    while((c =  getopt(argc, argv, "n:f:v:a:m:")) != EOF)
+    while((c =  getopt(argc, argv, "n:f:v:a:m:g:")) != EOF)
         {
             switch (c)
                 {
+                case 'g':
+                    nGenBin = generalUtils::stringTo<int>(optarg);
+                    break;
                 case 'n':
                     nStep = generalUtils::stringTo<int>(optarg);
                     break;
@@ -139,7 +143,7 @@ int main(int argc, char** argv){
     //    MCMC<RealisticToyModel, ProposalFunction > a(name);
 
     
-    RealDataModel model;
+    RealDataModel model(nGenBin);
     if(maskFile != "") model.SetMask(maskFile);
     model.setRegularizationFactor(alphaRegularization);
 
