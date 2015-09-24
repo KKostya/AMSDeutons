@@ -2,7 +2,6 @@ import pandas as pd
 from pd_model import *
 import seaborn as s
 from matplotlib.colors import LogNorm
-import bq
 from histQueryFactory import *
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,12 +14,13 @@ def main(params, outFilename="2.counting/datasets/observed_data.txt"):
     ##
     ################################################################################
 
-    client = bq.Client.Get()
-    schema = client.GetTableSchema({
+    connector = pd.io.gbq.GbqConnector('ams-test-kostya', reauth=False)
+    tbls = connector.service.tables()
+    schema = tbls.get(**{
         'projectId': 'ams-test-kostya',
         'datasetId': 'AMS',
         'tableId': 'protonsB800'
-    })
+    }).execute()['schema']
 
     bitFields = None
     for field in schema['fields']:
