@@ -92,6 +92,9 @@ public:
     // Log likelihood
     virtual float GetLogLikelihood(const SearchSpace & point) override;
     
+    // Gradient of Log likelihood
+    SearchSpace GetLogLikelihoodGradient(const SearchSpace & point);
+
     // Regularization term
     void ComputeRegularizationTerm(const SearchSpace & point);
     
