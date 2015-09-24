@@ -19,7 +19,7 @@ def main(params, outFilename="2.counting/datasets/observed_data.txt"):
     schema = client.GetTableSchema({
         'projectId': 'ams-test-kostya',
         'datasetId': 'AMS',
-        'tableId': 'protonsB1034'
+        'tableId': 'protonsB800'
     })
 
     bitFields = None
@@ -73,16 +73,19 @@ def main(params, outFilename="2.counting/datasets/observed_data.txt"):
 
     # frame.T.to_csv(os.path.dirname(outFilename)+"B_resolution.csv")
 
-    gen_bin=frame['Gen_bin'].unique()
+    
 
-    for i in gen_bin:
+    for i in range( len(params['binningBetaTheoretic']) - 1 ):
         bin='GenBin: ['+str(params['binningBetaTheoretic'][i])+';'+str(params['binningBetaTheoretic'][i+1])+']; '
         df=frame[frame['Gen_bin']==i][['R_bin','B_bin','count']].set_index(['R_bin','B_bin']).unstack().fillna(0)['count']
-        print df.sum().sum()
-        
         df = df/df.sum().sum()
-        
-        df=df.drop(-1,axis=0).drop(-1,axis=1)
+
+
+        # Dropping overflow row and column
+        if -1 in df.columns:
+            df=df.drop(-1,axis=1)
+        if -1 in df.index:
+            df=df.drop(-1,axis=0)
         
         def addMissingColumns(ref_columns):
             col=set(df.columns.values)
