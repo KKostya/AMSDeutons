@@ -26,7 +26,10 @@ import pandas as pd
 def main(params,directory=None):
     if params['redoMCMC']:
         if params['redoMatrices']: produceMatrices.main(params)
-        os.system("cd 2.counting/mcmc; rm -rf latestMCMC; make -B; ./mcmc -f latestMCMC -n 1000000")
+        cmd="cd 2.counting/mcmc; rm -rf latestMCMC;make -B; ./mcmc -f latestMCMC -n 1000000 -g "+ str(len(params['binningRgdtTheoretic'])-1)
+        print 'Sending command:'
+        print cmd
+        os.system(cmd )
         
     fluxP,fluxD=readMCMC.main(params,directory)
 
