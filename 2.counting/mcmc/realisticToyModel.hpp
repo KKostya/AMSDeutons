@@ -94,8 +94,8 @@ struct RealDataModel: public PDModel
 {
     static const bool isToyMC = false;
 
-    RealDataModel():
-        PDModel(PDModel::FromCSVSBiDim( std::vector<std::string>(begin(files),end(files)), "../datasets/mask.csv" ))
+    RealDataModel(int _nGenBin):
+        PDModel( PDModel::FromCSVSBiDim( "beta_vs_rgdt_GenBin0.pd", _nGenBin, "../datasets/mask.csv" ) )
         //PDModel(PDModel::FromCSVS("../datasets/B_resolution.csv", "../datasets/R_resolution.csv", "../datasets/mask.csv"))
     {
         // Get initial conditions
