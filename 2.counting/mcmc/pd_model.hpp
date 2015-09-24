@@ -5,6 +5,7 @@
 #include <iostream>
 #include <regex>
 #include <tuple>
+#include <limits>
 
 #include "Matrix.hpp"
 #include "SearchSpace.hpp"
@@ -89,7 +90,7 @@ public:
     MatrixF GetPredictionFast(const SearchSpace & point);
     
     // Log likelihood
-    virtual float GetLogLikelihood(const SearchSpace & point);
+    virtual float GetLogLikelihood(const SearchSpace & point) override;
     
     // Gradient of Log likelihood
     SearchSpace GetLogLikelihoodGradient(const SearchSpace & point);
@@ -103,6 +104,8 @@ public:
     
     // Observed
     void LoadObservedDataFromFile(const std::string & fname);
+    MatrixF getObservedDataFromFile(const std::string & fname);
+    
     void GenerateToyObservedData(const SearchSpace & point){
         observed = GetPrediction(point);
     }

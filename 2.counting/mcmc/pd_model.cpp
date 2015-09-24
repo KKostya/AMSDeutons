@@ -129,6 +129,9 @@ PDModel PDModel::FromCSVS(const std::string & betaFile, const std::string & rgdt
 
     MatrixF _rgdtF = getMatrixAndBins(rgdt, rT, rM).subMatrix(nTrueBins);
     MatrixF _betaF = getMatrixAndBins(beta, bT, bM).subMatrix(nTrueBins);
+
+    _betaF.normalize(MatrixF::NormBy::kColumn);
+    _rgdtF.normalize(MatrixF::NormBy::kColumn);
     //    MatrixB _mask = getMask(maskFile).subMatrix(nTrueBins);
 
     MatrixB _mask(bM.size()-1,rM.size()-1,true);
@@ -363,7 +366,7 @@ void PDModel::ComputeRegularizationTerm(const SearchSpace & point){
 }
 
 
-void PDModel::LoadObservedDataFromFile(const std::string & fname)
+MatrixF PDModel::getObservedDataFromFile(const std::string & fname)
 {
     std::fstream fs(fname);
     std::vector<std::vector<float> > data;
@@ -382,5 +385,9 @@ void PDModel::LoadObservedDataFromFile(const std::string & fname)
 
     MatrixF obs(betaBinsM.size()-1,rgdtBinsM.size()-1);
     obs.Fill(data);
-    observed = obs;
+    return obs;
+}
+
+void PDModel::LoadObservedDataFromFile(const std::string & fname){
+    observed = getObservedDataFromFile(fname);
 }
