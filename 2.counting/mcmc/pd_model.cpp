@@ -98,21 +98,19 @@ PDModel::PDModel(
 
 void PDModel::init(){
     for(int bBin=0; bBin < betaBinsT.size() - 1; bBin++)
+    {
+        for(int rBin=0; rBin < rgdtBinsT.size() - 1; rBin++)
         {
-            for(int rBin=0; rBin < rgdtBinsT.size() - 1; rBin++)
-                {
-                    float bmin = betaBinsT[bBin], bmax = betaBinsT[bBin+1];
-                    float Rmin = rgdtBinsT[rBin], Rmax = rgdtBinsT[rBin+1];
-                    float bP1 = beta_from_R(Rmin, mp), bP2 = beta_from_R(Rmax, mp);
-                    float bD1 = beta_from_R(Rmin, md), bD2 = beta_from_R(Rmax, md);
+            float bmin = betaBinsT[bBin], bmax = betaBinsT[bBin+1];
+            float Rmin = rgdtBinsT[rBin], Rmax = rgdtBinsT[rBin+1];
+            float bP1 = beta_from_R(Rmin, mp), bP2 = beta_from_R(Rmax, mp);
+            float bD1 = beta_from_R(Rmin, md), bD2 = beta_from_R(Rmax, md);
 
-                    deltaP.at(bBin, rBin) = getOverlap(bmin,bmax,bP1,bP2)/(bmax-bmin);
-                    deltaD.at(bBin, rBin) = getOverlap(bmin,bmax,bD1,bD2)/(bmax-bmin);
-                    //if( bBin == betaBinsTs
-                }
+            deltaP.at(bBin, rBin) = getOverlap(bmin,bmax,bP1,bP2)/(bmax-bmin);
+            deltaD.at(bBin, rBin) = getOverlap(bmin,bmax,bD1,bD2)/(bmax-bmin);
+            //if( bBin == betaBinsTs
         }
-    
-
+    }
 }
 
 PDModel PDModel::FromCSVS(const std::string & betaFile, const std::string & rgdtFile, const std::string & maskFile, int nTrueBins )
@@ -233,20 +231,19 @@ void PDModel::SetMask(const std::string & maskFile){
 
 void PDModel::SetMask(const MatrixB & _mask)
 {
-    if( _mask.getNrows() != (betaBinsM.size() - 1) || _mask.getNcolums() != (rgdtBinsM.size() - 1) ) 
-        {
-            std::cout <<"Error in " << __FUNCTION__ << "\n";
-            std::cout <<"mask matrix size "
-                      << "(" << _mask.getNrows()
-                      << "," << _mask.getNcolums() << ")\n";
-            std::cout <<"is incompatible with measured beta or rgdt binning size"
-                      << (betaBinsM.size() - 1) << "," << (rgdtBinsM.size() - 1) << ".\n";
+    if( _mask.getNrows() != (betaBinsM.size() - 1) || _mask.getNcolums() != (rgdtBinsM.size() - 1) ) {
+        std::cout <<"Error in " << __FUNCTION__ << "\n";
+        std::cout <<"mask matrix size "
+                  << "(" << _mask.getNrows()
+                  << "," << _mask.getNcolums() << ")\n";
+        std::cout <<"is incompatible with measured beta or rgdt binning size"
+                  << (betaBinsM.size() - 1) << "," << (rgdtBinsM.size() - 1) << ".\n";
 
-            for(int i = 0;i<rgdtBinsM.size();i++){
-                std::cout << "rgdtBinsM[i] : " << rgdtBinsM[i] << std::endl;
-            }
-            exit(-1);
+        for(int i = 0;i<rgdtBinsM.size();i++){
+            std::cout << "rgdtBinsM[i] : " << rgdtBinsM[i] << std::endl;
         }
+        exit(-1);
+    }
 
     mask = _mask;
 }
@@ -317,6 +314,28 @@ float PDModel::GetLogLikelihood(const SearchSpace & point)
 
     // ComputeRegularizationTerm(point);
     // ret -= regularizationTerm;
+    return ret;
+}
+
+
+PDModel::SearchSpace PDModel::GetLogLikelihoodGradient(const SearchSpace & point)
+{
+    long unsigned int nBinsBetaT = betaBinsT.size() - 1;
+    // (N/Lambda - 1)
+    Matrix factor = GetPredictionFast(point);
+    factor.map([this](float expected , int n, float m){
+        return observed.get(n,m)/expected - 1;
+    });
+
+    auto product = [&factor](float f, int n, float m)
+                   { return factor.get(n,m) * f; };
+
+    SearchSpace ret;
+    for(int i = 0;i<nBinsBetaT;i++){
+        ret.fluxP.push_back(matrixBase[i].applyAndSum(product));
+        ret.fluxD.push_back(matrixBase[i+nBinsBetaT].applyAndSum(product));
+    }
+
     return ret;
 }
 
