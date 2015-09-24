@@ -24,7 +24,12 @@ void readFlux(std::string filename, std::vector<float> & fluxP, std::vector<floa
 }
 
 MyMainFrame::MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h)
-    : nGenBins(39), TGMainFrame(p,w,h, kHorizontalFrame), model(PDModel::FromCSVSBiDim( "beta_vs_rgdt_GenBin0.pd", nGenBins, "../datasets/mask.csv" )), rightMargin(0.2) {
+    : windowWidth(w),
+      windowHeight(h),
+      nGenBins(39),
+      TGMainFrame(p,windowWidth, windowHeight, kHorizontalFrame),
+      model(PDModel::FromCSVSBiDim( "beta_vs_rgdt_GenBin0.pd", nGenBins, "../datasets/mask.csv" )),
+      rightMargin(0.2) {
     // Creates widgets of the example
 
     initPoint();
@@ -146,7 +151,7 @@ void MyMainFrame::addMain(TGCompositeFrame* frParent){
                 TGLabel* binNumber = new TGLabel(binFrame, ("#"+generalUtils::toString(i)).c_str() );
                 binFrame -> AddFrame(binNumber);
                 
-                bin[it->first][i] = new TGNumberEntry(binFrame, value[it->first][i], 6, -1, TGNumberFormat::kNESInteger);
+                bin[it->first][i] = new TGNumberEntry(binFrame, value[it->first][i], 10, -1, TGNumberFormat::kNESInteger);
                 binFrame -> AddFrame(bin[it->first][i]);
                 
                 it->second -> AddFrame(binFrame, new TGLayoutHints(kLHintsCenterX,2,2,2,2));

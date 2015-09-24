@@ -13,7 +13,6 @@
 #include "TH2F.h"
 #include "TStyle.h"
 
-#include "Stack.hpp"
 #include "pd_model.hpp"
 #include "generalUtils.hpp"
 
@@ -25,6 +24,8 @@ private:
     std::map<std::string, TH2F*> h;
     std::map<std::string, std::vector<TGNumberEntry*>> bin;
 
+
+    int windowWidth, windowHeight;
     int nGenBins;
     PDModel model;
     SearchSpace point;
