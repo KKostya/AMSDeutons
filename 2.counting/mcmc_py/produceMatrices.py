@@ -31,7 +31,7 @@ def main(params, outFilename="2.counting/datasets/observed_data.txt"):
                        build_case_string("GenMomentum/SQRT(0.88022 + POW(GenMomentum,2))", "Gen_bin", params['binningBetaTheoretic']),
                        "COUNT(1) as count" ])
 
-  h = "SELECT\n" + vs + """
+   h = "SELECT\n" + vs + """
     FROM
        {tableMC} 
     WHERE
