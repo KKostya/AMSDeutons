@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 from pd_model import *
 import seaborn as s
 from matplotlib.colors import LogNorm
@@ -8,30 +9,6 @@ import numpy as np
 import os
 
 def main(params, outFilename="2.counting/datasets/observed_data.txt"):
-    ################################################################################
-    ##
-    ##  MAKING BQ CLEAR
-    ##
-    ################################################################################
-
-    connector = pd.io.gbq.GbqConnector('ams-test-kostya', reauth=False)
-    tbls = connector.service.tables()
-    schema = tbls.get(**{
-        'projectId': 'ams-test-kostya',
-        'datasetId': 'AMS',
-        'tableId': 'protonsB800'
-    }).execute()['schema']
-
-    bitFields = None
-    for field in schema['fields']:
-        if field['name'] != 'selStatus':
-            continue
-        bitFields = field['description'].split(',')
-        break
-
-    get_cumulative_mask = lambda sel: (1 << (bitFields.index(sel))) - 1
-
-
     import itertools
     def iterpairs(l):
         i1,i2 = itertools.tee(l); next(i2)
@@ -54,13 +31,14 @@ def main(params, outFilename="2.counting/datasets/observed_data.txt"):
                        build_case_string("GenMomentum/SQRT(0.88022 + POW(GenMomentum,2))", "Gen_bin", params['binningBetaTheoretic']),
                        "COUNT(1) as count" ])
 
-    h = "SELECT\n" + vs + """
+  h = "SELECT\n" + vs + """
     FROM
-       AMS.protonsB1034
+       {tableMC} 
     WHERE
-       (""" + params['preselectionMC'] + """ AND """ + params['trackSelectionMC'] + """)
+       ({preselectionMC}) AND ({trackSelectionMC})
     GROUP BY B_bin,R_bin,Gen_bin
-    ORDER BY B_bin,R_bin,Gen_bin"""
+    ORDER BY B_bin,R_bin,Gen_bin""".format(**params)
+
 
     # tableid = client.Query(str(h))['configuration']['query']['destinationTable']
     # bq_table = client.ReadTableRows(tableid)
