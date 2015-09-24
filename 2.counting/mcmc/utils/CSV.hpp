@@ -49,17 +49,6 @@ MatrixF getMatrixAndBins( std::fstream & fs,
     MatrixF M(binsT.size()-1, binsM.size()-1);
     M.Fill(data);
 
-    std::vector<float> sums;
-    for(auto row : data)
-        {
-            float sum = 0;
-            for(auto v : row) sum += v;
-            sums.push_back(sum);
-        }
-
-    M.map([&sums](float v, int t ){return v/(sums[t]>0?sums[t]:1);});
-
-
     return M;
 }
 
