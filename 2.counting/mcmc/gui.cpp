@@ -41,85 +41,202 @@ std::string files[] = {
     "beta_vs_rgdt_GenBin37.pd"
 };
 
-MyMainFrame::MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h)
-    : TGMainFrame(p,w,h), model(PDModel::FromCSVSBiDim( std::vector<std::string>(begin(files),end(files)), "../datasets/mask.csv" )) {
-    // Creates widgets of the example
-    fEcanvas = new TRootEmbeddedCanvas ("Ecanvas",this,200,200);
-    AddFrame(fEcanvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,
-                                         10,10,10,1));
-    TGHorizontalFrame *hframe=new TGHorizontalFrame(this, 200,40);
-    TGTextButton *draw = new TGTextButton(hframe,"&Draw");
-    draw->Connect("Clicked()","MyMainFrame",this,"DoDraw()");
-    hframe->AddFrame(draw, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
-    TGTextButton *exit = new TGTextButton(hframe,"&Exit ",
-                                          "gApplication->Terminate()");
-    hframe->AddFrame(exit, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
-    AddFrame(hframe,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+void readFlux(std::string filename, std::vector<float> & fluxP, std::vector<float> & fluxD){
+    std::ifstream f("flux.txt");
+    if( ! f.good() ){
+        std::cout << "The file : " << filename << " does not exist or is corrupted" << std::endl;
+        exit(-1);
+    }
 
+    fluxP.clear();
+    fluxD.clear();
+    
+    float p,d;
+    while(! f.eof() ){
+        f >> p >> d;
+        fluxP.push_back(p);
+        fluxD.push_back(d);
+    }
+
+    fluxP.pop_back();
+    fluxD.pop_back();
+}
+
+MyMainFrame::MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h)
+    : TGMainFrame(p,w,h, kHorizontalFrame), model(PDModel::FromCSVSBiDim( std::vector<std::string>(begin(files),end(files)), "../datasets/mask.csv" )) {
+    // Creates widgets of the example
+
+    initPoint();
+
+    TGTab *fTab = new TGTab(this, 300, 300);
+    fTab->Connect("Selected(Int_t)", "TestDialog", this, "DoTab(Int_t)");
+
+    TGCompositeFrame *tf1 = fTab->AddTab("Tab 1");
+    addMain(tf1);
+
+    TGCompositeFrame *tf2 = fTab->AddTab("Tab 2");
+    addDiff(tf2);
+
+    AddFrame(fTab);
+
+    
     // Sets window name and shows the main frame
     SetWindowName("Simple Example");
     MapSubwindows();
     Resize(GetDefaultSize());
     MapWindow();
+}
 
-    SearchSpace point;
-    point.fluxP.push_back(3165.72);     
-    point.fluxP.push_back(14165.8); 
-    point.fluxP.push_back(61011.1); 
-    point.fluxP.push_back(134436);  
-    point.fluxP.push_back(162383);  
-    point.fluxP.push_back(182538);  
-    point.fluxP.push_back(139180);  
-    point.fluxP.push_back(389212);  
-    point.fluxP.push_back(432333);  
-    point.fluxP.push_back(146634);  
-    point.fluxP.push_back(276084);  
-    point.fluxP.push_back(216946);  
-    point.fluxP.push_back(10.6869); 
-    point.fluxP.push_back(7.42032); 
-    point.fluxP.push_back(256613);  
-    point.fluxP.push_back(25.3764); 
-    point.fluxP.push_back(48988.1); 
-    point.fluxP.push_back(205.929); 
-    point.fluxP.push_back(9630.93);
+TGVerticalFrame * MyMainFrame::predictedMatrixFrame(TGHorizontalFrame* fr){
+    TGVerticalFrame *vframe=new TGVerticalFrame(fr, 40,200);
+    {
+        fEcanvas = new TRootEmbeddedCanvas ("Ecanvas",vframe,500,500);
+        vframe->AddFrame(fEcanvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,
+                                                     10,10,10,1));
+        TGHorizontalFrame *hframe=new TGHorizontalFrame(vframe, 200,40);
+        TGTextButton *draw = new TGTextButton(hframe,"&Draw");
+        draw->Connect("Clicked()","MyMainFrame",this,"DoDraw()");
+        hframe->AddFrame(draw, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
+        TGTextButton *exit = new TGTextButton(hframe,"&Exit ",
+                                              "gApplication->Terminate()");
+        TGCheckButton *logButton = new TGCheckButton(hframe,"&LogZ");
+        logButton->Connect("Clicked()","MyMainFrame",this,"DoLog()");
 
-    point.fluxD.push_back(342.942);
-    point.fluxD.push_back(12344.2);
-    point.fluxD.push_back(1711.07);
-    point.fluxD.push_back(21542.6);
-    point.fluxD.push_back(14753.3);
-    point.fluxD.push_back(2926.6); 
-    point.fluxD.push_back(7882.65);
-    point.fluxD.push_back(2841.71);
-    point.fluxD.push_back(16468.8);
-    point.fluxD.push_back(2186.63);
-    point.fluxD.push_back(8619.49);
-    point.fluxD.push_back(2978.43);
-    point.fluxD.push_back(85.0417);
-    point.fluxD.push_back(92.2313);
-    point.fluxD.push_back(29210.1);
-    point.fluxD.push_back(170.11); 
-    point.fluxD.push_back(217.125);
-    point.fluxD.push_back(160.243);
-    point.fluxD.push_back(1157.51);
+        hframe->AddFrame(exit, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
+        vframe->AddFrame(hframe,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+        hframe->AddFrame(logButton, new TGLayoutHints(kLHintsCenterX,5,5,3,4));
+        
+        fr -> AddFrame(vframe,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+    }
+}
+
+TGVerticalFrame * MyMainFrame::observedMatrixFrame(TGHorizontalFrame* fr){
+    TGVerticalFrame *vframe=new TGVerticalFrame(fr, 40,200);
+    {
+        observedCanvas = new TRootEmbeddedCanvas ("observedCan",vframe,500,500);
+        vframe->AddFrame(observedCanvas, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,
+                                                     10,10,10,1));
+
+        TH2F* hObserved = new TH2F("hObserved","hObserved", h->GetNbinsX(),0,100,h->GetNbinsY(),0,100);
+        MatrixF observedMatrix = model.getObservedDataFromFile("../datasets/observed_data.txt");
+
+        getHisto(observedMatrix, hObserved);
+        hObserved -> Draw("colz");
+        
+        
+        fr -> AddFrame(vframe,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+    }
+}
+
+
+void MyMainFrame::addDiff(TGCompositeFrame* frParent){
+    TGHorizontalFrame *fr = new TGHorizontalFrame(frParent, 40,200);
+    observedMatrixFrame(fr);
+    predictedMatrixFrame(fr);
+    
+    std::vector<std::string> theFiles(begin(files),end(files));
+    fluxFrame=new TGHorizontalFrame(fr);
+    {
+        std::map<std::string, TGVerticalFrame*> flux;
+        std::map<std::string, std::vector<float>> value;
+
+        flux["proton"] = new TGVerticalFrame(fluxFrame);
+        flux["deuton"] = new TGVerticalFrame(fluxFrame);
+        value["proton"] = point.fluxP;
+        value["deuton"] = point.fluxD;
+        bin["proton"] = std::vector<TGNumberEntry*>(point.fluxP.size());
+        bin["deuton"] = std::vector<TGNumberEntry*>(point.fluxD.size());
+
 
         
-    MatrixF prediction = model.GetPredictionFast(point);
-    getHisto(prediction);
-} 
+        for(auto it=flux.begin();it!=flux.end();it++){
+            for(int i = 0;i<theFiles.size()/2;i++){
+                TGHorizontalFrame *binFrame=new TGHorizontalFrame(it->second);
+                
+                TGLabel* binNumber = new TGLabel(binFrame, ("#"+generalUtils::toString(i)).c_str() );
+                binFrame -> AddFrame(binNumber);
+                
+                bin[it->first][i] = new TGNumberEntry(binFrame, value[it->first][i], 6, -1, TGNumberFormat::kNESInteger);
+                binFrame -> AddFrame(bin[it->first][i]);
+                
+                it->second -> AddFrame(binFrame, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+            }
+            fluxFrame -> AddFrame(it->second, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+        }
 
-void MyMainFrame::getHisto(const MatrixF & matrix){
-    h = new TH2F("h","h", matrix.getNrows(),0,100,matrix.getNcolums(),0,100);
-    for(int i = 1;i<=matrix.getNrows();i++){
-        for(int j = 1;j<=matrix.getNcolums();j++){
-            h -> SetBinContent(i,j,matrix.get(i-1,j-1));
+        TGTextButton *clear = new TGTextButton(fluxFrame,"&Clear");
+        clear->Connect("Clicked()","MyMainFrame",fr,"DoClear()");
+        fluxFrame->AddFrame(clear);
+        
+        fr -> AddFrame(fluxFrame,new TGLayoutHints(kLHintsRight,2,2,2,2));
+    }
+    frParent -> AddFrame(fr);
+}
+
+void MyMainFrame::addMain(TGCompositeFrame* frParent){
+    TGHorizontalFrame *fr = new TGHorizontalFrame(frParent, 40,200);
+    predictedMatrixFrame(fr);
+    
+    std::vector<std::string> theFiles(begin(files),end(files));
+    fluxFrame=new TGHorizontalFrame(fr);
+    {
+        std::map<std::string, TGVerticalFrame*> flux;
+        std::map<std::string, std::vector<float>> value;
+
+        flux["proton"] = new TGVerticalFrame(fluxFrame);
+        flux["deuton"] = new TGVerticalFrame(fluxFrame);
+        value["proton"] = point.fluxP;
+        value["deuton"] = point.fluxD;
+        bin["proton"] = std::vector<TGNumberEntry*>(point.fluxP.size());
+        bin["deuton"] = std::vector<TGNumberEntry*>(point.fluxD.size());
+
+
+        
+        for(auto it=flux.begin();it!=flux.end();it++){
+            for(int i = 0;i<theFiles.size()/2;i++){
+                TGHorizontalFrame *binFrame=new TGHorizontalFrame(it->second);
+                
+                TGLabel* binNumber = new TGLabel(binFrame, ("#"+generalUtils::toString(i)).c_str() );
+                binFrame -> AddFrame(binNumber);
+                
+                bin[it->first][i] = new TGNumberEntry(binFrame, value[it->first][i], 6, -1, TGNumberFormat::kNESInteger);
+                binFrame -> AddFrame(bin[it->first][i]);
+                
+                it->second -> AddFrame(binFrame, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+            }
+            fluxFrame -> AddFrame(it->second, new TGLayoutHints(kLHintsCenterX,2,2,2,2));
+        }
+
+        TGTextButton *clear = new TGTextButton(fluxFrame,"&Clear");
+        clear->Connect("Clicked()","MyMainFrame",fr,"DoClear()");
+        fluxFrame->AddFrame(clear);
+        
+        fr -> AddFrame(fluxFrame,new TGLayoutHints(kLHintsRight,2,2,2,2));
+    }
+    frParent -> AddFrame(fr);
+}
+
+void MyMainFrame::initPoint(){
+    readFlux("flux.txt",point.fluxP, point.fluxD);
+    
+    MatrixF prediction = model.GetPredictionFast(point);
+    h = new TH2F("h","h", prediction.getNcolums(),0,100,prediction.getNrows(),0,100);
+
+    gStyle -> SetOptStat(0);
+
+}
+
+void getHisto(const MatrixF & matrix, TH2F* h){
+    for(int i = 1;i<=matrix.getNcolums();i++){
+        for(int j = 1;j<=matrix.getNrows();j++){
+            h -> SetBinContent(j,i,matrix.get(i-1,j-1));
         }
     }
 }
 
 int main(int argc, char **argv) {
     TApplication theApp("App",&argc,argv);
-    new MyMainFrame(gClient->GetRoot(),200,200);
+    new MyMainFrame(gClient->GetRoot(),600,600);
     theApp.Run();
     return 0;
 } 
