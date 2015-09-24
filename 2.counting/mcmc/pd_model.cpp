@@ -417,6 +417,29 @@ void PDModel::ComputeRegularizationTerm(const SearchSpace & point){
 
 MatrixF PDModel::getObservedDataFromFile(const std::string & fname)
 {
+
+
+    int nRows = generalUtils::stringTo<int>( generalUtils::exec("wc -l "+ fname) );
+    if( nRows != betaBinsM.size() ){
+        std::cerr << "ERROR in PDModel::getObservedDataFromFile" << std::endl;
+        std::cerr << "File : " << fname << " has wrong number of rows !" << std::endl;
+        std::cerr << "Expected : " << betaBinsM.size()-1 << " - Got : " << nRows << std::endl;
+        exit(-1);
+    }
+
+    std::vector<int> nColumns = generalUtils::stringTo<int>( generalUtils::splitIntoLines( generalUtils::exec("awk '{print NF}' "+ fname) ) );
+
+    for(int i = 0;i<nColumns.size();i++){
+        if(nColumns[i] != rgdtBinsM.size()){
+            std::cerr << "ERROR in PDModel::getObservedDataFromFile" << std::endl;
+            std::cerr << "File : " << fname << " has wrong number of column !" << std::endl;
+            std::cout << "At row number :" << i << std::endl;
+            std::cerr << "Expected : " << rgdtBinsM.size() << " - Got : " << nColumns[i] << std::endl;
+            exit(-1);
+        }
+    }
+
+
     std::fstream fs(fname);
     std::vector<std::vector<float> > data;
 
