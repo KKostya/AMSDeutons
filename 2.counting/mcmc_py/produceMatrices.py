@@ -78,6 +78,39 @@ def main(params, outFilename="2.counting/datasets/observed_data.txt"):
         addMissingColumns(params['binningRgdtMeasured'])
 
         df.to_csv('2.counting/mcmc/beta_vs_rgdt_GenBin'+str(i)+'.pd',index_label=bin+ 'R_bin/B_bin')
+
+
+    ################################################################################
+    ##
+    ##  TARGET
+    ##
+    ################################################################################
+
+    vs =  ",\n".join([ build_case_string("R", "R_bin", params['binningRgdtMeasured']),
+                                          build_case_string("BetaTOF", "B_bin", params['binningBetaMeasured']),
+                                          "COUNT(1) as count" ])
+
+    h = "SELECT\n" + vs + """
+    FROM
+       AMS.Data
+    JOIN EACH
+       AMS.cutoffs
+    ON
+       AMS.cutoffs.JMDCTime=AMS.Data.UTime
+    WHERE
+       (""" + params['preselectionData'] + """ AND """ + params['trackSelectionData'] + """ AND goodSecond==1)
+    GROUP BY R_bin,B_bin
+    ORDER BY R_bin,B_bin"""
+
+    frame = pd.read_gbq(str(h),project_id='ams-test-kostya')
+    frame.columns = ['Rbin', 'Beta', 'Count']
+    frame['Rbin'] = frame['Rbin'].map(lambda x: params['binningRgdtMeasured'][x] )
+    frame['Beta'] = frame['Beta'].map(lambda x: params['binningBetaMeasured'][x] )
+    frame = frame.set_index(list(frame.columns[:-1])).unstack()['Count'].fillna(0)
+    frame = frame.T
+
+    np.savetxt(outFilename,frame.values)
+
     return frame
 
 # for debugging only

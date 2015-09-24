@@ -13,7 +13,6 @@
 #include "TH2F.h"
 #include "TStyle.h"
 
-#include "Stack.hpp"
 #include "pd_model.hpp"
 #include "generalUtils.hpp"
 
