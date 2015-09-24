@@ -318,11 +318,11 @@ float PDModel::GetLogLikelihood(const SearchSpace & point)
 }
 
 
-PDModel::SearchSpace PDModel::GetLogLikelihoodGradient(const SearchSpace & point)
+SearchSpace PDModel::GetLogLikelihoodGradient(const SearchSpace & point)
 {
     long unsigned int nBinsBetaT = betaBinsT.size() - 1;
     // (N/Lambda - 1)
-    Matrix factor = GetPredictionFast(point);
+    MatrixF factor = GetPredictionFast(point);
     factor.map([this](float expected , int n, float m){
         return observed.get(n,m)/expected - 1;
     });
