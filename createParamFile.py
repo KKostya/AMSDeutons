@@ -1,9 +1,10 @@
 import sys
 import numpy as np
+import pandas as pd
+import bigQueryPlotting as b
 
 sys.path.insert(0,'2.counting/mcmc_py')
 
-import bigQueryPlotting as b
 import pd_model
 ################################################################################
 #
@@ -45,6 +46,7 @@ binningRgdtMeasured = np.logspace(-5.0 / 19, 1, 25)
 tableMC="AMS.protonsB1034"
 tableData="AMS.Data"
 
+
 #########################################################################################
 #
 # Define preselection
@@ -80,11 +82,8 @@ cut3TOFLayers=' NTofClustersUsed >= 3 '
 mask=[]
 mask.append("downGoing")
 
-b.setTable(tableMC)
-preselectionMC=b.makeSelectionMask(mask) + " AND " + cut3TOFLayers
-
-b.setTable(tableData)
-preselectionData=b.makeSelectionMask(mask) + " AND " + cut3TOFLayers
+preselectionMC  =b.makeSelectionMask(tableMC,   mask) + " AND " + cut3TOFLayers
+preselectionData=b.makeSelectionMask(tableData, mask) + " AND " + cut3TOFLayers
 
 ########################################################################################
 #
@@ -101,11 +100,9 @@ mask.append("goldenTOF")
 mask.append("goldenTRACKER")
 mask.append("oneParticle")
 
-b.setTable(tableMC)
-trackSelectionMC=b.makeSelectionMask(mask)
+trackSelectionMC  =b.makeSelectionMask(tableMC, mask)
 print 'trackSelectionMC : '+trackSelectionMC
-b.setTable(tableData)
-trackSelectionData=b.makeSelectionMask(mask)
+trackSelectionData=b.makeSelectionMask(tableData, mask)
 
 ########################################################################################
 #
