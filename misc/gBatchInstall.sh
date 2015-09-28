@@ -9,7 +9,8 @@
 # git gbatch repo hash:
 # 1f87cffcdfbb28bf877b45b46824cfa802642aef
 
-sudo apt-get install git unzip build-essential libx11-dev cmake libxml2-dev libgmp3-dev m4 libffi-dev libzmq3-dev libssl-dev libxpm-dev libxft-dev
+sudo apt-get install git unzip build-essential libx11-dev cmake libxml2-dev libgmp3-dev m4 libffi-dev libzmq3-dev 
+sudo apt-get install libssl-dev libxpm-dev libxft-dev libxext-dev libjpeg8-dev python2.7
 
 # XROOTD
 git clone https://github.com/xrootd/xrootd.git
