@@ -9,10 +9,11 @@
 # git gbatch repo hash:
 # 1f87cffcdfbb28bf877b45b46824cfa802642aef
 
-
+sudo apt-get install git unzip build-essential libx11-dev cmake libxml2-dev libgmp3-dev m4 libffi-dev libzmq3-dev libssl-dev
 
 # XROOTD
-git clone git@github.com:xrootd/xrootd.git
+git clone https://github.com/xrootd/xrootd.git
+cd xrootd
 git checkout b2ee72584fbc5ef6873bbac445b4b620b5bca71e
 mkdir build
 cd build
