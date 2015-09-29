@@ -121,7 +121,7 @@ private:
         // Dirty way to save one event every 1000
         static int counter = 0;
         counter++;
-        if(counter<1000) return;
+        // if(counter<1000) return;
 
         log_likelihood[chunkStepNumber] = current_log_likelihood;
         for(int i = 0; i < nVar; i++)

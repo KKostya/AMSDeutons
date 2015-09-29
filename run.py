@@ -1,5 +1,4 @@
 import sys
-import bigQueryPlotting as b
 import numpy as np
 import pandas as pd
 import inspect

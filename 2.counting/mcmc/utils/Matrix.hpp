@@ -10,7 +10,14 @@ template <typename T> class Matrix
 {
     long unsigned int nRows,nColumns;
     std::vector<T> data;
+    
 public:
+    enum NormBy{
+        kRow,
+        kColumn,
+        kAll
+    };
+    
 
     Matrix():nRows(0), nColumns(0), data(0) {}
     Matrix(long unsigned int iN, long unsigned int iM): 
@@ -194,6 +201,37 @@ public:
 
     inline bool operator!=(const Matrix<T> &rhs){
         return !operator==(rhs);
+    }
+
+    inline void normalize(NormBy type){
+        T sum = 0;
+
+        switch(type) {
+        case kRow:
+            for(int iColumn = 0; iColumn < nColumns; iColumn++){
+                sum = 0;
+                for(int iRow = 0; iRow < nRows; iRow++) sum+=this -> get(iRow,iColumn);
+                if(abs(sum) < 1e-99) continue;
+                for(int iRow = 0; iRow < nRows; iRow++) this -> set(iRow, iColumn, this -> get(iRow,iColumn)/sum);
+            }
+            break;
+        case kColumn:
+            for(int iRow = 0; iRow < nRows; iRow++){
+                sum = 0;
+                for(int iColumn = 0; iColumn < nColumns; iColumn++) sum+=this -> get(iRow,iColumn);
+                if(abs(sum) < 1e-99) continue;
+                for(int iColumn = 0; iColumn < nColumns; iColumn++) this -> set(iRow, iColumn, this -> get(iRow,iColumn)/sum);
+            }
+            break;
+        case kAll:
+            sum = 0;
+            for(int iRow = 0; iRow < nRows; iRow++) for(int iColumn = 0; iColumn < nColumns; iColumn++) sum+=this -> get(iRow,iColumn);
+            if(abs(sum) < 1e-99) return;
+            for(int iRow = 0; iRow < nRows; iRow++){
+                for(int iColumn = 0; iColumn < nColumns; iColumn++) this -> set(iRow, iColumn, this -> get(iRow,iColumn)/sum);
+            }
+            break;
+        }
     }
 };
 

@@ -39,7 +39,7 @@ def main(params):
     theTable="AMS.Data"
     b.setTable(theTable)
 
-    theMask=b.makeSelectionMask(masks)
+    theMask=b.makeSelectionMask(theTable,masks)
 
     #whereClause="(Rfull > 0 && (selStatus&" + str(theMask)+ ")==" + str(theMask)+ " && " + mass + " > 0.8 && " + mass + " < 1.3 )"
     whereClause="(Rfull > 0 AND " + str(theMask)+ " AND AMS.cutoffs.goodSecond == 1)"

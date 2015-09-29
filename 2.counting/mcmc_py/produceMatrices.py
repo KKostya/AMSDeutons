@@ -1,36 +1,14 @@
 import pandas as pd
+import json
 from pd_model import *
 import seaborn as s
 from matplotlib.colors import LogNorm
-import bq
 from histQueryFactory import *
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 
 def main(params, outFilename="2.counting/datasets/observed_data.txt"):
-    ################################################################################
-    ##
-    ##  MAKING BQ CLEAR
-    ##
-    ################################################################################
-
-    client = bq.Client.Get()
-    schema = client.GetTableSchema({
-            'projectId': 'ams-test-kostya',
-            'datasetId': 'AMS',
-            'tableId': 'protonsB1034'
-        })
-
-    bitFields = None
-    for field in schema['fields']:
-        if field['name'] != 'selStatus':
-            continue
-        bitFields = field['description'].split(',')
-        break
-
-    get_cumulative_mask = lambda sel: (1 << (bitFields.index(sel))) - 1
-
 
     import itertools
     def iterpairs(l):
@@ -46,84 +24,65 @@ def main(params, outFilename="2.counting/datasets/observed_data.txt"):
 
     ################################################################################
     ##
-    ##  BETA MATRIX
+    ##  BETA VS RIG MATRICES
     ##
     ################################################################################
     vs =  ",\n".join([ build_case_string("BetaTOF", "B_bin", params['binningBetaMeasured']),
+                       build_case_string("R", "R_bin", params['binningRgdtMeasured']),
                        build_case_string("GenMomentum/SQRT(0.88022 + POW(GenMomentum,2))", "Gen_bin", params['binningBetaTheoretic']),
                        "COUNT(1) as count" ])
 
     h = "SELECT\n" + vs + """
     FROM
-       AMS.protonsB1034
+       {tableMC} 
     WHERE
-       (""" + params['preselectionMC'] + """ AND """ + params['trackSelectionMC'] + """)
-    GROUP BY B_bin,Gen_bin
-    ORDER BY B_bin,Gen_bin"""
+       ({preselectionMC}) AND ({trackSelectionMC})
+    GROUP BY B_bin,R_bin,Gen_bin
+    ORDER BY B_bin,R_bin,Gen_bin""".format(**params)
 
-    tableid = client.Query(str(h))['configuration']['query']['destinationTable']
-    bq_table = client.ReadTableRows(tableid)
+    # tableid = client.Query(str(h))['configuration']['query']['destinationTable']
+    # bq_table = client.ReadTableRows(tableid)
 
-    frame = pd.DataFrame(bq_table, columns=['Bbin', 'GenBin', 'Count']).astype(int)
-    frame['Bbin'] = frame['Bbin'].map(lambda x: params['binningBetaMeasured'][x] )
-    frame['GenBin'] = frame['GenBin'].map(lambda x: params['binningBetaTheoretic'][x] )
-    frame = frame.set_index(list(frame.columns[:-1])).unstack()['Count'].fillna(0)
+    # frame = pd.DataFrame(bq_table, columns=['Bbin', 'GenBin', 'Count']).astype(int)
+    frame=pd.read_gbq(str(h),project_id='ams-test-kostya')
+    # frame['Bbin'] = frame['Bbin'].map(lambda x: params['binningBetaMeasured'][x] )
+    # frame['GenBin'] = frame['GenBin'].map(lambda x: params['binningBetaTheoretic'][x] )
+    # frame = frame.set_index(list(frame.columns[:-1])).unstack()['Count'].fillna(0)
 
-    frame.T.to_csv(os.path.dirname(outFilename)+"B_resolution.csv")
+    # frame.T.to_csv(os.path.dirname(outFilename)+"B_resolution.csv")
 
-    ################################################################################
-    ##
-    ##  RIGIDITY MATRIX
-    ##
-    ################################################################################
-    vs =  ",\n".join([ build_case_string("R", "R_bin", params['binningRgdtMeasured']),
-                                          build_case_string("GenMomentum", "Gen_bin", params['binningRgdtTheoretic']),
-                                          "COUNT(1) as count" ])
+    
 
-    h = "SELECT\n" + vs + """
-    FROM
-       AMS.protonsB1034
-    WHERE
-       (""" + params['preselectionMC'] + """ AND """ + params['trackSelectionMC'] + """)
-    GROUP BY R_bin,Gen_bin
-    ORDER BY R_bin,Gen_bin"""
+    for i in range( len(params['binningBetaTheoretic']) - 1 ):
+        bin='GenBin: ['+str(params['binningBetaTheoretic'][i])+';'+str(params['binningBetaTheoretic'][i+1])+']; '
+        df=frame[frame['Gen_bin']==i][['R_bin','B_bin','count']].set_index(['R_bin','B_bin']).unstack().fillna(0)['count']
+        df = df/df.sum().sum()
 
-    tableid = client.Query(str(h))['configuration']['query']['destinationTable']
-    bq_table = client.ReadTableRows(tableid)
-    frame = pd.DataFrame(bq_table, columns=['Rbin', 'GenBin', 'Count']).astype(int)
-    frame['Rbin'] = frame['Rbin'].map(lambda x: params['binningRgdtMeasured'][x] )
-    frame['GenBin'] = frame['GenBin'].map(lambda x: params['binningRgdtTheoretic'][x] )
-    frame = frame.set_index(list(frame.columns[:-1])).unstack()['Count'].fillna(0)
-    frame.T.to_csv(os.path.dirname(outFilename)+"R_resolution.csv")
 
-    ################################################################################
-    ##
-    ##  TARGET
-    ##
-    ################################################################################
+        # Dropping overflow row and column
+        if -1 in df.columns:
+            df=df.drop(-1,axis=1)
+        if -1 in df.index:
+            df=df.drop(-1,axis=0)
+        
+        def addMissingColumns(ref_columns):
+            col=set(df.columns.values)
+            fullColumns=set(range(0,len(ref_columns)))
+            missingColumns=fullColumns-col
 
-    vs =  ",\n".join([ build_case_string("R", "R_bin", params['binningRgdtMeasured']),
-                                          build_case_string("BetaTOF", "B_bin", params['binningBetaMeasured']),
-                                          "COUNT(1) as count" ])
+            for index in missingColumns:
+                df[index]=0
 
-    h = "SELECT\n" + vs + """
-    FROM
-       AMS.Data
-    JOIN EACH
-       AMS.cutoffs
-    ON
-       AMS.cutoffs.JMDCTime=AMS.Data.UTime
-    WHERE
-       (""" + params['preselectionData'] + """ AND """ + params['trackSelectionData'] + """ AND goodSecond==1)
-    GROUP BY R_bin,B_bin
-    ORDER BY R_bin,B_bin"""
-    tableid = client.Query(str(h))['configuration']['query']['destinationTable']
-    bq_table = client.ReadTableRows(tableid)
+        addMissingColumns(params['binningBetaMeasured'])
+        df=df.transpose()
+        addMissingColumns(params['binningRgdtMeasured'])
 
-    frame = pd.DataFrame(bq_table, columns=['Rbin', 'Beta', 'Count']).astype(int)
-    frame['Rbin'] = frame['Rbin'].map(lambda x: params['binningRgdtMeasured'][x] )
-    frame['Beta'] = frame['Beta'].map(lambda x: params['binningBetaMeasured'][x] )
-    frame = frame.set_index(list(frame.columns[:-1])).unstack()['Count'].fillna(0)
-    frame = frame.T
+        df.to_csv('2.counting/mcmc/beta_vs_rgdt_GenBin'+str(i)+'.pd',index_label=bin+ 'R_bin/B_bin')
+    return frame
 
-    np.savetxt(outFilename,frame.values)
+# for debugging only
+if __name__ == "__main__":
+    import json
+    os.chdir("../..")
+    print main(json.load(open('param.json')))
+

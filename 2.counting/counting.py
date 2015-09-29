@@ -24,7 +24,6 @@ import pandas as pd
 
 
 def main(params,directory=None):
-
     if params['redoMCMC']:
         if params['redoMatrices']: produceMatrices.main(params)
         os.system("cd 2.counting/mcmc; rm -rf latestMCMC; make -B; ./mcmc -f latestMCMC -n 1000000")

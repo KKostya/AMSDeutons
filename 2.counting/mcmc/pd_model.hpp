@@ -3,6 +3,9 @@
 #include <vector>
 #include <functional>
 #include <iostream>
+#include <regex>
+#include <tuple>
+#include <limits>
 
 #include "Matrix.hpp"
 #include "SearchSpace.hpp"
@@ -51,10 +54,7 @@ class PDModel: public ModelBase
     void SetRigidityResolution(const MatrixF & matrix);
     void SetBetaResolution    (const MatrixF & matrix);
 
-    // Build prediction matrices for all unitary fluxes
-    void constructBaseMatrices();
-
-    void init(const MatrixF & _betaF, const MatrixF & _rgdtF);
+    void init();
 
     // save predicted matrix for SearchSpace 'point' in file 'filename'
     void savePredictedMatrix(const SearchSpace & point, const std::string & filename);
@@ -68,10 +68,14 @@ public:
              const std::vector<float> & rT, const std::vector<float> & rM,
              const MatrixF & betaF, const MatrixF & rgdtF, const MatrixB & mask);
 
+    PDModel( const std::vector<float> & bT, const std::vector<float> & bM, 
+             const std::vector<float> & rT, const std::vector<float> & rM,
+             const std::vector<MatrixF> & betaVsRig, const MatrixB & mask);
+
     virtual ~PDModel(){}
 
     static PDModel FromCSVS(const std::string & betaFile, const std::string & rgdtFile, const std::string & maskFile, int maxTrueBinNumber = 0 );
-
+    static PDModel FromCSVSBiDim(const std::vector<std::string> & matricesFiles, const std::string & maskFile);
     // Getters
     inline std::vector<float> getBetaBinsT(){ return betaBinsT; }
     inline std::vector<float> getBetaBinsM(){ return betaBinsM; }
@@ -86,8 +90,11 @@ public:
     MatrixF GetPredictionFast(const SearchSpace & point);
     
     // Log likelihood
-    virtual float GetLogLikelihood(const SearchSpace & point);
+    virtual float GetLogLikelihood(const SearchSpace & point) override;
     
+    // Gradient of Log likelihood
+    SearchSpace GetLogLikelihoodGradient(const SearchSpace & point);
+
     // Regularization term
     void ComputeRegularizationTerm(const SearchSpace & point);
     
@@ -97,6 +104,8 @@ public:
     
     // Observed
     void LoadObservedDataFromFile(const std::string & fname);
+    MatrixF getObservedDataFromFile(const std::string & fname);
+    
     void GenerateToyObservedData(const SearchSpace & point){
         observed = GetPrediction(point);
     }

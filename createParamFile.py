@@ -1,9 +1,10 @@
 import sys
 import numpy as np
+import pandas as pd
+import bigQueryPlotting as b
 
 sys.path.insert(0,'2.counting/mcmc_py')
 
-import bigQueryPlotting as b
 import pd_model
 ################################################################################
 #
@@ -28,7 +29,7 @@ bbins = sorted(bbins)
 mid1,mid2 = (bbins[1]+bbins[0])/2,(bbins[2]+bbins[1])/2
 bbins += make_beta_bins(mid1)
 bbins += make_beta_bins(mid2)
-bbins = np.array([bbin for bbin in sorted(bbins) if 1 < pd_model.R_from_beta(bbin,pd_model.mp) < 30 ])
+bbins = np.array([bbin for bbin in sorted(bbins) ])
 
 binningBetaTheoretic, binningRgdtTheoretic = np.array([bbins, pd_model.R_from_beta(bbins, pd_model.mp)])
 
@@ -42,8 +43,9 @@ binningRgdtMeasured = np.logspace(-5.0 / 19, 1, 25)
 
 
 # Define the tables to use
-tableMC="AMS.protonsB1034"
+tableMC="AMS.protonsB800"
 tableData="AMS.Data"
+
 
 #########################################################################################
 #
@@ -80,11 +82,8 @@ cut3TOFLayers=' NTofClustersUsed >= 3 '
 mask=[]
 mask.append("downGoing")
 
-b.setTable(tableMC)
-preselectionMC=b.makeSelectionMask(mask) + " AND " + cut3TOFLayers
-
-b.setTable(tableData)
-preselectionData=b.makeSelectionMask(mask) + " AND " + cut3TOFLayers
+preselectionMC  =b.makeSelectionMask(tableMC,   mask) + " AND " + cut3TOFLayers
+preselectionData=b.makeSelectionMask(tableData, mask) + " AND " + cut3TOFLayers
 
 ########################################################################################
 #
@@ -100,12 +99,12 @@ mask.append("oneTrack")
 mask.append("goldenTOF")
 mask.append("goldenTRACKER")
 mask.append("oneParticle")
+mask.append("goldenTRD")
+mask.append("betaNotCrazy")
 
-b.setTable(tableMC)
-trackSelectionMC=b.makeSelectionMask(mask)
+trackSelectionMC  =b.makeSelectionMask(tableMC, mask)
 print 'trackSelectionMC : '+trackSelectionMC
-b.setTable(tableData)
-trackSelectionData=b.makeSelectionMask(mask)
+trackSelectionData=b.makeSelectionMask(tableData, mask)
 
 ########################################################################################
 #

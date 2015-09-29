@@ -44,8 +44,12 @@ test_matrix: tests/test_matrix.cpp utils/Matrix.hpp  generalUtils.o
 	g++ ${INCLUDE} $(CXXFLAGS) -o $@ $< -std=c++11 
 
 test_model: tests/test_model.cpp pd_model.o generalUtils.o
-	g++ ${INCLUDE} $(CXXFLAGS) -o $@ $^ -std=c++11 
+	g++ ${INCLUDE} $(CXXFLAGS) -o $@ $^ -std=c++11
+
+gui: gui.cpp gui.hpp pd_model.o generalUtils.o
+	rootcint -f guiLinkDef.cpp -c ${INCLUDE} gui.hpp guiLinkDef.hpp
+	g++ ${INCLUDE} `root-config --cflags --glibs` gui.cpp guiLinkDef.cpp -o gui pd_model.o generalUtils.o `root-config --glibs`
 
 clean:
-	rm -f mcmc reader test_model test_matrix *.o
+	rm -f mcmc reader test_model test_matrix *.o guiLinkDef.cpp guiLinkDef_rdict.pcm
 
