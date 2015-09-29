@@ -119,4 +119,13 @@ public:
         getHisto(prediction,h["predicted"]);
         DoDraw();
     }
+
+    void DoSave() {
+        for(int i = 0;i<point.fluxP.size();i++) bin["proton"][i] -> SetIntNumber(point.fluxP[i]);
+        for(int i = 0;i<point.fluxD.size();i++) bin["deuton"][i] -> SetIntNumber(point.fluxD[i]);
+
+        MatrixF prediction = model.GetPredictionFast(point);
+        getHisto(prediction,h["predicted"]);
+        DoDraw();
+    }
 }; 

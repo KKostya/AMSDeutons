@@ -78,6 +78,9 @@ TGVerticalFrame * MyMainFrame::predictedMatrixFrame(TGHorizontalFrame* fr){
         TGTextButton *clear = new TGTextButton(hframe,"&Clear");
         clear->Connect("Clicked()","MyMainFrame",this,"DoClear()");
 
+        TGTextButton *save = new TGTextButton(hframe,"&Save");
+        save->Connect("Clicked()","MyMainFrame",this,"DoSave()");
+
         TGTextButton *clearDeuton = new TGTextButton(hframe,"&Clear deutons");
         clearDeuton->Connect("Clicked()","MyMainFrame",this,"DoClearDeutons()");
 
@@ -172,7 +175,7 @@ void MyMainFrame::addMain(TGCompositeFrame* frParent){
                 TGLabel* binNumber = new TGLabel(binFrame, ("#"+generalUtils::toString(i)).c_str() );
                 binFrame -> AddFrame(binNumber);
                 
-                bin[it->first][i] = new TGNumberEntry(binFrame, value[it->first][i], 6, -1, TGNumberFormat::kNESInteger);
+                bin[it->first][i] = new TGNumberEntry(binFrame, value[it->first][i], 10, -1, TGNumberFormat::kNESInteger);
                 bin[it->first][i]->Connect("ValueSet(Long_t)", "MyMainFrame", this, "DoDraw()");
                 (bin[it->first][i]->GetNumberEntry())->Connect("ReturnPressed()", "MyMainFrame", this,
                                                      "DoDraw()");
@@ -213,7 +216,7 @@ void getHisto(const MatrixF & matrix, TH2F* h){
 int main(int argc, char **argv) {
     TApplication theApp("App",&argc,argv);
     gStyle -> SetPalette(1);
-    new MyMainFrame(gClient->GetRoot(),600,600);
+    new MyMainFrame(gClient->GetRoot(),1400,800);
     theApp.Run();
     return 0;
 } 
