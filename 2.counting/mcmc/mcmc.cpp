@@ -95,7 +95,7 @@ template <class ProposalFunction > void MCMC<ProposalFunction>::setSpectator(std
 int main(int argc, char** argv){
     if( argc == 1 ){
         std::cout << "Usage : " << std::endl;
-        std::cout << "./mcmc filename [options] " << std::endl;
+        std::cout << "./mcmc filename -N NTRUEBINS [options] " << std::endl;
         std::cout << "\nOptions are:" << std::endl;
         std::cout << "-n : number of entries" << std::endl;
         std::cout << "-f : output file name" << std::endl;
@@ -106,14 +106,18 @@ int main(int argc, char** argv){
     
     int c;
     int nStep = 0;
-    std::string name = "test";
+    int nGenBin = 0;
+    std::string name = "outputMCMC";
     std::string maskFile = ""; 
     bool verbose = false;
     float alphaRegularization = 0;
-    while((c =  getopt(argc, argv, "n:f:v:a:m:")) != EOF)
+    while((c =  getopt(argc, argv, "n:f:v:a:m:N:")) != EOF)
         {
             switch (c)
                 {
+                case 'N':
+                    nGenBin = generalUtils::stringTo<int>(optarg);
+                    break;
                 case 'n':
                     nStep = generalUtils::stringTo<int>(optarg);
                     break;
@@ -136,10 +140,12 @@ int main(int argc, char** argv){
 
     std::clock_t start = std::clock();
 
-    //    MCMC<RealisticToyModel, ProposalFunction > a(name);
-
+    if( nGenBin == 0 ){
+        std::cerr << "\nYou must set the number of true bins with the -N option\n" << std::endl;
+        exit(-1);
+    }
     
-    RealDataModel model;
+    RealDataModel model(nGenBin);
     if(maskFile != "") model.SetMask(maskFile);
     model.setRegularizationFactor(alphaRegularization);
 

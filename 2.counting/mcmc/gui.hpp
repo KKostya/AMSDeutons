@@ -18,6 +18,7 @@
 #include "generalUtils.hpp"
 
 void getHisto(const MatrixF & matrix, TH2F* h);
+void readFlux(std::string filename, std::vector<float> & fluxP, std::vector<float> & fluxD);
 
 class MyMainFrame : public TGMainFrame {
 private:
@@ -25,6 +26,8 @@ private:
     std::map<std::string, TH2F*> h;
     std::map<std::string, std::vector<TGNumberEntry*>> bin;
 
+    std::string fileFlux;
+    int nGenBins;
     PDModel model;
     SearchSpace point;
     TGHorizontalFrame *fluxFrame;
@@ -33,6 +36,9 @@ private:
     void initPoint();
 
     float zAxisMin, zAxisMax;
+
+    bool snapZScale;
+
 public:
     MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h);
     void DoDraw() {
@@ -41,17 +47,28 @@ public:
         MatrixF prediction = model.GetPredictionFast(point);
         getHisto(prediction,h["predicted"]);
 
-        h["predicted"] -> SetMinimum(zAxisMin);
-        h["predicted"] -> SetMaximum(zAxisMax);
+        if(snapZScale){
+            h["predicted"] -> SetMinimum(zAxisMin);
+            h["predicted"] -> SetMaximum(zAxisMax);
+        }else{
+            h["predicted"] -> SetMinimum(h["predicted"]->GetBinContent(h["predicted"]->GetMinimumBin()));
+            h["predicted"] -> SetMaximum(h["predicted"]->GetBinContent(h["predicted"]->GetMaximumBin()));
+        }
 
         for(auto it=canvas.begin();it!=canvas.end();it++){
             TCanvas *theCanvas = it -> second ->GetCanvas();
             theCanvas -> cd();
             h[it->first] -> Draw("colz");
+            gPad -> SetLogx(1);
             theCanvas -> Update();
         }
     }
 
+    void DoSnapZScale(){
+        snapZScale= !snapZScale;
+        DoDraw();
+    }
+    
     void DoLog() {
         static bool logz = false;
         TCanvas *fCanvas = canvas["predicted"]->GetCanvas();
@@ -74,7 +91,7 @@ public:
         getHisto(prediction,h["predicted"]);
         for(int i = 0;i<point.fluxP.size();i++) bin["proton"][i] -> SetIntNumber(0);
         for(int i = 0;i<point.fluxD.size();i++) bin["deuton"][i] -> SetIntNumber(0);
-        fluxFrame -> Layout();
+        DoDraw();
     }
 
     void DoClearDeutons() {
@@ -82,7 +99,7 @@ public:
         MatrixF prediction = model.GetPredictionFast(point);
         getHisto(prediction,h["predicted"]);
         for(int i = 0;i<point.fluxP.size();i++) bin["proton"][i] -> SetIntNumber(0);
-        fluxFrame -> Layout();
+        DoDraw();
     }
 
     void DoClearProtons() {
@@ -90,6 +107,16 @@ public:
         MatrixF prediction = model.GetPredictionFast(point);
         getHisto(prediction,h["predicted"]);
         for(int i = 0;i<point.fluxD.size();i++) bin["deuton"][i] -> SetIntNumber(0);
-        fluxFrame -> Layout();
+        DoDraw();
+    }
+
+    void DoDefaultValue() {
+        readFlux(fileFlux,point.fluxP, point.fluxD);
+        for(int i = 0;i<point.fluxP.size();i++) bin["proton"][i] -> SetIntNumber(point.fluxP[i]);
+        for(int i = 0;i<point.fluxD.size();i++) bin["deuton"][i] -> SetIntNumber(point.fluxD[i]);
+
+        MatrixF prediction = model.GetPredictionFast(point);
+        getHisto(prediction,h["predicted"]);
+        DoDraw();
     }
 }; 

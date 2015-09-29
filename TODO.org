@@ -1,5 +1,6 @@
 * Current tasks
-** implement gradient method
+** [KOSTYA] Implement gradient method
+** [BENOIT] produceMatrices.py : add the production of deuton matrices
 
 * Cuts
 ** To be added in preselection:
