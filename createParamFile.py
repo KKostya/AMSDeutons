@@ -1,23 +1,67 @@
+####################################################
+#
+# PARAMETERS DEFINITION
+#
+###################################################
+
+# BIG QUERY
+protonMC="AMS.protonsB800"
+deutonMC="AMS.dB1030_GG_Blic"
+tableData="AMS.Data"
+
+# MCMC
+redoMCMC=True
+redoMatrices=True
+
+#  BINNINGS
+betaMeasuredNBins=100
+betaMeasuredMin=0.5
+betaMeasuredMax=1.5
+rgdtMeasuredNBins=100
+rgdtMeasuredMin=1
+rgdtMeasuredMax=40
+betaTheoreticMax=0.5
+
+# PRESELECTION
+cut3TOFLayers=' NTofClustersUsed >= 3 '
+selStatusPreselection=["downGoing"]
+
+# TRACK SELECTION
+selStatusTrackSelection=[
+    "physicsTrigger",
+    "chargeOne",
+    "oneTrack",
+    "goldenTOF",
+    "goldenTRACKER",
+    "oneParticle",
+    "goldenTRD",
+    "betaNotCrazy"]
+
+
+####################################################
+#
+# END OF PARAMETER DEFINITION
+#
+####################################################
+
 import sys
 import numpy as np
 import pandas as pd
 import bigQueryPlotting as b
+import math
 
 sys.path.insert(0,'2.counting/mcmc_py')
 
 import pd_model
-################################################################################
-#
-#  MAKE BINNINGS
-#
-################################################################################
+
+# Binning magic
 #
 # "Theoretical" binning (the one we will look the spectrum for)
 #  is bootstrapped from R-vs-beta curves for D and P
 #
 def make_beta_bins(beta):
     bbins = []
-    for i in range(10):
+    for i in range(5):
         bbins.append(beta)
         beta = pd_model.beta_from_R(pd_model.R_from_beta(beta,pd_model.md),pd_model.mp)
     return bbins
@@ -36,23 +80,16 @@ binningBetaTheoretic, binningRgdtTheoretic = np.array([bbins, pd_model.R_from_be
 #
 # Measured values binnings are not very fancy
 #
-binningBetaMeasured = 1/np.linspace(0.5,2,28)
+binningBetaMeasured = 1/np.linspace(1./betaMeasuredMax,1./betaMeasuredMin,betaMeasuredNBins+1)
 binningBetaMeasured.sort()
 
-binningRgdtMeasured = np.logspace(-5.0 / 19, 1, 25)
+binningRgdtMeasured = np.logspace((math.log(rgdtMeasuredMin)/math.log(10)), (math.log(rgdtMeasuredMax)/math.log(10)), rgdtMeasuredNBins+1)
 
 
-# Define the tables to use
-tableMC="AMS.protonsB800"
-tableData="AMS.Data"
 
 
-#########################################################################################
-#
-# Define preselection
-#
-########################################################################################
 
+# Preselection magic
 
 # Track extrapolation to L1, L9
 # Might be usefull one day for full span
@@ -76,35 +113,14 @@ tableData="AMS.Data"
 #     + lowerX + ' as lowerX ' \
 #     + 'FROM ' + tableMC
 
-# 1)
-cut3TOFLayers=' NTofClustersUsed >= 3 '
-# 2) Asking for downgoing particle
-mask=[]
-mask.append("downGoing")
 
-preselectionMC  =b.makeSelectionMask(tableMC,   mask) + " AND " + cut3TOFLayers
-preselectionData=b.makeSelectionMask(tableData, mask) + " AND " + cut3TOFLayers
+preselectionMC  =b.makeSelectionMask( protonMC,   selStatusPreselection) + " AND " + cut3TOFLayers
+preselectionData=b.makeSelectionMask( tableData, selStatusPreselection) + " AND " + cut3TOFLayers
 
-########################################################################################
-#
-# Define Track Selection
-#
-########################################################################################
+# Track Selection magic
 
-# 1) Mask defined cuts
-mask=[]
-mask.append("physicsTrigger")
-mask.append("chargeOne")
-mask.append("oneTrack")
-mask.append("goldenTOF")
-mask.append("goldenTRACKER")
-mask.append("oneParticle")
-mask.append("goldenTRD")
-mask.append("betaNotCrazy")
-
-trackSelectionMC  =b.makeSelectionMask(tableMC, mask)
-print 'trackSelectionMC : '+trackSelectionMC
-trackSelectionData=b.makeSelectionMask(tableData, mask)
+trackSelectionMC  =b.makeSelectionMask(protonMC, selStatusTrackSelection)
+trackSelectionData=b.makeSelectionMask(tableData, selStatusTrackSelection)
 
 ########################################################################################
 #
@@ -122,10 +138,10 @@ l={'binningBetaTheoretic':binningBetaTheoretic.tolist(),
    'preselectionData':preselectionData,
    'trackSelectionMC':trackSelectionMC,
    'trackSelectionData':trackSelectionData,
-   'tableMC':tableMC,
+   'protonMC':protonMC,
    'tableData':tableData,
-   'redoMCMC':False,
-   'redoMatrices':False
+   'redoMCMC':redoMCMC,
+   'redoMatrices':redoMatrices,
 }
 
 #map(lambda obj: json.dump(obj,f), l)

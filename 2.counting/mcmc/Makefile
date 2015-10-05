@@ -26,7 +26,7 @@ CXXFLAGS=-Wall -Weffc++ -pedantic -Wno-sign-compare -Wno-unused-variable -Wno-un
     -Wunused-value  -Wunused-variable  -Wvariadic-macros \
     -Wvolatile-register-var  -Wwrite-strings
 
-all: mcmc test_model test_matrix
+all: mcmc
 
 mcmc:	mcmc.cpp pd_model.o generalUtils.o
 	g++ ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} $(LIBS) $^ -o mcmc -std=c++11

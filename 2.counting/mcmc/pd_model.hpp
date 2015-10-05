@@ -76,6 +76,8 @@ public:
 
     static PDModel FromCSVS(const std::string & betaFile, const std::string & rgdtFile, const std::string & maskFile, int maxTrueBinNumber = 0 );
     static PDModel FromCSVSBiDim(const std::vector<std::string> & matricesFiles, const std::string & maskFile);
+    static PDModel FromCSVSBiDim(const std::string & firstFileName, int nFiles, const std::string & maskFile );
+
     // Getters
     inline std::vector<float> getBetaBinsT(){ return betaBinsT; }
     inline std::vector<float> getBetaBinsM(){ return betaBinsM; }

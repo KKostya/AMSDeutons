@@ -5,6 +5,7 @@ import produceMatrices
 import readMCMC
 import os
 import pandas as pd
+import subprocess
 
 # This script do the following things
 # 1) If 'redoMatrices' is set to 'True' and given the preselection and selection cuts, it computes
@@ -26,8 +27,30 @@ import pandas as pd
 def main(params,directory=None):
     if params['redoMCMC']:
         if params['redoMatrices']: produceMatrices.main(params)
-        os.system("cd 2.counting/mcmc; rm -rf latestMCMC; make -B; ./mcmc -f latestMCMC -n 1000000")
+
+        shellCmds=[
+            'rm -rf 2.counting/mcmc/latestMCMC',
+            'make -C 2.counting/mcmc',
+            'cd 2.counting/mcmc && ./mcmc -f latestMCMC -n 1000000 -N '+ str(len(params['binningRgdtTheoretic'])-1)
+        ]
+
+
+        # subprocess.call(shellCmds[0])
+        # subprocess.call(shellCmds[1])
+        # sys.exit()
+
         
+        def evalcommand(cmd):
+            print cmd
+            r=os.system(cmd)
+            print r
+            return r
+
+        
+        if any(evalcommand(cmd) for cmd in shellCmds):
+            print 'error'
+            sys.exit()
+            
     fluxP,fluxD=readMCMC.main(params,directory)
 
     df=pd.DataFrame({'countP':fluxP.mean(), 'countD':fluxD.mean()})

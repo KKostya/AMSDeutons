@@ -4,7 +4,6 @@ log
 *.json
 *.csv
 *.pd
-2.counting/mcmc/*/
 2.counting/mcmc/mcmc
 2.counting/mcmc/reader
 2.counting/mcmc/test_matrix
