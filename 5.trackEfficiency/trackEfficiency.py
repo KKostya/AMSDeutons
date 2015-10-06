@@ -11,9 +11,9 @@ def main(params,plot=False):
     matchObj=re.match(r'.*selStatus\^(.*)\)&.*', params["trackSelectionMC"])
     selStatus=int(matchObj.group(1))
 
-    tableMC = params["tableMC"]
+    protonMC = params["protonMC"]
     
-    finalMask=b.getSelectionsFromMask(tableMC, selStatus)
+    finalMask=b.getSelectionsFromMask(protonMC, selStatus)
 
     mask=list()
 
@@ -25,7 +25,7 @@ def main(params,plot=False):
         print mask
         theQuery="SELECT "+b.binLowEdgeFromArray("GenMomentum",params['binningRgdtTheoretic']) + "as binX, " \
             ' COUNT(1) as after_' + m + \
-            ' FROM {0} WHERE '.format(tableMC) + b.makeSelectionMask(tableMC, mask) + \
+            ' FROM {0} WHERE '.format(protonMC) + b.makeSelectionMask(protonMC, mask) + \
             ' GROUP BY binX, HAVING binX >= 0 ORDER BY binX '
 
         plt.figure()

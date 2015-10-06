@@ -32,7 +32,7 @@ import sys
 #          for the bin having low edge given by column 'binX'
 
 def main(params,plot=False):
-    b.setTable(params['tableMC'])
+    b.setTable(params['protonMC'])
 
     # The MC Rig distrbution in uniform in log(R)
     # We know that on the range [Rmin,Rmax], nTotal events have been generated
@@ -42,7 +42,7 @@ def main(params,plot=False):
     # Since distribution is uniform in log(R) space, the number of event in bin [A,B] is
     # f * nTotal = (log(B)-log(A)) / (log(Rmax) - log(Rmin)) * nTotal
 
-    b.setTable(params['tableMC'])
+    b.setTable(params['protonMC'])
 
     print params['preselectionMC']
 
