@@ -16,10 +16,10 @@ redoMatrices=True
 #  BINNINGS
 betaMeasuredNBins=100
 betaMeasuredMin=0.5
-betaMeasuredMax=1.5
-rgdtMeasuredNBins=100
+betaMeasuredMax=1.2
+rgdtMeasuredNBins=50
 rgdtMeasuredMin=1
-rgdtMeasuredMax=40
+rgdtMeasuredMax=10
 betaTheoreticMax=0.5
 
 # PRESELECTION
