@@ -12,6 +12,8 @@ log
 2.counting/mcmc/*/
 !2.counting/mcmc/Utils/
 2.counting/mcmc/reader
+2.counting/mcmc/sigma
+2.counting/mcmc/*.eps
 2.counting/mcmc/test_matrix
 2.counting/mcmc/test_model
 3.acceptance/acceptance-c++/*/
