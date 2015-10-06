@@ -44,7 +44,11 @@ class PDModel: public ModelBase
     std::vector<float> rgdtBinsT, rgdtBinsM;
     MatrixF rgdtF_transposed,  betaF;
     MatrixF deltaP, deltaD;
+
+protected:
     MatrixF observed;
+
+private:
 
     MatrixB mask;
 
@@ -93,6 +97,12 @@ public:
     
     // Log likelihood
     virtual float GetLogLikelihood(const SearchSpace & point) override;
+
+    // Log likelihood per cell
+    inline float GetCellLogLikelihood(float expected, int n, int m){
+        if( std::abs(expected) < 1e-99 ) return 0.;
+        return observed.get(n,m) * log(expected) - expected;
+    }
     
     // Gradient of Log likelihood
     SearchSpace GetLogLikelihoodGradient(const SearchSpace & point);
@@ -105,7 +115,6 @@ public:
     }
     
     // Observed
-    void LoadObservedDataFromFile(const std::string & fname);
     MatrixF getObservedDataFromFile(const std::string & fname);
     
     void GenerateToyObservedData(const SearchSpace & point){

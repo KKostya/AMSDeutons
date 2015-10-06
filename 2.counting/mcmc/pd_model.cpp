@@ -127,15 +127,15 @@ PDModel PDModel::FromCSVS(const std::string & betaFile, const std::string & rgdt
     
     std::vector<float> rT, rM, bT, bM;
 
-    MatrixF _rgdtF = getMatrixAndBins(rgdt, rT, rM).subMatrix(nTrueBins);
-    MatrixF _betaF = getMatrixAndBins(beta, bT, bM).subMatrix(nTrueBins);
+    MatrixF _rgdtF = CSV::getMatrixAndBins(rgdt, rT, rM).subMatrix(nTrueBins);
+    MatrixF _betaF = CSV::getMatrixAndBins(beta, bT, bM).subMatrix(nTrueBins);
 
     _betaF.normalize(MatrixF::NormBy::kColumn);
     _rgdtF.normalize(MatrixF::NormBy::kColumn);
     //    MatrixB _mask = getMask(maskFile).subMatrix(nTrueBins);
 
     MatrixB _mask(bM.size()-1,rM.size()-1,true);
-    if( maskFile != "" ) _mask = getMask(maskFile);
+    if( maskFile != "" ) _mask = CSV::getMask(maskFile,bM.size()-1,rM.size()-1);
 
     bT = subBinning(bT, nTrueBins+1);
     rT = subBinning(rT, nTrueBins+1);
@@ -175,7 +175,7 @@ PDModel PDModel::FromCSVSBiDim(const std::vector<std::string> & matricesFiles, c
             exit(-1);
         }
 
-        betaVsRig.push_back( getMatrixAndBins(file, bM, rM) );
+        betaVsRig.push_back( CSV::getMatrixAndBins(file, bM, rM) );
         std::cout << "rM.size() : " << rM.size() << std::endl;
         betaTrueBinTuple = getGenBin(file);
         if(i<matricesFiles.size()/2)  bT.push_back( std::get<0>(betaTrueBinTuple) );
@@ -187,7 +187,7 @@ PDModel PDModel::FromCSVSBiDim(const std::vector<std::string> & matricesFiles, c
     for(int i = 0;i<bT.size();i++) rT.push_back( R_from_beta(bT[i], PDModel::mp) );
     
     MatrixB _mask(bM.size()-1,rM.size()-1,true);
-    if( maskFile != "" ) _mask = getMask(maskFile);
+    if( maskFile != "" ) _mask = CSV::getMask(maskFile,bM.size()-1,rM.size()-1);
 
     PDModel model(bT,bM,rT,rM,betaVsRig,_mask);
     
@@ -215,7 +215,7 @@ PDModel PDModel::FromCSVSBiDim(const std::string & firstFileName, int nFiles, co
             exit(-1);
         }
 
-        betaVsRig.push_back( getMatrixAndBins(file, bM, rM) );
+        betaVsRig.push_back( CSV::getMatrixAndBins(file, bM, rM) );
         //        std::cout << "rM.size() : " << rM.size() << std::endl;
         betaTrueBinTuple = getGenBin(file);
         if(i<nFiles){
@@ -235,8 +235,7 @@ PDModel PDModel::FromCSVSBiDim(const std::string & firstFileName, int nFiles, co
     for(int i = 0;i<bT.size();i++) rT.push_back( R_from_beta(bT[i], PDModel::mp) );
     
     MatrixB _mask(bM.size()-1,rM.size()-1,true);
-    if( maskFile != "" ) _mask = getMask(maskFile);
-
+    if( maskFile != "" ) _mask = CSV::getMask(maskFile,bM.size()-1,rM.size()-1);
     PDModel model(bT,bM,rT,rM,betaVsRig,_mask);
     
     return model;
@@ -277,7 +276,7 @@ void PDModel::SetBetaResolution(const MatrixF & matrix)
 }
 
 void PDModel::SetMask(const std::string & maskFile){
-    SetMask( getMask(maskFile) );
+    SetMask( CSV::getMask(maskFile, betaBinsM.size() - 1, rgdtBinsM.size() - 1));
 }
 
 void PDModel::SetMask(const MatrixB & _mask)
@@ -355,12 +354,14 @@ float PDModel::GetLogLikelihood(const SearchSpace & point)
     // point.dump();
     // prediction.dump();
 
-    
+    // observed.dump();
+    // exit(-1);
     float ret = prediction.applyAndSum(
                                        [this](float expected , int n, int m){
-                                           if( std::abs(expected) < 1e-99 ) return 0.;
-                                           //std::cout << expected << "\t" << observed.get(n,m) << std::endl;
-                                           return observed.get(n,m) * log(expected) - expected;
+                                           // if(expected > 100000){
+                                           //     std::cout << expected << "\t" << observed.get(n,m) << std::endl;
+                                           // }
+                                           return GetCellLogLikelihood(expected,n,m);
                                        }
                                        );
 
@@ -417,8 +418,6 @@ void PDModel::ComputeRegularizationTerm(const SearchSpace & point){
 
 MatrixF PDModel::getObservedDataFromFile(const std::string & fname)
 {
-
-
     int nRows = generalUtils::stringTo<int>( generalUtils::exec("wc -l "+ fname) );
     if( nRows != betaBinsM.size() ){
         std::cerr << "ERROR in PDModel::getObservedDataFromFile" << std::endl;
@@ -461,6 +460,3 @@ MatrixF PDModel::getObservedDataFromFile(const std::string & fname)
     return obs;
 }
 
-void PDModel::LoadObservedDataFromFile(const std::string & fname){
-    observed = getObservedDataFromFile(fname);
-}

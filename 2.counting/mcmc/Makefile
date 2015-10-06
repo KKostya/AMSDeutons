@@ -50,6 +50,9 @@ gui: gui.cpp gui.hpp pd_model.o generalUtils.o
 	rootcint -f guiLinkDef.cpp -c ${INCLUDE} gui.hpp guiLinkDef.hpp
 	g++ ${INCLUDE} `root-config --cflags --glibs` gui.cpp guiLinkDef.cpp -o gui pd_model.o generalUtils.o `root-config --glibs`
 
+sigma: sigma.cpp sigma.hpp pd_model.o generalUtils.o gui.hpp
+	g++ ${INCLUDE} sigma.cpp -o sigma pd_model.o generalUtils.o  -lGraphFromHistos -lStack $(LIBS)
+
 clean:
 	rm -f mcmc reader test_model test_matrix *.o guiLinkDef.cpp guiLinkDef_rdict.pcm
 

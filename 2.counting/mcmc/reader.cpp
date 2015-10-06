@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <sys/stat.h>
 
 #include "TH1F.h"
 #include "TCanvas.h"
@@ -549,6 +550,13 @@ int main(int argc, char** argv){
                     }
                 }
         }
+
+    // Check that 'dirname' exists
+    struct stat sb;
+    if (stat(dirname.c_str(), &sb) != 0 || !S_ISDIR(sb.st_mode)){
+        std::cout << "Directory : " << dirname << " does not exist" << std::endl;
+        exit(-1);
+    }
     
     std::clock_t start = std::clock();
 

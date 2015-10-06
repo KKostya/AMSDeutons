@@ -18,77 +18,37 @@
 //     return derivative;
 // }
 
-std::string files[] = {
-    "beta_vs_rgdt_GenBin0.pd", 
-    "beta_vs_rgdt_GenBin1.pd", 
-    "beta_vs_rgdt_GenBin2.pd", 
-    "beta_vs_rgdt_GenBin3.pd", 
-    "beta_vs_rgdt_GenBin4.pd", 
-    "beta_vs_rgdt_GenBin5.pd", 
-    "beta_vs_rgdt_GenBin7.pd", 
-    "beta_vs_rgdt_GenBin6.pd", 
-    "beta_vs_rgdt_GenBin8.pd", 
-    "beta_vs_rgdt_GenBin9.pd", 
-    "beta_vs_rgdt_GenBin10.pd",
-    "beta_vs_rgdt_GenBin11.pd",
-    "beta_vs_rgdt_GenBin12.pd",
-    "beta_vs_rgdt_GenBin13.pd",
-    "beta_vs_rgdt_GenBin14.pd",
-    "beta_vs_rgdt_GenBin16.pd",
-    "beta_vs_rgdt_GenBin15.pd",
-    "beta_vs_rgdt_GenBin17.pd",
-    "beta_vs_rgdt_GenBin18.pd",
-    "beta_vs_rgdt_GenBin19.pd", 
-    "beta_vs_rgdt_GenBin20.pd", 
-    "beta_vs_rgdt_GenBin21.pd", 
-    "beta_vs_rgdt_GenBin22.pd", 
-    "beta_vs_rgdt_GenBin23.pd", 
-    "beta_vs_rgdt_GenBin24.pd", 
-    "beta_vs_rgdt_GenBin26.pd", 
-    "beta_vs_rgdt_GenBin25.pd", 
-    "beta_vs_rgdt_GenBin27.pd", 
-    "beta_vs_rgdt_GenBin28.pd", 
-    "beta_vs_rgdt_GenBin29.pd",
-    "beta_vs_rgdt_GenBin30.pd",
-    "beta_vs_rgdt_GenBin31.pd",
-    "beta_vs_rgdt_GenBin32.pd",
-    "beta_vs_rgdt_GenBin33.pd",
-    "beta_vs_rgdt_GenBin35.pd",
-    "beta_vs_rgdt_GenBin34.pd",
-    "beta_vs_rgdt_GenBin36.pd",
-    "beta_vs_rgdt_GenBin37.pd"
-};
 
-struct RealisticToyModel: public PDModel
-{
-    static const bool isToyMC = true;
+// struct RealisticToyModel: public PDModel
+// {
+//     static const bool isToyMC = true;
 
-    RealisticToyModel():
-        //PDModel(PDModel::FromCSVS("../datasets/B_resolution.csv", "../datasets/R_resolution.csv","../datasets/mask.csv" ))
-        PDModel(PDModel::FromCSVSBiDim( std::vector<std::string>(begin(files),end(files)), "../datasets/mask.csv" ))
-    {
-        // Set true values of the model
-        for( int i = 0; i < getBetaBinsT().size() - 1; i++){
-            realValues.fluxP.push_back(10000);
-            realValues.fluxD.push_back(10000);
-        }
+//     RealisticToyModel():
+//         //PDModel(PDModel::FromCSVS("../datasets/B_resolution.csv", "../datasets/R_resolution.csv","../datasets/mask.csv" ))
+//         PDModel(PDModel::FromCSVSBiDim( std::vector<std::string>(begin(files),end(files)), "../datasets/mask.csv" ))
+//     {
+//         // Set true values of the model
+//         for( int i = 0; i < getBetaBinsT().size() - 1; i++){
+//             realValues.fluxP.push_back(10000);
+//             realValues.fluxD.push_back(10000);
+//         }
 
         
 
-        exit(-1);
-        // Generate fake data
+//         exit(-1);
+//         // Generate fake data
 
-        GenerateToyObservedData(realValues);
-    }
+//         GenerateToyObservedData(realValues);
+//     }
 
-    virtual void saveMetaData(std::ofstream & myfile) override {
-        myfile << "isToyMC "        << isToyMC << std::endl;
-        myfile << "bins " ;
-        for(auto v :  getBetaBinsT()) myfile << v << " "; 
-        myfile << std::endl;
-    }
+//     virtual void saveMetaData(std::ofstream & myfile) override {
+//         myfile << "isToyMC "        << isToyMC << std::endl;
+//         myfile << "bins " ;
+//         for(auto v :  getBetaBinsT()) myfile << v << " "; 
+//         myfile << std::endl;
+//     }
 
-};
+// };
 
 struct RealDataModel: public PDModel
 {
@@ -134,7 +94,7 @@ struct RealDataModel: public PDModel
         // }
 
         // Load real data
-        LoadObservedDataFromFile("../datasets/observed_data.txt");
+        observed = getObservedDataFromFile("../datasets/observed_data.txt");
     }
 
     ~RealDataModel(){}

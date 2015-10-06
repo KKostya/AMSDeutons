@@ -149,7 +149,7 @@ int main(int argc, char** argv){
     if(maskFile != "") model.SetMask(maskFile);
     model.setRegularizationFactor(alphaRegularization);
 
-    MCMC<ProposalFunction > a(name,model);
+    MCMC<ProposalFunctionDeutonFixed > a(name,model);
     a.setVerbose(verbose);
     //    a.setSpectator( &RealDataModel::regularizationTermAccessor );
 
