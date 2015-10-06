@@ -25,6 +25,7 @@ try:
 
         return data 
 except:
+    print 'import failed'
     pass
 
 def config_plots(rcParams):
