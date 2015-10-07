@@ -12,8 +12,8 @@ OBJECTS=$(EXEC:%=./%.o)
 
 ### Options
 AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
-AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG
-LIBS	      := -L${amsUtils}/lib -lRootUtils
+AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG_dynamic
+LIBS	      := -L${amsUtils}/lib -lRootUtils -lGeneralUtils
 INCLUDES      := -I. -I$(AMSROOTLIBS) -Iinclude/ -I${amsUtils}/include
 DEBUG	      := -g
 
@@ -21,7 +21,7 @@ DEBUG	      := -g
 ROOTCFG  := root-config
 CXX      :=$(shell $(ROOTCFG) --cxx)   #g++
 CXXFLAGS :=$(DEBUG) -O2 $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-write-strings # TH1F...
-ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet # -lRFIO
+ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 
 
 #$?  List of dependencies changed more recently than current target.
@@ -34,7 +34,7 @@ ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet # -lRFIO
 all :$(BIN)
 
 $(BIN) : $(OBJECTS) $(CLASSES)
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $^  $(ROOTLIBS) $(LIBS)  $(AMSSTATICLIBS) 
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $^  $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) $(amsUtils)/lib/Loop.o
 
 
 $(OBJECTS): $(SRC)
