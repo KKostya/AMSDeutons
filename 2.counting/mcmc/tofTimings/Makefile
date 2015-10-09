@@ -34,7 +34,7 @@ ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 all :$(BIN)
 
 $(BIN) : $(OBJECTS) $(CLASSES)
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $^  $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) $(amsUtils)/lib/Loop.o
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $^  $(ROOTLIBS) $(AMSSTATICLIBS) $(LIBS) $(amsUtils)/lib/Loop.o -lStack
 
 
 $(OBJECTS): $(SRC)

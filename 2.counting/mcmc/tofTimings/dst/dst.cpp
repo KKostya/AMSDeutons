@@ -11,13 +11,33 @@ using namespace rootUtils;
 void Dst::registerVariables(){
     maxEntries = 100;
 
-    ADD_VARIABLE("beta",               beta ? beta  -> Beta           : -1; );
-    ADD_VARIABLE("betaH",             betaH ? betaH -> GetBeta()      : -1; );
-    ADD_VARIABLE("NTofClusterH",      betaH ? betaH -> NTofClusterH() : -1; );
-    ADD_VARIABLE("time_L0",      clusterHL0 ? clusterHL0 -> Time      : -1; );
-    ADD_VARIABLE("time_L1",      clusterHL1 ? clusterHL1 -> Time      : -1; );
-    ADD_VARIABLE("time_L2",      clusterHL2 ? clusterHL2 -> Time      : -1; );
-    ADD_VARIABLE("time_L3",      clusterHL3 ? clusterHL3 -> Time      : -1; );
+    //                              pointer        value              defaultValue
+    // HEADER
+    ADD_VARIABLE("run",                  ev ? ev -> Run()             : -1;     );
+    ADD_VARIABLE("event",                ev ? ev -> Event()           : -1;     );
+    ADD_VARIABLE("UTime",                ev ? ev -> UTime()           : -1;     );
+
+    // TOF
+    ADD_VARIABLE("beta",               beta ? beta  -> Beta           : -1;     );
+    ADD_VARIABLE("betaH",             betaH ? betaH -> GetBeta()      : -1;     );
+    ADD_VARIABLE("NTofClusterH",      betaH ? betaH -> NTofClusterH() : -1;     );
+    ADD_VARIABLE("time_L0",      clusterHL0 ? clusterHL0 -> Time      : -999;     );
+    ADD_VARIABLE("time_L1",      clusterHL1 ? clusterHL1 -> Time      : -999;     );
+    ADD_VARIABLE("time_L2",      clusterHL2 ? clusterHL2 -> Time      : -999;     );
+    ADD_VARIABLE("time_L3",      clusterHL3 ? clusterHL3 -> Time      : -999;     );
+
+    // Tracker
+    ADD_VARIABLE("R",                    tr ? tr -> GetRigidity()     : -999;  );
+
+    // MC
+    ADD_VARIABLE("GenMomentum",          mc ? mc -> Momentum          : -999;  );
+    ADD_VARIABLE("GenCoo0",              mc ? mc -> Coo[0]            : -999;  );
+    ADD_VARIABLE("GenCoo1",              mc ? mc -> Coo[1]            : -999;  );
+    ADD_VARIABLE("GenCoo2",              mc ? mc -> Coo[2]            : -999;  );
+    ADD_VARIABLE("GenDir0",              mc ? mc -> Dir[0]            : -999;  );
+    ADD_VARIABLE("GenDir1",              mc ? mc -> Dir[1]            : -999;  );
+    ADD_VARIABLE("GenDir2",              mc ? mc -> Dir[2]            : -999;  );
+
 }
 
 void Dst::initPointers(){
@@ -29,6 +49,7 @@ void Dst::initPointers(){
     clusterHL1 = NULL;
     clusterHL2 = NULL;
     clusterHL3 = NULL;
+    mc = NULL;
 
     if(ev == NULL) return;
 
@@ -41,15 +62,17 @@ void Dst::initPointers(){
     if (betaH) clusterHL1 = betaH -> GetClusterHL(1);
     if (betaH) clusterHL2 = betaH -> GetClusterHL(2);
     if (betaH) clusterHL3 = betaH -> GetClusterHL(3);
+
+    mc = ev->GetPrimaryMC();
 }
 
 int main(int argc, char **argv){
-    TApplication app("app",&argc,argv);
+    std::string filename = "/afs/cern.ch/work/b/bcoste/protonB800.root";
+    if(argc > 1) filename = argv[1];
+    Dst t( filename );
 
-    Dst t( "/afs/cern.ch/work/b/bcoste/protonB800.root" );
+    if(argc > 2) t.setOutputFileName(argv[2]);
     t.go();
-
-    app.Run();
     return 0;
 }
 

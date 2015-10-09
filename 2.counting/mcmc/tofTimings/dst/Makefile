@@ -38,6 +38,7 @@ $(BIN) : $(OBJECTS) $(CLASSES) $(amsUtils)/Loop.o $(amsUtils)/DstAmsBinary.o
 
 
 $(OBJECTS): $(SRC)
+	if test -z "$$amsUtils"; then echo "Need to set env var amsUtils"; exit 1; fi
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $^
 
 clean:

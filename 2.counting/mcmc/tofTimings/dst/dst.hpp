@@ -24,8 +24,8 @@ protected:
 
     BetaHR* betaH;
     BetaR* beta;
-
     TofClusterHR *clusterHL0,*clusterHL1,*clusterHL2,*clusterHL3;
+    MCEventgR* mc;
     virtual void initPointers();
 
 };
