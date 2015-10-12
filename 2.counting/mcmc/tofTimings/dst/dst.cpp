@@ -9,8 +9,6 @@ using namespace rootUtils;
 
 
 void Dst::registerVariables(){
-    maxEntries = 100;
-
     //                              pointer        value              defaultValue
     // HEADER
     ADD_VARIABLE("run",                  ev ? ev -> Run()             : -1;     );
