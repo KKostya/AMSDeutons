@@ -53,3 +53,16 @@ def plot_matrix(frame, xInf=None,yInf=None,xSup=None,ySup=None, **args):
     plt.ylim(yInf,ySup)
     
     return ret
+
+# Plot a 2D histogram of varX vs varY
+def plotDataFrame2D(df,nBinsX,firstBinX,lastBinX,nBinsY,firstBinY,lastBinY,varX,varY):
+    binX='bin_'+varX
+    binY='bin_'+varY
+    dfTmp=pd.DataFrame(df[[varX,varY]])
+    dfTmp[binX]=binning(dfTmp,varX,nBinsX,firstBinX,lastBinX)
+    dfTmp[binY]=binning(dfTmp,varY,nBinsY,firstBinY,lastBinY)
+    dfTmp=dfTmp[(dfTmp[binX] >= firstBinX) & (dfTmp[binX] < lastBinX) & (dfTmp[binY] >= firstBinY) & (dfTmp[binY] < lastBinY) ]
+    return plot_matrix( dfTmp.groupby([binY,binX]).count()[varX].unstack().fillna(0) )
+
+
+
