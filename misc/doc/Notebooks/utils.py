@@ -65,7 +65,9 @@ def plotDataFrame2D(df,nBinsX,firstBinX,lastBinX,nBinsY,firstBinY,lastBinY,varX,
     dfTmp=dfTmp[(dfTmp[binX] >= firstBinX) & (dfTmp[binX] < lastBinX) & (dfTmp[binY] >= firstBinY) & (dfTmp[binY] < lastBinY) ]
     return plot_matrix( dfTmp.groupby([binY,binX]).count()[varX].unstack().fillna(0) )
 
-def gaussianFit(xdata,ydata,init):
-    fitfunc  = lambda p, x: p[0]*np.exp(-0.5*((x-p[1])/p[2])**2)
-    errfunc  = lambda p, x, y: (y - fitfunc(p, x))
+
+gaussian = lambda par, x: par[0]*np.exp(-0.5*((x-par[1])/par[2])**2)
+
+def fit(fitfunc,xdata,ydata,init):
+    errfunc  = lambda par, x, y: (y - fitfunc(par, x))
     return leastsq( errfunc, init, args=(xdata, ydata))
