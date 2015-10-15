@@ -55,8 +55,6 @@ void Dst::registerSelStatus(){
 }
 
 void Dst::registerVariables(){
-    maxEntries = 100;
-
     // HEADER
     ADD_VARIABLE("Run",                                    ev  ? ev -> Run()                     : -1;     );
     ADD_VARIABLE("Event",                                  ev  ? ev -> Event()                   : -1;     );
@@ -125,12 +123,28 @@ void Dst::registerVariables(){
 }
 
 
-int main(int argc, char **argv){
-    std::string filename = "/afs/cern.ch/work/b/bcoste/protonB800.root";
-    if(argc > 1) filename = argv[1];
-    Dst t( filename );
 
-    if(argc > 2) t.setOutputFileName(argv[2]);
+int main(int argc, char **argv){
+    //Processing input options
+    int c;
+    int entries = 0;
+    std::string outFname;
+    std::string  inFname = "/afs/cern.ch/work/b/bcoste/protonB800.root";
+
+    if (argc==1) std::cout
+                     << "Example:  ./dst -o test.root -n 10000 $EOSPATH/ams/Data/AMS02/2014/ISS.B900/std/1439205227.00000001.root"
+                     << std::endl;
+
+    while((c = getopt(argc, argv, "o:n:")) != -1) {
+        if(c == 'o') outFname = std::string(optarg);
+        else if(c == 'n') entries = atoi(optarg);
+    }
+
+    if (optind < argc) inFname = std::string(argv[optind++]); 
+    
+    Dst t( inFname );
+    t.setMaxEntries(entries);
+    if(!outFname.empty()) t.setOutputFileName(outFname);
     t.go();
     return 0;
 }
