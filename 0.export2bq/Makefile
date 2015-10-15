@@ -1,48 +1,50 @@
-CFLAGS= -g 
-ROOTINC=`root-config --cflags`
-ROOTLIB=`root-config --libs`
-AMSINC=-I$(AMSSRC)/include
+# Change the two first lines
+
+EXEC = dst
+ADDCLASS= 
+
+CLASSES = $(ADDCLASS) $(ADDCLASS:include/%.h=src/%.cpp)
+
+BIN    =$(EXEC:%=bin/%)
+SRC    =$(EXEC:%=./%.cpp)
+OBJECTS=$(EXEC:%=./%.o)
 
 
-ntupleData: ntupleData.o Data Selections gitversion.c utils gitversion.c
-	g++ -o $@ $(AMSLIBso) $(ROOTLIB) ntupleData.o Data/data.a  Selections/selections.a utils/utils.a gitversion.c
+### Options
+AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
+AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG_dynamic
+LIBS	      := -L../utils/lib -lRootUtils -lGeneralUtils
+INCLUDES      := -I. -Iselections/ -I$(AMSROOTLIBS) -Iinclude/ -I../utils/include
+DEBUG	      := -g
 
-selTable: SelectionsTable.o Selections 
-	g++ -o $@ $(AMSLIBso) $(ROOTLIB) SelectionsTable.o  Selections/selections.a 
+#Ca va chier dans le compilo
+ROOTCFG  := root-config
+CXX      :=$(shell $(ROOTCFG) --cxx)   #g++
+CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-write-strings # TH1F...
+ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 
-dumpRTI: dumpRTI.cxx 
-	g++ -o dumpRTI $(AMSINC) -std=c++11 $(AMSLIBso) `root-config --cflags --libs` dumpRTI.cxx 
 
-MyDict.cxx: $(HEADERS) Linkdef.h
-	rootcint -f $@ -c $(CXXFLAGS) -p $^
+#$?  List of dependencies changed more recently than current target.
+#$^  List of dependencies.
+#$@  Name of current target.
+#$<  Name of current dependency.
+#$*  Name of current dependency without extension.
 
-libMyLib.so: MyDict.cxx $(SOURCES)
-	g++ -shared -o$@ `root-config --ldflags` $(CXXFLAGS) -I$(ROOTSYS)/include $^
 
-Data:
-	make --directory=$@
+all :$(BIN)
 
-Selections:
-	make --directory=$@
+selections/selections.a:
+	make --directory=selections
 
 utils:
-	make --directory=$@
+	make --directory=../utils
 
-Data.o: Data.cxx Data.h
-CreateDataTree.o: CreateDataTree.cxx  Data.h 
-SelectionsTable.o: SelectionsTable.cxx 
+$(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@  dst.o $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) selections/selections.a ../utils/lib/dstAmsBinary.a
 
-%.o : %.cxx
-	g++ $(CFLAGS) -D_PGTRACK_ -o $@ -c $< $(ROOTINC) $(AMSINC)
 
-gitversion.c: ../.git/HEAD ../.git/index
-	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
+$(OBJECTS): $(SRC)
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $^
 
 clean:
-	rm -f *.o *.a ntupleData ntuplesData
-	make --directory=Data clean
-	make --directory=Selections clean
-	make --directory=utils clean
-
-.PHONY: Selections Data utils
-
+	rm -rf $(OBJECTS)

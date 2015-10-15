@@ -1,9 +1,0 @@
-1. Lots of duplicate code in Selections
-
-2. Selection stats:
- - save to file
- - add fall-through effs
-
-3. bug -- GetGoldenList template refers to the same global independent on template parameters
-
-4. memorybug -- see how the "data" variable is created. Othervise -- double free memory on the 
