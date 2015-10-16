@@ -57,106 +57,73 @@ void Dst::registerSelStatus(){
     selections.push_back( std::make_pair("ringNoNaFBorder", ringNoNaFBorder) );
 }
 
-
-template <typename T> struct Container{
-    Container<T>(std::string _name, std::function<T()> _f): name(_name), f(_f){
-
-    }
-
-    std::string name;
-    std::function<T()> f;
-    T *var;
-
-    void assign(int i){
-        var[i] = f();
-    }
-
-    // void save(){
-    //     for(auto it = var.begin(); it != var.end() ;it++){
-    //         std::cout << "outputFileName : " << outputFileName << std::endl;
-    //         std::stringstream fname;
-    //         fname << outputFileName <<"/" << it->first << "_chunk" << chunkNumber << ".bin";
-    //         std::cout << "fname.str() : " << fname.str() << std::endl;
-    //         std::ofstream myfile( fname.str(), std::ios::out | std::ios::binary);
-
-    //         // myfile.write((char*)&chunkStepNumber, sizeof(int));
-    //         myfile.write((char*)&(it->second[0]), sizeof(float)*chunkStepNumber);
-    //         myfile.close();
-    //     }
-    // }
-};
-
-void Dst::registerVariables(){
+void Dst::registerVariables() {
 
     registerSelStatus();
 
-    variables = std::make_tuple
-        (
-         // HEADER
-         Container<unsigned int>("Run", [this](){return ev ? ev -> Run()                     : -1;}),
-         Container<unsigned int>("Event", [this](){return ev ? ev -> Event()                   : -1;}),
-         Container<unsigned int>("UTime", [this](){return ev ? ev -> UTime()                   : -1;}),
-         Container<double>("ThetaS", [this](){return ev ? ev -> fHeader.ThetaS             : 0;}),
-         Container<double>("PhiS", [this](){return ev ? ev -> fHeader.PhiS               : 0;}),
-         Container<double>("Livetime", [this](){return ev ? ev -> LiveTime()                 : 0;}),
-         Container<double>("Latitude", [this](){return ev ? ev -> fHeader.ThetaM             : 0;}),
-         Container<unsigned long long>("fStatus", [this](){return ev ? ev -> fStatus                    : 0;}),
-         Container<double>("Rcutoff", [this](){return part ? part -> Cutoff                   : -1;}),
+    // HEADER
+    variables.push_back(new Container<unsigned int>("Run", [this](){return ev ? ev -> Run()                     : -1;}));
+    variables.push_back(new Container<unsigned int>("Event", [this](){return ev ? ev -> Event()                   : -1;}));
+    variables.push_back(new Container<unsigned int>("UTime", [this](){return ev ? ev -> UTime()                   : -1;}));
+    variables.push_back(new Container<double>("ThetaS", [this](){return ev ? ev -> fHeader.ThetaS             : 0;}));
+    variables.push_back(new Container<double>("PhiS", [this](){return ev ? ev -> fHeader.PhiS               : 0;}));
+    variables.push_back(new Container<double>("Livetime", [this](){return ev ? ev -> LiveTime()                 : 0;}));
+    variables.push_back(new Container<double>("Latitude", [this](){return ev ? ev -> fHeader.ThetaM             : 0;}));
+    variables.push_back(new Container<unsigned long long>("fStatus", [this](){return ev ? ev -> fStatus                    : 0;}));
+    variables.push_back(new Container<double>("Rcutoff", [this](){return part ? part -> Cutoff                   : -1;}));
                                                      
-         // Triggers                                      
-         Container<int>("PhysBPatt", [this](){return level ? level -> PhysBPatt               : -1;}),
-         Container<int>("JMembPatt", [this](){return level ? level -> JMembPatt               : -1;}),
+        // Triggers                                      
+    variables.push_back(new Container<int>("PhysBPatt", [this](){return level ? level -> PhysBPatt               : -1;}));
+    variables.push_back(new Container<int>("JMembPatt", [this](){return level ? level -> JMembPatt               : -1;}));
                                                                                                 
-         // TOF                                                                                      
-         Container<double>("BetaTOF", [this](){return beta  ? beta  -> Beta                : -1;}),
-         Container<double>("BetaTOFH", [this](){return betaH  ? betaH -> GetBeta()           : -1;}),
-         Container<int>("NTofClustersH", [this](){return ev ? ev     -> NTofClusterH()     : -1;}),
-         Container<int>("NTofClusters", [this](){return ev ? ev     -> NTofCluster()      : -1;}),
-         Container<int>("NTofClustersHUsed", [this](){return betaH  ? betaH ->  NTofClusterH()     : -1;}),
-         Container<int>("NTofClustersUsed", [this](){return beta   ? beta  ->  NTofCluster()      : -1;}),
-         Container<float>("Time_L0",    [this](){return clusterHL0  ? clusterHL0 -> Time              : -999;}),
-         Container<float>("Time_L1",    [this](){return clusterHL1  ? clusterHL1 -> Time              : -999;}),
-         Container<float>("Time_L2",    [this](){return clusterHL2  ? clusterHL2 -> Time              : -999;}),
-         Container<float>("Time_L3",    [this](){return clusterHL3  ? clusterHL3 -> Time              : -999;}),
+        // TOF                                                                                      
+    variables.push_back(new Container<double>("BetaTOF", [this](){return beta  ? beta  -> Beta                : -1;}));
+    variables.push_back(new Container<double>("BetaTOFH", [this](){return betaH  ? betaH -> GetBeta()           : -1;}));
+    variables.push_back(new Container<int>("NTofClustersH", [this](){return ev ? ev     -> NTofClusterH()     : -1;}));
+    variables.push_back(new Container<int>("NTofClusters", [this](){return ev ? ev     -> NTofCluster()      : -1;}));
+    variables.push_back(new Container<int>("NTofClustersHUsed", [this](){return betaH  ? betaH ->  NTofClusterH()     : -1;}));
+    variables.push_back(new Container<int>("NTofClustersUsed", [this](){return beta   ? beta  ->  NTofCluster()      : -1;}));
+    variables.push_back(new Container<float>("Time_L0",    [this](){return clusterHL0  ? clusterHL0 -> Time              : -999;}));
+    variables.push_back(new Container<float>("Time_L1",    [this](){return clusterHL1  ? clusterHL1 -> Time              : -999;}));
+    variables.push_back(new Container<float>("Time_L2",    [this](){return clusterHL2  ? clusterHL2 -> Time              : -999;}));
+    variables.push_back(new Container<float>("Time_L3",    [this](){return clusterHL3  ? clusterHL3 -> Time              : -999;}));
     
-         // Tracker                                                                                  
-         Container<int>("NTrackHits",   [this](){return tr ? tr -> NTrRecHit()               : 0;}),
-         Container<double>("R",         [this](){return tr ? tr -> GetRigidity()             : 0;}),
-         Container<float>("Q_all",      [this](){return tr ? tr -> GetQ_all().Mean           : 0;}),
-         Container<float>("InnerQ_all", [this](){return tr ? tr -> GetInnerQ_all().Mean      : 0;}),
-         Container<float>("L1_Hit_X",   [this](){return tr ? tr -> GetHitCooLJ(1)[0]         : 0;}),
-         Container<float>("L1_Hit_Y",   [this](){return tr ? tr -> GetHitCooLJ(1)[1]         : 0;}),
-         Container<float>("L1_Hit_Z",   [this](){return tr ? tr -> GetHitCooLJ(1)[2]         : 0;}),
-         Container<float>("L2_Hit_X",   [this](){return tr ? tr -> GetHitCooLJ(2)[0]         : 0;}),
-         Container<float>("L2_Hit_Y",   [this](){return tr ? tr -> GetHitCooLJ(2)[1]         : 0;}),
-         Container<float>("L2_Hit_Z",   [this](){return tr ? tr -> GetHitCooLJ(2)[2]         : 0;}),
-         Container<float>("ChiQUp",     [this](){return tr && tr -> ParExists(trackFitId_111) ? tr -> GetChisq(trackFitId_111)  : 0;}),
-         Container<float>("ChiQDown",   [this](){return tr && tr -> ParExists(trackFitId_121) ? tr -> GetChisq(trackFitId_121)  : 0;}),
-         Container<float>("ChiQ",       [this](){return tr && tr -> ParExists(trackFitId_131) ? tr -> GetChisq(trackFitId_131)  : 0;}),
-         Container<float>("ChiQL1",     [this](){return tr && tr -> ParExists(trackFitId_151) ? tr -> GetChisq(trackFitId_151)  : 0;}),
+        // Tracker                                                                                  
+    variables.push_back(new Container<int>("NTrackHits",   [this](){return tr ? tr -> NTrRecHit()               : 0;}));
+    variables.push_back(new Container<double>("R",         [this](){return tr ? tr -> GetRigidity()             : 0;}));
+    variables.push_back(new Container<float>("Q_all",      [this](){return tr ? tr -> GetQ_all().Mean           : 0;}));
+    variables.push_back(new Container<float>("InnerQ_all", [this](){return tr ? tr -> GetInnerQ_all().Mean      : 0;}));
+    variables.push_back(new Container<float>("L1_Hit_X",   [this](){return tr ? tr -> GetHitCooLJ(1)[0]         : 0;}));
+    variables.push_back(new Container<float>("L1_Hit_Y",   [this](){return tr ? tr -> GetHitCooLJ(1)[1]         : 0;}));
+    variables.push_back(new Container<float>("L1_Hit_Z",   [this](){return tr ? tr -> GetHitCooLJ(1)[2]         : 0;}));
+    variables.push_back(new Container<float>("L2_Hit_X",   [this](){return tr ? tr -> GetHitCooLJ(2)[0]         : 0;}));
+    variables.push_back(new Container<float>("L2_Hit_Y",   [this](){return tr ? tr -> GetHitCooLJ(2)[1]         : 0;}));
+    variables.push_back(new Container<float>("L2_Hit_Z",   [this](){return tr ? tr -> GetHitCooLJ(2)[2]         : 0;}));
+    variables.push_back(new Container<float>("ChiQUp",     [this](){return tr && tr -> ParExists(trackFitId_111) ? tr -> GetChisq(trackFitId_111)  : 0;}));
+    variables.push_back(new Container<float>("ChiQDown",   [this](){return tr && tr -> ParExists(trackFitId_121) ? tr -> GetChisq(trackFitId_121)  : 0;}));
+    variables.push_back(new Container<float>("ChiQ",       [this](){return tr && tr -> ParExists(trackFitId_131) ? tr -> GetChisq(trackFitId_131)  : 0;}));
+    variables.push_back(new Container<float>("ChiQL1",     [this](){return tr && tr -> ParExists(trackFitId_151) ? tr -> GetChisq(trackFitId_151)  : 0;}));
 
-         // Rich
-         Container<double>("BetaRICH", [this](){return rich ? rich -> getBeta()               : 0;}),
-         Container<float>("RichBetaConsistency", [this](){return rich ? rich -> getBetaConsistency()    : 0;}),
+        // Rich
+    variables.push_back(new Container<double>("BetaRICH", [this](){return rich ? rich -> getBeta()               : 0;}));
+    variables.push_back(new Container<float>("RichBetaConsistency", [this](){return rich ? rich -> getBetaConsistency()    : 0;}));
 
-         // // MC
-         Container<double>("GenMomentum", [this](){return mc ? mc -> Momentum          : -999;}),
-         Container<float>("GenCoo0", [this](){return mc ? mc -> Coo[0]            : -999;}),
-         Container<float>("GenCoo1", [this](){return mc ? mc -> Coo[1]            : -999;}),
-         Container<float>("GenCoo2", [this](){return mc ? mc -> Coo[2]            : -999;}),
-         Container<float>("GenDir0", [this](){return mc ? mc -> Dir[0]            : -999;}),
-         Container<float>("GenDir1", [this](){return mc ? mc -> Dir[1]            : -999;}),
-         Container<float>("GenDir2", [this](){return mc ? mc -> Dir[2]            : -999;}),
-         Container<unsigned long long>("selStatus", [this](){
-                 if(!ev) return float(0);
-                 unsigned long long selStatus = 0;
-                 for(int nsel=0; nsel<selections.size(); nsel++)
-                     if(selections[nsel].second(ev))
-                         selStatus += 1LLU << nsel;
-                 return float(selStatus);
-             })
-         );
-
+        // // MC
+    variables.push_back(new Container<double>("GenMomentum", [this](){return mc ? mc -> Momentum          : -999;}));
+    variables.push_back(new Container<float>("GenCoo0", [this](){return mc ? mc -> Coo[0]            : -999;}));
+    variables.push_back(new Container<float>("GenCoo1", [this](){return mc ? mc -> Coo[1]            : -999;}));
+    variables.push_back(new Container<float>("GenCoo2", [this](){return mc ? mc -> Coo[2]            : -999;}));
+    variables.push_back(new Container<float>("GenDir0", [this](){return mc ? mc -> Dir[0]            : -999;}));
+    variables.push_back(new Container<float>("GenDir1", [this](){return mc ? mc -> Dir[1]            : -999;}));
+    variables.push_back(new Container<float>("GenDir2", [this](){return mc ? mc -> Dir[2]            : -999;}));
+    // variables.push_back(new Container<unsigned long long>("selStatus", [this]()){
+    //         unsigned long long selStatus = 0;
+    //         if(!ev) return selStatus;
+    //         for(int nsel=0; nsel<selections.size(); nsel++)
+    //             if(selections[nsel].second(ev))
+    //                 selStatus += 1LLU << nsel;
+    //         return selStatus;
+    //     });
 }
 
 

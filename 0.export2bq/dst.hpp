@@ -29,7 +29,7 @@ public:
   
 protected:
     // virtual void init();
-    void registerVariables();
+    void registerVariables() override; 
 
     BetaHR* betaH;
     BetaR* beta;
@@ -39,8 +39,6 @@ protected:
     Level1R *level;
     RichRingR *rich;
     std::vector<std::pair<std::string, std::function<bool(AMSEventR*)> > > selections;
-
-    auto variables;
 
     virtual void initPointers(){
         beta = NULL;
