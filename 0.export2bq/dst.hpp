@@ -15,6 +15,7 @@
 #include "Preselect.h"
 #include "Golden.h"
 #include "MinBias.h"
+#include <tuple>
 #include "RICH.h"
 
 #define MAXRAM 1e9
@@ -38,6 +39,8 @@ protected:
     Level1R *level;
     RichRingR *rich;
     std::vector<std::pair<std::string, std::function<bool(AMSEventR*)> > > selections;
+
+    auto variables;
 
     virtual void initPointers(){
         beta = NULL;

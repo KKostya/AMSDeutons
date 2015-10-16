@@ -5,7 +5,10 @@
 
 using namespace rootUtils;
 
-#define ADD_VARIABLE(name, lambda) fill[name] =  [this](){ var[name][chunkStepNumber] = lambda }
+//#define ADD_VARIABLE(name, lambda) fill[name] =  [this](){ var[name][chunkStepNumber] = lambda }
+
+// #define ADD_VARIABLE(name, lambda) fill[  [this](){ var[name][chunkStepNumber] = lambda }
+
 
 void Dst::registerSelStatus(){
     selections.push_back( std::make_pair("notFirstTwo", notFirstTwo) );
@@ -54,72 +57,106 @@ void Dst::registerSelStatus(){
     selections.push_back( std::make_pair("ringNoNaFBorder", ringNoNaFBorder) );
 }
 
+
+template <typename T> struct Container{
+    Container<T>(std::string _name, std::function<T()> _f): name(_name), f(_f){
+
+    }
+
+    std::string name;
+    std::function<T()> f;
+    T *var;
+
+    void assign(int i){
+        var[i] = f();
+    }
+
+    // void save(){
+    //     for(auto it = var.begin(); it != var.end() ;it++){
+    //         std::cout << "outputFileName : " << outputFileName << std::endl;
+    //         std::stringstream fname;
+    //         fname << outputFileName <<"/" << it->first << "_chunk" << chunkNumber << ".bin";
+    //         std::cout << "fname.str() : " << fname.str() << std::endl;
+    //         std::ofstream myfile( fname.str(), std::ios::out | std::ios::binary);
+
+    //         // myfile.write((char*)&chunkStepNumber, sizeof(int));
+    //         myfile.write((char*)&(it->second[0]), sizeof(float)*chunkStepNumber);
+    //         myfile.close();
+    //     }
+    // }
+};
+
 void Dst::registerVariables(){
-    // HEADER
-    ADD_VARIABLE("Run",                                    ev  ? ev -> Run()                     : -1;     );
-    ADD_VARIABLE("Event",                                  ev  ? ev -> Event()                   : -1;     );
-    ADD_VARIABLE("UTime",                                  ev  ? ev -> UTime()                   : -1;     );
-    ADD_VARIABLE("ThetaS",                                 ev ? ev -> fHeader.ThetaS             : 0;     );
-    ADD_VARIABLE("PhiS",                                   ev ? ev -> fHeader.PhiS               : 0;     );
-    ADD_VARIABLE("Livetime",                               ev ? ev -> LiveTime()                 : 0;     );
-    ADD_VARIABLE("Latitude",                               ev ? ev -> fHeader.ThetaM             : 0;     );
-    ADD_VARIABLE("fStatus",                                ev ? ev -> fStatus                    : 0;     );
-    ADD_VARIABLE("Rcutoff",                              part ? part -> Cutoff                   : -1;    );
-
-    // Triggers
-    ADD_VARIABLE("PhysBPatt",                           level ? level -> PhysBPatt               : -1;    );
-    ADD_VARIABLE("JMembPatt",                           level ? level -> JMembPatt               : -1;    );
-                                                                                                
-    // TOF                                                                                      
-    ADD_VARIABLE("BetaTOF",                                 beta  ? beta  -> Beta                : -1;     );
-    ADD_VARIABLE("BetaTOFH",                               betaH  ? betaH -> GetBeta()           : -1;     );
-    ADD_VARIABLE("NTofClustersH",                              ev ? ev     -> NTofClusterH()     : -1;     );
-    ADD_VARIABLE("NTofClusters",                               ev ? ev     -> NTofCluster()      : -1;     );
-    ADD_VARIABLE("NTofClustersHUsed",                      betaH  ? betaH ->  NTofClusterH()     : -1;     );
-    ADD_VARIABLE("NTofClustersUsed",                       beta   ? beta  ->  NTofCluster()      : -1;     );
-    ADD_VARIABLE("Time_L0",                        clusterHL0  ? clusterHL0 -> Time              : -999;     );
-    ADD_VARIABLE("Time_L1",                        clusterHL1  ? clusterHL1 -> Time              : -999;     );
-    ADD_VARIABLE("Time_L2",                        clusterHL2  ? clusterHL2 -> Time              : -999;     );
-    ADD_VARIABLE("Time_L3",                        clusterHL3  ? clusterHL3 -> Time              : -999;     );
-    
-    // Tracker                                                                                  
-    ADD_VARIABLE("NTrackHits",                               tr ? tr -> NTrRecHit()               : 0;  );
-    ADD_VARIABLE("R",                                        tr ? tr -> GetRigidity()             : 0;  );
-    ADD_VARIABLE("Q_all",                                    tr ? tr -> GetQ_all().Mean           : 0;  );
-    ADD_VARIABLE("InnerQ_all",                               tr ? tr -> GetInnerQ_all().Mean      : 0;  );
-    ADD_VARIABLE("L1_Hit_X",                                 tr ? tr -> GetHitCooLJ(1)[0]         : 0;  );
-    ADD_VARIABLE("L1_Hit_Y",                                 tr ? tr -> GetHitCooLJ(1)[1]         : 0;  );
-    ADD_VARIABLE("L1_Hit_Z",                                 tr ? tr -> GetHitCooLJ(1)[2]         : 0;  );
-    ADD_VARIABLE("L2_Hit_X",                                 tr ? tr -> GetHitCooLJ(2)[0]         : 0;  );
-    ADD_VARIABLE("L2_Hit_Y",                                 tr ? tr -> GetHitCooLJ(2)[1]         : 0;  );
-    ADD_VARIABLE("L2_Hit_Z",                                 tr ? tr -> GetHitCooLJ(2)[2]         : 0;  );
-    ADD_VARIABLE("ChiQUp",  tr && tr -> ParExists(trackFitId_111) ? tr -> GetChisq(trackFitId_111)  : 0;  );
-    ADD_VARIABLE("ChiQDown",tr && tr -> ParExists(trackFitId_121) ? tr -> GetChisq(trackFitId_121)  : 0;  );
-    ADD_VARIABLE("ChiQ",    tr && tr -> ParExists(trackFitId_131) ? tr -> GetChisq(trackFitId_131)  : 0;  );
-    ADD_VARIABLE("ChiQL1",  tr && tr -> ParExists(trackFitId_151) ? tr -> GetChisq(trackFitId_151)  : 0;  );
-
-    // Rich
-    ADD_VARIABLE("BetaRICH",                               rich ? rich -> getBeta()               : 0;  );
-    ADD_VARIABLE("RichBetaConsistency",                    rich ? rich -> getBetaConsistency()    : 0;  );
-
-    // MC
-    ADD_VARIABLE("GenMomentum",          mc ? mc -> Momentum          : -999;  );
-    ADD_VARIABLE("GenCoo0",              mc ? mc -> Coo[0]            : -999;  );
-    ADD_VARIABLE("GenCoo1",              mc ? mc -> Coo[1]            : -999;  );
-    ADD_VARIABLE("GenCoo2",              mc ? mc -> Coo[2]            : -999;  );
-    ADD_VARIABLE("GenDir0",              mc ? mc -> Dir[0]            : -999;  );
-    ADD_VARIABLE("GenDir1",              mc ? mc -> Dir[1]            : -999;  );
-    ADD_VARIABLE("GenDir2",              mc ? mc -> Dir[2]            : -999;  );
 
     registerSelStatus();
-    fill["selStatus"] = [this](){
-        if(!ev) return float(0);
-        unsigned long long selStatus = 0;
-        for(int nsel=0; nsel<selections.size(); nsel++)
-            if(selections[nsel].second(ev))
-                selStatus += 1LLU << nsel;
-        return float(selStatus);
-    };
+
+    variables = std::make_tuple
+        (
+         // HEADER
+         Container<unsigned int>("Run", [this](){return ev ? ev -> Run()                     : -1;}),
+         Container<unsigned int>("Event", [this](){return ev ? ev -> Event()                   : -1;}),
+         Container<unsigned int>("UTime", [this](){return ev ? ev -> UTime()                   : -1;}),
+         Container<double>("ThetaS", [this](){return ev ? ev -> fHeader.ThetaS             : 0;}),
+         Container<double>("PhiS", [this](){return ev ? ev -> fHeader.PhiS               : 0;}),
+         Container<double>("Livetime", [this](){return ev ? ev -> LiveTime()                 : 0;}),
+         Container<double>("Latitude", [this](){return ev ? ev -> fHeader.ThetaM             : 0;}),
+         Container<unsigned long long>("fStatus", [this](){return ev ? ev -> fStatus                    : 0;}),
+         Container<double>("Rcutoff", [this](){return part ? part -> Cutoff                   : -1;}),
+                                                     
+         // Triggers                                      
+         Container<int>("PhysBPatt", [this](){return level ? level -> PhysBPatt               : -1;}),
+         Container<int>("JMembPatt", [this](){return level ? level -> JMembPatt               : -1;}),
+                                                                                                
+         // TOF                                                                                      
+         Container<double>("BetaTOF", [this](){return beta  ? beta  -> Beta                : -1;}),
+         Container<double>("BetaTOFH", [this](){return betaH  ? betaH -> GetBeta()           : -1;}),
+         Container<int>("NTofClustersH", [this](){return ev ? ev     -> NTofClusterH()     : -1;}),
+         Container<int>("NTofClusters", [this](){return ev ? ev     -> NTofCluster()      : -1;}),
+         Container<int>("NTofClustersHUsed", [this](){return betaH  ? betaH ->  NTofClusterH()     : -1;}),
+         Container<int>("NTofClustersUsed", [this](){return beta   ? beta  ->  NTofCluster()      : -1;}),
+         Container<float>("Time_L0",    [this](){return clusterHL0  ? clusterHL0 -> Time              : -999;}),
+         Container<float>("Time_L1",    [this](){return clusterHL1  ? clusterHL1 -> Time              : -999;}),
+         Container<float>("Time_L2",    [this](){return clusterHL2  ? clusterHL2 -> Time              : -999;}),
+         Container<float>("Time_L3",    [this](){return clusterHL3  ? clusterHL3 -> Time              : -999;}),
+    
+         // Tracker                                                                                  
+         Container<int>("NTrackHits",   [this](){return tr ? tr -> NTrRecHit()               : 0;}),
+         Container<double>("R",         [this](){return tr ? tr -> GetRigidity()             : 0;}),
+         Container<float>("Q_all",      [this](){return tr ? tr -> GetQ_all().Mean           : 0;}),
+         Container<float>("InnerQ_all", [this](){return tr ? tr -> GetInnerQ_all().Mean      : 0;}),
+         Container<float>("L1_Hit_X",   [this](){return tr ? tr -> GetHitCooLJ(1)[0]         : 0;}),
+         Container<float>("L1_Hit_Y",   [this](){return tr ? tr -> GetHitCooLJ(1)[1]         : 0;}),
+         Container<float>("L1_Hit_Z",   [this](){return tr ? tr -> GetHitCooLJ(1)[2]         : 0;}),
+         Container<float>("L2_Hit_X",   [this](){return tr ? tr -> GetHitCooLJ(2)[0]         : 0;}),
+         Container<float>("L2_Hit_Y",   [this](){return tr ? tr -> GetHitCooLJ(2)[1]         : 0;}),
+         Container<float>("L2_Hit_Z",   [this](){return tr ? tr -> GetHitCooLJ(2)[2]         : 0;}),
+         Container<float>("ChiQUp",     [this](){return tr && tr -> ParExists(trackFitId_111) ? tr -> GetChisq(trackFitId_111)  : 0;}),
+         Container<float>("ChiQDown",   [this](){return tr && tr -> ParExists(trackFitId_121) ? tr -> GetChisq(trackFitId_121)  : 0;}),
+         Container<float>("ChiQ",       [this](){return tr && tr -> ParExists(trackFitId_131) ? tr -> GetChisq(trackFitId_131)  : 0;}),
+         Container<float>("ChiQL1",     [this](){return tr && tr -> ParExists(trackFitId_151) ? tr -> GetChisq(trackFitId_151)  : 0;}),
+
+         // Rich
+         Container<double>("BetaRICH", [this](){return rich ? rich -> getBeta()               : 0;}),
+         Container<float>("RichBetaConsistency", [this](){return rich ? rich -> getBetaConsistency()    : 0;}),
+
+         // // MC
+         Container<double>("GenMomentum", [this](){return mc ? mc -> Momentum          : -999;}),
+         Container<float>("GenCoo0", [this](){return mc ? mc -> Coo[0]            : -999;}),
+         Container<float>("GenCoo1", [this](){return mc ? mc -> Coo[1]            : -999;}),
+         Container<float>("GenCoo2", [this](){return mc ? mc -> Coo[2]            : -999;}),
+         Container<float>("GenDir0", [this](){return mc ? mc -> Dir[0]            : -999;}),
+         Container<float>("GenDir1", [this](){return mc ? mc -> Dir[1]            : -999;}),
+         Container<float>("GenDir2", [this](){return mc ? mc -> Dir[2]            : -999;}),
+         Container<unsigned long long>("selStatus", [this](){
+                 if(!ev) return float(0);
+                 unsigned long long selStatus = 0;
+                 for(int nsel=0; nsel<selections.size(); nsel++)
+                     if(selections[nsel].second(ev))
+                         selStatus += 1LLU << nsel;
+                 return float(selStatus);
+             })
+         );
+
 }
 
 
