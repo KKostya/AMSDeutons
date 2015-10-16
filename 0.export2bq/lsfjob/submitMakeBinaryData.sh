@@ -12,8 +12,8 @@ export eosRoot=${HOME}/eos
 export executable=../bin/dst
 export initial="$(echo ${USER} | head -c 1)"
 
-files=("${eosRoot}/ams/Data/AMS02/2014/ISS.B950/pass6"/*)
-#files=("${eosRoot}/ams/MC/AMS02/2014/protons.B1034/pr.pl1.1200.qgsp_bic_ams"/*)
+files=("${eosRoot}/ams/Data/AMS02/2014/ISS.B950/pass6"/*.root)
+#files=("${eosRoot}/ams/MC/AMS02/2014/protons.B1034/pr.pl1.1200.qgsp_bic_ams"/*.root)
 
 if [[ ! -f "$executable" ]]; then
     echo Executable: ${executable} not found !
@@ -31,6 +31,8 @@ fi
 mkdir $jobName
 cp ${executable} $jobName/`basename ${executable}`
 executable=`pwd`/$jobName/`basename ${executable}`
+cp ../../utils/lib/libRootUtils.so `pwd`/$jobName/
+cp ../../utils/lib/libGeneralUtils.so `pwd`/$jobName/
 
 /afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select -b fuse mount $eosRoot
 if [[ ! -d "${eosRoot}/ams/user/${initial}/${USER}/binaryAmsData" ]]; then

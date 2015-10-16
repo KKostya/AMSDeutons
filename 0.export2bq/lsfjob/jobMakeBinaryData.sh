@@ -4,7 +4,6 @@ if [ "$#" -lt 2 ]; then
     exit
 fi
 
-
 k5reauth -R
 klist
 
@@ -21,20 +20,21 @@ eosRoot=`pwd`/eos
 echo making local eos mounting point ...
 /afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select -b fuse mount ${eosRoot}
 cp ${executable} main
+
+cp `dirname ${executable}`/libRootUtils.so .
+cp `dirname ${executable}`/libGeneralUtils.so .
+
+LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
 ls -lrt
 
 for inputFile in ${ROOTUPLES[@]}; do
-    if [[ "${inputFile}" == *"/eos/"* ]]; then
-        #change the eos mounting point
-        fileNameNewMountingPoint=`echo $inputFile | awk -F'eos/' '{printf("'${eosRoot}/'%s",$2)}'`
-        echo $fileNameNewMountingPoint
-        theLocalFile=`basename "$inputFile"`
-        cp ${fileNameNewMountingPoint} .
-        ./main ${theLocalFile} "${theLocalFile%.*}".output
-        rm -f ${theLocalFile}
-    else
-        ./main ${inputFile} "${inputFile%.*}".output
-    fi
+    #change the eos mounting point
+    fileNameNewMountingPoint=`echo $inputFile | awk -F'eos/' '{printf("'${eosRoot}/'%s",$2)}'`
+    echo $fileNameNewMountingPoint
+    theLocalFile=`basename "$inputFile"`
+    cp ${fileNameNewMountingPoint} .
+    ./main -o "${theLocalFile%.*}".output ${theLocalFile}
+    rm -f ${theLocalFile}
 done
 
 
