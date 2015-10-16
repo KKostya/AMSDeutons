@@ -1,6 +1,6 @@
 # Change the two first lines
 
-EXEC = acceptance
+EXEC = main
 ADDCLASS= 
 
 CLASSES = $(ADDCLASS) $(ADDCLASS:include/%.h=src/%.cpp)
@@ -34,7 +34,7 @@ ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 all :$(BIN) result
 
 $(BIN) : $(OBJECTS) $(CLASSES) ${HOME}/utils/lib/Loop.o
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $^  $(AMSSTATICLIBS) $(ROOTLIBS)  $(LIBS) 
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $^  $(AMSSTATICLIBS) $(ROOTLIBS)  $(LIBS)  -lStack
 
 result : result.cpp
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o result result.cpp  $(AMSSTATICLIBS) $(ROOTLIBS)  $(LIBS) 

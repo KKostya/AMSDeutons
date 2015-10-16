@@ -12,9 +12,9 @@ export isWorkFolder=1
 export isEosFolder=0
 export eosRoot=/afs/cern.ch/user/b/bcoste/eos
 export executable=/afs/cern.ch/user/b/bcoste/deutons/3.acceptance/acceptance-c++/bin/acceptance
-#files=("/afs/cern.ch/user/b/bcoste/eos/ams/MC/AMS02/2014/protons.B1034/pr.pl1.1200.qgsp_bic_ams"/*)
-#files=("/afs/cern.ch/user/b/bcoste/eos/ams/MC/AMS02/2014/protons.B800/pr.pl1.0_5200/"/*)
-files=("/afs/cern.ch/user/b/bcoste/eos/ams/MC/AMS02/2014/d.B1030/d.pl1.0_520_Shen_Blic"/*)
+#files=("/afs/cern.ch/user/b/bcoste/eos/ams/MC/AMS02/2014/protons.B1034/pr.pl1.1200.qgsp_bic_ams"/*root)
+files=("/afs/cern.ch/user/b/bcoste/eos/ams/MC/AMS02/2014/protons.B800/pr.pl1.0_5200/"/*root)
+#files=("/afs/cern.ch/user/b/bcoste/eos/ams/MC/AMS02/2014/d.B1030/d.pl1.0_520_Shen_Blic"/*root)
 if [[ ! -f "$executable" ]]; then
     echo Executable: ${executable} not found !
     echo Exit !

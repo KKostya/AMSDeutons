@@ -13,12 +13,14 @@
 #include "rootUtils.hpp"
 #include "generalUtils.hpp"
 #include "Stack.hpp"
+#include "TofRecon.h"
 
 int main(int argc, char** argv){
     TApplication app("app",&argc,argv);
 
-    std::vector <std::string > files =  generalUtils::getFilesInDirWithPattern("/afs/cern.ch/work/b/bcoste/acceptance-c++/d.pl1.0_520_GG_Blic/","ana");
-
+    std::vector <std::string > files =  generalUtils::getFilesInDirWithPattern("/afs/cern.ch/work/b/bcoste/acceptance-c++/d.pl1.0_520_Shen_Blic/","ana");
+    //std::vector <std::string > files =  generalUtils::getFilesInDirWithPattern("/afs/cern.ch/work/b/bcoste/acceptance-c++/pr.pl1.0_5200/","ana");
+    
     std::cout << "files.size() : " << files.size() << std::endl;
 
     
@@ -28,7 +30,7 @@ int main(int argc, char** argv){
 
     for(int i = 1;i<files.size();i++){
         //    for(int i = 1;i<=1674;i++){
-        std::cout << "i : " << i << std::endl;
+        std::cout << "i : " << files[i] << std::endl;
         TH1F* htmp = (TH1F*)rootUtils::get(files[i],"hacc");
         if(htmp -> GetEntries() < 1 || htmp->GetMaximum() < 0 ){
             std::cout << "problem" << std::endl;
