@@ -39,8 +39,8 @@ selections/selections.a:
 utils:
 	make --directory=../utils
 
-$(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@  dst.o $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) selections/selections.a ../utils/lib/dstAmsBinary.a
+$(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils 
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@  dst.o $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) selections/selections.a -lDstAmsBinary
 
 
 $(OBJECTS): $(SRC)

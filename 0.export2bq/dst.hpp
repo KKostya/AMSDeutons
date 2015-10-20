@@ -38,7 +38,16 @@ protected:
     MCEventgR* mc;
     Level1R *level;
     RichRingR *rich;
+
+    std::vector<TrClusterR*> trackRawClusters;
+    std::map<TrRecHitR*,std::pair<TrClusterR*, TrClusterR*> > trackHitToClusterMap;
+
     std::vector<std::pair<std::string, std::function<bool(AMSEventR*)> > > selections;
+
+    template <int SIDE> std::vector<float> edepLayer();
+    template <int SIDE> std::vector<float> edepTrack();
+    
+    std::vector<float> LayerJQ();
 
     virtual void initPointers(){
         beta = NULL;
@@ -58,6 +67,9 @@ protected:
         trackFitId_131 = 0;
         trackFitId_151 = 0;
 
+        trackRawClusters.clear();
+        trackHitToClusterMap.clear();
+
         if(ev == NULL) return;
 
         level = ev->pLevel1(0);
@@ -70,7 +82,16 @@ protected:
     
         if (part) tr = (TrTrackR*) part->pTrTrack();
 
+        for (int i = 0; i < ev -> NTrCluster(); i++) trackRawClusters.push_back( ev->pTrCluster(i) );
+
         if(tr){
+            for (int i = 0; i < tr -> GetNhits(); i++){
+                TrRecHitR* hit = tr -> GetHit(i);
+                TrClusterR* yCluster = hit -> GetYCluster();
+                TrClusterR* xCluster = hit->OnlyY() ? NULL : hit -> GetXCluster();
+                trackHitToClusterMap[hit] = make_pair(xCluster, yCluster);
+            }
+
             trackFitId_111 = tr -> iTrTrackPar(1,1,1);
             trackFitId_121 = tr -> iTrTrackPar(1,2,1);
             trackFitId_131 = tr -> iTrTrackPar(1,3,1);
@@ -84,7 +105,10 @@ protected:
             clusterHL3 = betaH -> GetClusterHL(3);
         }
 
+
+
         mc = ev->GetPrimaryMC();
+
     }
 
 private:

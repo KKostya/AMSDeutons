@@ -90,7 +90,6 @@ void Dst::registerVariables() {
     
         // Tracker                                                                                  
     variables.push_back(new Container<int>("NTrackHits",   [this](){return tr ? tr -> NTrRecHit()               : 0;}));
-    variables.push_back(new Container<double>("R",         [this](){return tr ? tr -> GetRigidity()             : 0;}));
     variables.push_back(new Container<float>("Q_all",      [this](){return tr ? tr -> GetQ_all().Mean           : 0;}));
     variables.push_back(new Container<float>("InnerQ_all", [this](){return tr ? tr -> GetInnerQ_all().Mean      : 0;}));
     variables.push_back(new Container<float>("L1_Hit_X",   [this](){return tr ? tr -> GetHitCooLJ(1)[0]         : 0;}));
@@ -104,6 +103,17 @@ void Dst::registerVariables() {
     variables.push_back(new Container<float>("ChiQ",       [this](){return tr && tr -> ParExists(trackFitId_131) ? tr -> GetChisq(trackFitId_131)  : 0;}));
     variables.push_back(new Container<float>("ChiQL1",     [this](){return tr && tr -> ParExists(trackFitId_151) ? tr -> GetChisq(trackFitId_151)  : 0;}));
 
+    variables.push_back(new Container<float>("RUp",     [this](){return tr && tr -> ParExists(trackFitId_111) ? tr -> GetRigidity(trackFitId_111)  : 0;}));
+    variables.push_back(new Container<float>("RDown",   [this](){return tr && tr -> ParExists(trackFitId_121) ? tr -> GetRigidity(trackFitId_121)  : 0;}));
+    variables.push_back(new Container<float>("R",       [this](){return tr && tr -> ParExists(trackFitId_131) ? tr -> GetRigidity(trackFitId_131)  : 0;}));
+    variables.push_back(new Container<float>("RL1",     [this](){return tr && tr -> ParExists(trackFitId_151) ? tr -> GetRigidity(trackFitId_151)  : 0;}));
+
+    variables.push_back(new Container<std::vector<float>, 9 >("EDepLayerX", [this](){return edepLayer<0>(); }));
+    variables.push_back(new Container<std::vector<float>, 9>("EDepLayerY", [this](){return edepLayer<1>(); }));
+    variables.push_back(new Container<std::vector<float>, 9>("EDepTrackX", [this](){return edepTrack<0>(); }));
+    variables.push_back(new Container<std::vector<float>, 9>("EDepTrackY", [this](){return edepTrack<1>(); }));
+    variables.push_back(new Container<std::vector<float>, 9>("LayerJQ", [this](){return LayerJQ(); }));
+
         // Rich
     variables.push_back(new Container<double>("BetaRICH", [this](){return rich ? rich -> getBeta()               : 0;}));
     variables.push_back(new Container<float>("RichBetaConsistency", [this](){return rich ? rich -> getBetaConsistency()    : 0;}));
@@ -116,17 +126,60 @@ void Dst::registerVariables() {
     variables.push_back(new Container<float>("GenDir0", [this](){return mc ? mc -> Dir[0]            : -999;}));
     variables.push_back(new Container<float>("GenDir1", [this](){return mc ? mc -> Dir[1]            : -999;}));
     variables.push_back(new Container<float>("GenDir2", [this](){return mc ? mc -> Dir[2]            : -999;}));
-    // variables.push_back(new Container<unsigned long long>("selStatus", [this]()){
-    //         unsigned long long selStatus = 0;
-    //         if(!ev) return selStatus;
-    //         for(int nsel=0; nsel<selections.size(); nsel++)
-    //             if(selections[nsel].second(ev))
-    //                 selStatus += 1LLU << nsel;
-    //         return selStatus;
-    //     });
+    variables.push_back(new Container<unsigned long long>("selStatus", [this](){
+            unsigned long long selStatus = 0;
+            if(!ev) return selStatus;
+            for(int nsel=0; nsel<selections.size(); nsel++)
+                if(selections[nsel].second(ev))
+                    selStatus += 1LLU << nsel;
+            return selStatus;
+            }));
 }
 
 
+//////////////////////////////////////////
+// Total energy deposited in each layer //
+//////////////////////////////////////////
+
+template<int SIDE>
+std::vector<float> Dst::edepLayer()
+{
+    std::vector<float> ret(9, 0);
+    for (int i = 0; i < trackRawClusters.size(); i++){
+        if (trackRawClusters[i]->GetSide() != SIDE) continue;
+        int ilay = trackRawClusters[i]->GetLayerJ()-1;
+        ret[ilay] += trackRawClusters[i]->GetEdep();
+    }
+    return ret;
+}
+
+//////////////////////////////////////////
+//  Energy deposited along the track    //
+//////////////////////////////////////////
+
+template<int SIDE>
+std::vector<float> Dst::edepTrack()
+{
+    std::vector<float> ret(9, 0);
+    for (auto it = trackHitToClusterMap.begin(); it != trackHitToClusterMap.end(); it++){
+        const TrRecHitR* hit = it -> first;
+        const int ilay = hit->GetLayerJ()-1;
+        const std::pair<TrClusterR*, TrClusterR*> xyClusters = it -> second;
+        if(SIDE == 0) ret[ilay] = xyClusters.first ? xyClusters.first -> GetEdep() : 0;
+        if(SIDE == 1) ret[ilay] = xyClusters.second -> GetEdep();
+    }
+    return ret;
+}
+
+std::vector<float> Dst::LayerJQ()
+{
+    std::vector<float> ret(9, 0);
+    if(!tr) return ret;
+
+    for (int j = 0; j < 9; j++) 
+        ret[j] = tr -> GetLayerJQ(j+1);
+    return ret; 
+}
 
 int main(int argc, char **argv){
     //Processing input options

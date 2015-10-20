@@ -35,14 +35,8 @@ for inputFile in ${ROOTUPLES[@]}; do
     cp ${fileNameNewMountingPoint} .
     ./main -o "${theLocalFile%.*}".output ${theLocalFile}
     rm -f ${theLocalFile}
+    mv *.output* ${eosRoot}/ams/user/${initial}/${USER}/dstTofTiming/${jobName}
 done
 
-
-cp -R *.output* ${eosRoot}/ams/user/${initial}/${USER}/dstTofTiming/${jobName}
-
-
-#sed -i 's/, return code.*$/, return code: '${code}'/' /afs/cern.ch/user/${initial}/${USER}/deutons/2.counting/mcmc/tofTimings/dst/dstTofTiming/${jobName}/jobList.log
-
 /afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select -b fuse umount eos 
-
 
