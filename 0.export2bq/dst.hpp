@@ -25,10 +25,18 @@ class Dst : public DstAmsBinary{
 public:
     Dst( std::string _data ) : DstAmsBinary( _data, MAXRAM){
         std::cout << "init with #" << data.size() << std::endl;
+        smearing = 0;
     }
-  
+    
+    void setSmearing(int _smearing){
+        this -> smearing = _smearing;
+    }
+
 protected:
-    // virtual void init();
+    virtual void init(){
+        DstAmsBinary::init();
+        if( smearing != 0 ) TofMCPar::MCtuneDT=smearing;
+    }
     void registerVariables() override; 
 
     BetaHR* betaH;
@@ -38,6 +46,8 @@ protected:
     MCEventgR* mc;
     Level1R *level;
     RichRingR *rich;
+
+    int smearing;
 
     std::vector<TrClusterR*> trackRawClusters;
     std::map<TrRecHitR*,std::pair<TrClusterR*, TrClusterR*> > trackHitToClusterMap;
@@ -99,6 +109,8 @@ protected:
         }
 
         if (betaH){
+            std::cout << "smearing  : " << smearing  << std::endl;
+            if( smearing != 0 ) betaH->DoMCtune(); //Active smearing
             clusterHL0 = betaH -> GetClusterHL(0);
             clusterHL1 = betaH -> GetClusterHL(1);
             clusterHL2 = betaH -> GetClusterHL(2);
