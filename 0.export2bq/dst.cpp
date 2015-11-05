@@ -187,19 +187,22 @@ int main(int argc, char **argv){
     int entries = 0;
     std::string outFname;
     std::string  inFname = "/afs/cern.ch/work/b/bcoste/protonB800.root";
+    int smearing = 0;
 
     if (argc==1) std::cout
-                     << "Example:  ./dst -o test.root -n 10000 $EOSPATH/ams/Data/AMS02/2014/ISS.B900/std/1439205227.00000001.root"
+                     << "Example:  ./dst -o test.root -n 10000 -f $EOSPATH/ams/Data/AMS02/2014/ISS.B900/std/1439205227.00000001.root"
                      << std::endl;
 
-    while((c = getopt(argc, argv, "o:n:")) != -1) {
+    while((c = getopt(argc, argv, "o:n:s:f:")) != -1) {
         if(c == 'o') outFname = std::string(optarg);
         else if(c == 'n') entries = atoi(optarg);
+        else if(c == 's') smearing = atoi(optarg);
+        else if(c == 'f') inFname = optarg;
     }
-
-    if (optind < argc) inFname = std::string(argv[optind++]); 
     
+    std::cout << "inFname : " << inFname << std::endl;
     Dst t( inFname );
+    t.setSmearing(smearing);
     t.setMaxEntries(entries);
     if(!outFname.empty()) t.setOutputFileName(outFname);
     t.go();
