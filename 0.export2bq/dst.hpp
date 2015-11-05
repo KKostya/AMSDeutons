@@ -60,6 +60,8 @@ protected:
 
         if(ev == NULL) return;
 
+        DistanceMinimizer::getDistanceMinimizer() -> reset(ev);
+
         level = ev->pLevel1(0);
         rich = ev->pRichRing(0);
 
