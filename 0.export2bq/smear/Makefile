@@ -1,6 +1,6 @@
 # Change the two first lines
 
-EXEC = dst
+EXEC = compare
 ADDCLASS= 
 
 CLASSES = $(ADDCLASS) $(ADDCLASS:include/%.h=src/%.cpp)
@@ -13,14 +13,14 @@ OBJECTS=$(EXEC:%=./%.o)
 ### Options
 AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
 AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG_dynamic
-LIBS	      := -L../utils/lib -lRootUtils -lGeneralUtils
-INCLUDES      := -I. -Iselections/ -I$(AMSROOTLIBS) -Iinclude/ -I../utils/include
-DEBUG	      := -g
+LIBS	      := -L../../utils/lib -lRootUtils -lGeneralUtils -lStack
+INCLUDES      := -I. -I$(AMSROOTLIBS) -Iinclude/ -I../../utils/include
+#DEBUG	      := -g
 
 #Ca va chier dans le compilo
 ROOTCFG  := root-config
 CXX      :=$(shell $(ROOTCFG) --cxx)   #g++
-CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-write-strings # TH1F...
+CXXFLAGS :=$(DEBUG) -O2 $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-write-strings # TH1F...
 ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 
 
@@ -31,19 +31,16 @@ ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 #$*  Name of current dependency without extension.
 
 
-all :$(BIN)
+all : bin/compare bin/smear
 
-selections/selections.a:
-	make --directory=selections
+bin/compare : compare.o $(CLASSES)
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $^  $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) ../../utils/Loop.o
 
-utils:
-	make --directory=../utils
-
-$(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils 
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@  dst.o $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) selections/selections.a -lDstAmsBinary
+bin/smear : smear.o $(CLASSES)
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $^  $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) ../../utils/Loop.o
 
 
-$(OBJECTS): $(SRC)
+%.o: %.cpp
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $^
 
 clean:

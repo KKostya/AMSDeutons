@@ -25,10 +25,18 @@ class Dst : public DstAmsBinary{
 public:
     Dst( std::string _data ) : DstAmsBinary( _data, MAXRAM){
         std::cout << "init with #" << data.size() << std::endl;
+        smearing = 0;
     }
-  
+    
+    void setSmearing(int _smearing){
+        this -> smearing = _smearing;
+    }
+
 protected:
-    // virtual void init();
+    virtual void init(){
+        DstAmsBinary::init();
+        if( smearing != 0 ) TofMCPar::MCtuneDT=smearing;
+    }
     void registerVariables() override; 
 
     BetaHR* betaH;
@@ -38,7 +46,18 @@ protected:
     MCEventgR* mc;
     Level1R *level;
     RichRingR *rich;
+
+    int smearing;
+
+    std::vector<TrClusterR*> trackRawClusters;
+    std::map<TrRecHitR*,std::pair<TrClusterR*, TrClusterR*> > trackHitToClusterMap;
+
     std::vector<std::pair<std::string, std::function<bool(AMSEventR*)> > > selections;
+
+    template <int SIDE> std::vector<float> edepLayer();
+    template <int SIDE> std::vector<float> edepTrack();
+    
+    std::vector<float> LayerJQ();
 
     virtual void initPointers(){
         beta = NULL;
@@ -58,6 +77,9 @@ protected:
         trackFitId_131 = 0;
         trackFitId_151 = 0;
 
+        trackRawClusters.clear();
+        trackHitToClusterMap.clear();
+
         if(ev == NULL) return;
 
         DistanceMinimizer::getDistanceMinimizer() -> reset(ev);
@@ -72,7 +94,16 @@ protected:
     
         if (part) tr = (TrTrackR*) part->pTrTrack();
 
+        for (int i = 0; i < ev -> NTrCluster(); i++) trackRawClusters.push_back( ev->pTrCluster(i) );
+
         if(tr){
+            for (int i = 0; i < tr -> GetNhits(); i++){
+                TrRecHitR* hit = tr -> GetHit(i);
+                TrClusterR* yCluster = hit -> GetYCluster();
+                TrClusterR* xCluster = hit->OnlyY() ? NULL : hit -> GetXCluster();
+                trackHitToClusterMap[hit] = make_pair(xCluster, yCluster);
+            }
+
             trackFitId_111 = tr -> iTrTrackPar(1,1,1);
             trackFitId_121 = tr -> iTrTrackPar(1,2,1);
             trackFitId_131 = tr -> iTrTrackPar(1,3,1);
@@ -80,13 +111,18 @@ protected:
         }
 
         if (betaH){
+            std::cout << "smearing  : " << smearing  << std::endl;
+            if( smearing != 0 ) betaH->DoMCtune(); //Active smearing
             clusterHL0 = betaH -> GetClusterHL(0);
             clusterHL1 = betaH -> GetClusterHL(1);
             clusterHL2 = betaH -> GetClusterHL(2);
             clusterHL3 = betaH -> GetClusterHL(3);
         }
 
+
+
         mc = ev->GetPrimaryMC();
+
     }
 
 private:
