@@ -181,6 +181,43 @@ std::vector<float> Dst::LayerJQ()
     return ret; 
 }
 
+// TOF energy deposit
+std::vector<double> EdepTOF(AMSEventR * ev)
+{
+    std::vector<double> ret(4);
+    for(int j=0; j<4; j++) ret[j] = 0;
+
+    if(ev == NULL) return ret;
+    for(int j=0; j< ev -> NTofCluster(); j++)
+        ret[(ev->pTofCluster(j)->Layer)-1] = ev->pTofCluster(j)->Edep;
+    return ret;
+}
+
+int NTRDclusters(AMSEventR * ev)
+{
+    if( ev -> pTrdTrack(0) == NULL ) return -1;
+    int ret = 0;
+    for(int j = 0; j < ev->pTrdTrack(0)->NTrdSegment(); j++) 
+        {
+            TrdSegmentR * trdSegment = ev->pTrdTrack(0)->pTrdSegment(j);
+            for(int i = 0;i < trdSegment->NTrdCluster(); i++) ret++;
+        }
+    return ret;
+}
+
+double EdepTRD(AMSEventR * ev)
+{
+    if( ev -> pTrdTrack(0) == NULL ) return -1;
+    double ret = 0;
+    for(int j = 0; j < ev->pTrdTrack(0)->NTrdSegment(); j++) 
+        {
+            TrdSegmentR * trdSegment = ev->pTrdTrack(0)->pTrdSegment(j);
+            for(int i = 0;i < trdSegment->NTrdCluster(); i++) 
+                ret += trdSegment->pTrdCluster(i)->EDep;
+        }
+    return ret;
+}
+
 int main(int argc, char **argv){
     //Processing input options
     int c;

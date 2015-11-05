@@ -20,6 +20,11 @@
 
 #define MAXRAM 1e9
 
+std::vector<double> EdepTOF(AMSEventR * ev);
+int NTRDclusters(AMSEventR * ev);
+double EdepTRD(AMSEventR * ev);
+
+#include "3DVariables.hpp"
 
 class Dst : public DstAmsBinary{
 public:
@@ -56,7 +61,8 @@ protected:
 
     template <int SIDE> std::vector<float> edepLayer();
     template <int SIDE> std::vector<float> edepTrack();
-    
+    std::vector<double> EdepTOF(AMSEventR * ev);
+
     std::vector<float> LayerJQ();
 
     virtual void initPointers(){
@@ -82,7 +88,6 @@ protected:
 
         if(ev == NULL) return;
 
-        DistanceMinimizer::getDistanceMinimizer() -> reset(ev);
 
         level = ev->pLevel1(0);
         rich = ev->pRichRing(0);
@@ -123,6 +128,7 @@ protected:
 
         mc = ev->GetPrimaryMC();
 
+        DistanceMinimizer::getDistanceMinimizer() -> reset(this);
     }
 
 private:
