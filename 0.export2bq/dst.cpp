@@ -315,7 +315,7 @@ void Dst::initPointers(){
     }
 
     if (betaH){
-        std::cout << "smearing  : " << smearing  << std::endl;
+        //std::cout << "smearing  : " << smearing  << std::endl;
         if( smearing != 0 ) betaH->DoMCtune(); //Active smearing
         clusterHL0 = betaH -> GetClusterHL(0);
         clusterHL1 = betaH -> GetClusterHL(1);

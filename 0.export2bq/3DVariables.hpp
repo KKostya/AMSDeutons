@@ -1,3 +1,4 @@
+bash-4.1$ cat 3DVariables.hpp 
 #include <vector>
 #include <numeric>
 
@@ -257,6 +258,31 @@ public:
             if(CurrentTRD   < distance.TRD)   { DR2 = 0; distance.TRD   = CurrentTRD;   distance.rMinTRD   = rgdtTrue;} else DR2++;
             if(CurrentTrack < distance.Track) { DR3 = 0; distance.Track = CurrentTrack; distance.rMinTrack = rgdtTrue;} else DR3++;
 
+            std::cout
+						  << ", betaTrue				"		<< betaTrue        <<  std::endl
+							<< ", etofTrue        "   << etofTrue          
+							<< ", etrdTrue        "   << etrdTrue          
+							<< ", etrkTrue        "   << etrkTrue        <<  std::endl
+							<< ", rgdtDist        "   << rgdtDist          
+							<< ", betaDist        "   << betaDist          
+							<< ", etofDist        "   << etofDist          
+							<< ", etrdDist        "   << etrdDist          
+							<< ", etrkDist        "   << etrkDist        <<  std::endl
+							<< ", CurrentTOF      "   << CurrentTOF        
+							<< ", distance.TOF    "   << distance.TOF      
+							<< ", R1              "   << DR1             <<  std::endl
+							<< ", CurrentTRD      "   << CurrentTRD        
+							<< ", distance.TRD    "   << distance.TRD      
+							<< ", R2              "   << DR2             <<  std::endl
+							<< ", CurrentTrack    "   << CurrentTrack      
+							<< ", distance.Track  "   << distance.Track    
+							<< ", R3              "   << DR3             <<  std::endl;
+
+
+
+
+
+
             if(DR1 > 25 && DR2 > 25 && DR3 > 25) break;
         }
     }
@@ -273,3 +299,4 @@ public:
 
 };
 
+bash-4.1$ 
