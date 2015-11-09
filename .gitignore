@@ -22,3 +22,4 @@ log
 0.export2bq/gitversion.c
 *.root
 0.export2bq/protonB*
+0.export2bq/lsfjob/*/
