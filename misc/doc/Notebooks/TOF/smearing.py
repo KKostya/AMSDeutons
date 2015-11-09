@@ -1,11 +1,18 @@
+import matplotlib
+
+display=True
+
+if not display:
+    matplotlib.use('Agg')
+
 import numpy as np
 from pandas import DataFrame
 import pandas as pd
 import glob
 import sys
-import sys
 import bigQueryPlotting as bq
 import math
+import random
 
 sys.path.insert(0,'../../../../utils/python')
 
@@ -15,28 +22,7 @@ import matplotlib.pyplot as plt
 
 import os
 
-maxFiles=100
-
-
-def readBinary(dirname,varToLoad=None):
-    print 'loading : ' + dirname
-    df = dict()
-    data=dict()
-
-    varType=dict()
-
-    for line in open(dirname+'/metadata.txt'):
-        words=line.split()
-        if words[0] == 'chunkSize' or words[0] == 'nVar' : continue
-        varType[words[0]] = words[2][0] + words[1]
-
-    for file in os.listdir(dirname):
-        if ( varToLoad is not None and file.startswith(varToLoad)) or ( varToLoad is None and not file.endswith("metadata.txt") ):
-            var=file.split('_chunk')[0]
-            data[var] = np.fromfile(dirname+'/'+file, np.dtype(varType[var]))
-
-    df = DataFrame(data)
-    return df
+maxFiles={ 'MC':40, 'Data':160}
 
 def loadBinaryOld(dirname,varToLoad=None):
     print 'loading : '
@@ -65,30 +51,44 @@ def makeDataframe(files, name, varToLoad, oldLoading=False):
     else :
         loadFunction = readBinary
 
-    df = pd.concat(map(lambda f: loadFunction(f,varToLoad), files[:maxFiles]))
-    df = df[(df.Time_L0 > -999) & (df.Time_L1 > -999) & (df.Time_L2 > -999) & (df.Time_L3 > -999) & (df.R < 30) & (df.R > 1) & (df.BetaTOFH > 0.5) & (df.BetaTOFH < 1.2) & (df.NTofClustersHUsed == 4)]
+    def loadAndFilter(dirname,varToLoad=None):
+        df=loadFunction(dirname,varToLoad)
+        df = df[(df.Time_L0 > -999) & (df.Time_L1 > -999) & (df.Time_L2 > -999) & (df.Time_L3 > -999) & (df.R < 30) & (df.R > 1) & (df.BetaTOFH > 0.5) & (df.BetaTOFH < 1.2) & (df.NTofClustersHUsed == 4) & (df.ChiQ > 0) & (df.ChiQ < 10)]
+        return df
+
+    df = pd.concat(map(lambda f: loadAndFilter(f,varToLoad), files[:maxFiles[name]]))
+
     df['binRgdt'] = df['R'].astype('int')
     df.index.name = name
     return df
 
-varToLoadNew=('Time_L','R','BetaTOF','NTofClustersHUsed')
+varToLoadNew=('Time_L','R','BetaTOF','NTofClustersHUsed','ChiQ')
 varToLoadOld=('time_L','R','beta','NTofClusterH')
 
 newCol=zip(varToLoadOld,varToLoadNew)
 
-mc='/afs/cern.ch/user/b/bcoste/myeos/binaryAmsData/protons.B1034_pr.pl1.1200.qgsp_bic_ams_noSmearing/*.00000001.output'
+mc  ='/afs/cern.ch/user/b/bcoste/myeos/binaryAmsData/protons.B1034_pr.pl1.1200.qgsp_bic_ams_noSmearing/*.00000001.output'
 data='/afs/cern.ch/user/b/bcoste/myeos/binaryAmsData/ISS.B950_pass6_allVariables/*.00000001.output'
 
 if len(sys.argv) > 1:
     mc = '/afs/cern.ch/user/b/bcoste/myeos/binaryAmsData/smearingMinus'+sys.argv[1]+'/*.00000001.output'
     print mc
-#dfMC = makeDataframe( glob.glob('/afs/cern.ch/user/b/bcoste/myeos/binaryAmsData/smearingMinus30/*.00000001.output'), "MC", varToLoadNew)
-dfMC = makeDataframe( glob.glob(mc), "MC", varToLoadNew)
-dfData = makeDataframe( glob.glob(data), "Data", varToLoadNew)
-#dfData = makeDataframe( glob.glob('/afs/cern.ch/user/b/bcoste/myeos/dstTofTiming/protons.B1034_pr.pl1.1200.qgsp_bic_ams/*.00000001.output'),  "MC",varToLoadOld,oldLoading=True)
 
-#dfData = makeDataframe( glob.glob('/afs/cern.ch/user/b/bcoste/myeos/dstTofTiming/ISS.B950_pass6/*.00000001.output'), "Data" , varToLoad , oldLoading=True)
+filesMC   = glob.glob(mc)
+filesData = glob.glob(data)
 
+random.shuffle(filesMC)
+random.shuffle(filesData)
+
+dfMC   = makeDataframe( filesMC, "MC", varToLoadNew)
+dfData = makeDataframe( filesData, "Data", varToLoadNew)
+
+#Old school
+# dfMC   = makeDataframe( glob.glob('/afs/cern.ch/user/b/bcoste/myeos/dstTofTiming/protons.B1034_pr.pl1.1200.qgsp_bic_ams/*.00000001.output'),  "MC",varToLoadOld,oldLoading=True)
+# dfData = makeDataframe( glob.glob('/afs/cern.ch/user/b/bcoste/myeos/dstTofTiming/ISS.B950_pass6/*.00000001.output'), "Data" , varToLoadOld , oldLoading=True)
+
+print 'data : '+data
+print 'mc : '+mc
 
 def binning(df,var,nBins,firstBin,lastBin):
     binWidth=(lastBin-firstBin)/nBins
@@ -106,10 +106,10 @@ def plotDataFrame2D(df,nBinsX,firstBinX,lastBinX,nBinsY,firstBinY,lastBinY,varX,
 for df in [dfData,dfMC]:
     print df.index.name
     df['invBetaH']=1/df.BetaTOFH
-    df['Time_L3-Time_L0']=df['Time_L3']-df['Time_L0']
-    df['Time_L1-Time_L0']=df['Time_L1']-df['Time_L0']
-    df['Time_L3-Time_L1']=df['Time_L3']-df['Time_L1']
-    df['Time_L3-Time_L2']=df['Time_L3']-df['Time_L2']
+    # df['Time_L3-Time_L0']=df['Time_L3']-df['Time_L0']
+    # df['Time_L1-Time_L0']=df['Time_L1']-df['Time_L0']
+    # df['Time_L3-Time_L1']=df['Time_L3']-df['Time_L1']
+    # df['Time_L3-Time_L2']=df['Time_L3']-df['Time_L2']
 
 
 def makeHistAndFit(data,init,hist_range,ylimit,widthSecondFit,funcFit=None,**kwargs):
@@ -131,8 +131,9 @@ def fitAllRigBin(data,var,rigBins,init,hist_range,ylimit,widthSecondFit,**kwargs
     par = []
     for i in range(len(rigBins[:-1])):
         name=var + 'distribution - rigidity : ['+str(rigBins[i])+','+str(rigBins[i+1])+']'
-        # plt.figure(name)
-        # plt.title(name)
+        if display:
+            plt.figure(name)
+            plt.title(name)
         par.append( makeHistAndFit( df[(df['R']>=rigBins[i]) & (df['R']<rigBins[i+1])][var].values, init, hist_range,ylimit,widthSecondFit,**kwargs) )
     return par
 
@@ -145,11 +146,11 @@ rigBins=np.linspace(2,29,40)
 print rigBins
 
 variables['BetaTOFH']=([9.0, 0.95, 0.05], (0.8, 1.1), (0,12), 1)
-variables['BetaTOF'] =([9.0, 0.95, 0.05], (0.8, 1.1), (0,12), 1)
-variables['Time_L3-Time_L0']=([1.0, 6.0, 1.0], (4,7),(0,1), 1)
-variables['Time_L3-Time_L1']=([1.0, 6.0, 1.0], (4,7),(0,1), 1)
-variables['Time_L3-Time_L2']=([1.0, 0, 0.5], (-1,1),(0,2), 1.5)
-variables['Time_L1-Time_L0']=([1.0, 0, 0.5], (-1,1),(0,2), 1.5)
+# variables['BetaTOF'] =([9.0, 0.95, 0.05], (0.8, 1.1), (0,12), 1)
+# variables['Time_L3-Time_L0']=([1.0, 6.0, 1.0], (4,7),(0,1), 1)
+# variables['Time_L3-Time_L1']=([1.0, 6.0, 1.0], (4,7),(0,1), 1)
+# variables['Time_L3-Time_L2']=([1.0, 0, 0.5], (-1,1),(0,2), 1.5)
+# variables['Time_L1-Time_L0']=([1.0, 0, 0.5], (-1,1),(0,2), 1.5)
 
 
 for var in variables:
@@ -193,9 +194,11 @@ for var in variables:
     plt.plot((rigBins[0],rigBins[-1]),(1,1))
     plt.ylim(canvasStd[var])
     if(len(sys.argv) > 1): plt.savefig(var+'_smearingMinus'+sys.argv[1]+'.png')
-
+    else: plt.savefig(var+'_noSmearing.png')
 
 # plt.figure()    
 # plt.plot(rigBins[:-1],[x-y for x,y in zip(std['Time_L1-Time_L0']['Data'],std['Time_L1-Time_L0']['MC'])],'o')
 # plt.plot(rigBins[:-1],[x-y for x,y in zip(std['Time_L3-Time_L2']['Data'],std['Time_L3-Time_L2']['MC'])],'o')
-#plt.show()
+
+if display:
+    plt.show()

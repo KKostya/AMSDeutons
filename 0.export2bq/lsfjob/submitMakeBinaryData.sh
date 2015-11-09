@@ -5,6 +5,9 @@ if [ "$#" -lt 1 ]; then
 fi
 
 jobName=$1
+# chunkSize=1
+# MAXJOB=1
+# queue=8nm
 chunkSize=20
 MAXJOB=1000
 queue=1nd
@@ -12,8 +15,16 @@ export eosRoot=${HOME}/eos
 export executable=../bin/dst
 export initial="$(echo ${USER} | head -c 1)"
 
-files=("${eosRoot}/ams/Data/AMS02/2014/ISS.B950/pass6"/*.root)
-#files=("${eosRoot}/ams/MC/AMS02/2014/protons.B1034/pr.pl1.1200.qgsp_bic_ams"/*.root)
+#files=("${eosRoot}/ams/Data/AMS02/2014/ISS.B950/pass6"/*.root)
+files=("${eosRoot}/ams/MC/AMS02/2014/protons.B1034/pr.pl1.1200.qgsp_bic_ams"/*.root)
+
+if [ "$#" -gt 1 ]; then
+    echo "New file dir provided : $2" 
+    files=("$2"/*.root)
+fi
+
+export libs=(../../utils/lib/libRootUtils.so  ../../utils/lib/libGeneralUtils.so ../../utils/lib/libDstAmsBinary.so)
+
 
 if [[ ! -f "$executable" ]]; then
     echo Executable: ${executable} not found !
@@ -31,8 +42,15 @@ fi
 mkdir $jobName
 cp ${executable} $jobName/`basename ${executable}`
 executable=`pwd`/$jobName/`basename ${executable}`
-cp ../../utils/lib/libRootUtils.so `pwd`/$jobName/
-cp ../../utils/lib/libGeneralUtils.so `pwd`/$jobName/
+
+for lib in ${libs[@]}
+do
+    if [[ ! -f "$lib" ]]; then
+        echo "lib : ${lib} not found !"
+        exit
+    fi
+    cp ${lib} `pwd`/$jobName/
+done
 
 /afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select -b fuse mount $eosRoot
 if [[ ! -d "${eosRoot}/ams/user/${initial}/${USER}/binaryAmsData" ]]; then
@@ -59,9 +77,12 @@ if [[ ! -f "jobMakeBinaryData.sh" ]]; then
     exit
 fi
 
+cp jobMakeBinaryData.sh ${jobName}
+
 cat << END > $jobName/env.sh
 export eosRoot=$eosRoot
 export executable=$executable
+$(declare -p libs)
 END
 
 for ((i=0; i < ${#files[@]}; i+=chunkSize)); do
@@ -71,7 +92,9 @@ for ((i=0; i < ${#files[@]}; i+=chunkSize)); do
 	break
     fi    
 
-    bsubCommand="bsub -J ${jobName}_${j} -q ${queue} $(pwd)/jobMakeBinaryData.sh ${jobName} ${j}"
+    echo "first libs : ${libs[@]} and rootuples : ${ROOTUPLES[@]}"
+
+    bsubCommand="bsub -J ${jobName}_${j} -q ${queue} k5reauth -R -- $(pwd)/${jobName}/jobMakeBinaryData.sh ${jobName} ${j}"
     $bsubCommand
     echo ${ROOTUPLES}>>${jobName}/inputFileList.log
 done
