@@ -126,6 +126,23 @@ void Dst::registerVariables() {
     variables.push_back(new Container<float>("GenDir0", [this](){return mc ? mc -> Dir[0]            : -999;}));
     variables.push_back(new Container<float>("GenDir1", [this](){return mc ? mc -> Dir[1]            : -999;}));
     variables.push_back(new Container<float>("GenDir2", [this](){return mc ? mc -> Dir[2]            : -999;}));
+    
+
+
+    variables.push_back(new Container<double>("DistanceTOF_P", [this](){return distanceMinimizer -> protonDists.TOF;       }));
+    variables.push_back(new Container<double>("DistanceTRD_P", [this](){return distanceMinimizer -> protonDists.TRD;       }));
+    variables.push_back(new Container<double>("DistanceTracker_P", [this](){return distanceMinimizer -> protonDists.Track;     }));
+    variables.push_back(new Container<double>("MLRigidityTOF_P", [this](){return distanceMinimizer -> protonDists.rMinTOF;   }));
+    variables.push_back(new Container<double>("MLRigidityTRD_P", [this](){return distanceMinimizer -> protonDists.rMinTRD;   }));
+    variables.push_back(new Container<double>("MLRigidityTracker_P", [this](){return distanceMinimizer -> protonDists.rMinTrack; }));
+
+    variables.push_back(new Container<double>("DistanceTOF_D", [this](){return distanceMinimizer -> deutonDists.TOF;       }));
+    variables.push_back(new Container<double>("DistanceTRD_D", [this](){return distanceMinimizer -> deutonDists.TRD;       }));
+    variables.push_back(new Container<double>("DistanceTracker_D", [this](){return distanceMinimizer -> deutonDists.Track;     }));
+    variables.push_back(new Container<double>("MLRigidityTOF_D", [this](){return distanceMinimizer -> deutonDists.rMinTOF;   }));
+    variables.push_back(new Container<double>("MLRigidityTRD_D", [this](){return distanceMinimizer -> deutonDists.rMinTRD;   }));
+    variables.push_back(new Container<double>("MLRigidityTracker_D", [this](){return distanceMinimizer -> deutonDists.rMinTrack; }));
+
     variables.push_back(new Container<unsigned long long>("selStatus", [this](){
             unsigned long long selStatus = 0;
             if(!ev) return selStatus;
@@ -181,6 +198,43 @@ std::vector<float> Dst::LayerJQ()
     return ret; 
 }
 
+// TOF energy deposit
+std::vector<double> EdepTOF(AMSEventR * ev)
+{
+    std::vector<double> ret(4);
+    for(int j=0; j<4; j++) ret[j] = 0;
+
+    if(ev == NULL) return ret;
+    for(int j=0; j< ev -> NTofCluster(); j++)
+        ret[(ev->pTofCluster(j)->Layer)-1] = ev->pTofCluster(j)->Edep;
+    return ret;
+}
+
+int NTRDclusters(AMSEventR * ev)
+{
+    if( ev -> pTrdTrack(0) == NULL ) return -1;
+    int ret = 0;
+    for(int j = 0; j < ev->pTrdTrack(0)->NTrdSegment(); j++) 
+        {
+            TrdSegmentR * trdSegment = ev->pTrdTrack(0)->pTrdSegment(j);
+            for(int i = 0;i < trdSegment->NTrdCluster(); i++) ret++;
+        }
+    return ret;
+}
+
+double EdepTRD(AMSEventR * ev)
+{
+    if( ev -> pTrdTrack(0) == NULL ) return -1;
+    double ret = 0;
+    for(int j = 0; j < ev->pTrdTrack(0)->NTrdSegment(); j++) 
+        {
+            TrdSegmentR * trdSegment = ev->pTrdTrack(0)->pTrdSegment(j);
+            for(int i = 0;i < trdSegment->NTrdCluster(); i++) 
+                ret += trdSegment->pTrdCluster(i)->EDep;
+        }
+    return ret;
+}
+
 int main(int argc, char **argv){
     //Processing input options
     int c;
@@ -207,6 +261,80 @@ int main(int argc, char **argv){
     if(!outFname.empty()) t.setOutputFileName(outFname);
     t.go();
     return 0;
+}
+
+
+void Dst::initPointers(){
+    beta = NULL;
+    betaH = NULL;
+    part = NULL;
+    tr = NULL;
+    level = NULL;
+    clusterHL0 = NULL;
+    clusterHL1 = NULL;
+    clusterHL2 = NULL;
+    clusterHL3 = NULL;
+    mc = NULL;
+    rich = NULL;
+
+    trackFitId_111 = 0;
+    trackFitId_121 = 0;
+    trackFitId_131 = 0;
+    trackFitId_151 = 0;
+
+    trackRawClusters.clear();
+    trackHitToClusterMap.clear();
+
+    if(ev == NULL) return;
+
+
+    level = ev->pLevel1(0);
+    rich = ev->pRichRing(0);
+
+    if (ev->nBetaH() > 0)     betaH = ev->pBetaH(0);
+    if (ev->nBeta() > 0)      beta = ev -> pBeta(0);
+    if (ev->nParticle() > 0 ) part = ev->pParticle(0);
+
+    
+    if (part) tr = (TrTrackR*) part->pTrTrack();
+
+    for (int i = 0; i < ev -> NTrCluster(); i++) trackRawClusters.push_back( ev->pTrCluster(i) );
+
+    if(tr){
+        for (int i = 0; i < tr -> GetNhits(); i++){
+            TrRecHitR* hit = tr -> GetHit(i);
+            TrClusterR* yCluster = hit -> GetYCluster();
+            TrClusterR* xCluster = hit->OnlyY() ? NULL : hit -> GetXCluster();
+            trackHitToClusterMap[hit] = make_pair(xCluster, yCluster);
+        }
+
+        trackFitId_111 = tr -> iTrTrackPar(1,1,1);
+        trackFitId_121 = tr -> iTrTrackPar(1,2,1);
+        trackFitId_131 = tr -> iTrTrackPar(1,3,1);
+        trackFitId_151 = tr -> iTrTrackPar(1,5,1);
+    }
+
+    if (betaH){
+        std::cout << "smearing  : " << smearing  << std::endl;
+        if( smearing != 0 ) betaH->DoMCtune(); //Active smearing
+        clusterHL0 = betaH -> GetClusterHL(0);
+        clusterHL1 = betaH -> GetClusterHL(1);
+        clusterHL2 = betaH -> GetClusterHL(2);
+        clusterHL3 = betaH -> GetClusterHL(3);
+    }
+
+
+
+    mc = ev->GetPrimaryMC();
+
+    distanceMinimizer -> reset(this);
+    distanceMinimizer -> CalculateDistances();
+}
+
+void Dst::init(){
+    DstAmsBinary::init();
+    if( smearing != 0 ) TofMCPar::MCtuneDT=smearing;
+    distanceMinimizer = new DistanceMinimizer();
 }
 
 #endif
