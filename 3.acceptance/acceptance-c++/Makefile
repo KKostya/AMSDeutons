@@ -1,6 +1,6 @@
 # Change the two first lines
 
-EXEC = main
+EXEC = acceptance
 ADDCLASS= 
 
 CLASSES = $(ADDCLASS) $(ADDCLASS:include/%.h=src/%.cpp)
@@ -13,14 +13,14 @@ OBJECTS=$(EXEC:%=./%.o)
 ### Options
 AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
 AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG_dynamic
-LIBS	      := -L${HOME}/utils/lib/ -lRootUtils -lGeneralUtils
-INCLUDES      := -I. -I$(AMSROOTLIBS) -Iinclude/ -I${HOME}/utils/include
+LIBS	      := -L../../utils/lib/ -lRootUtils -lGeneralUtils
+INCLUDES      := -I. -I$(AMSROOTLIBS) -Iinclude/ -I../../utils/include
 DEBUG	      := -O3
 
 #Ca va chier dans le compilo
 ROOTCFG  := root-config 
 CXX      :=$(shell $(ROOTCFG) --cxx) -std=c++11
-CXXFLAGS :=$(DEBUG) -O2 $(shell $(ROOTCFG) --cflags) -D_PGTRACK_ -Wno-write-strings # TH1F...
+CXXFLAGS :=$(DEBUG)  $(shell $(ROOTCFG) --cflags) -D_PGTRACK_ -Wno-write-strings # TH1F...
 ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 
 
@@ -33,7 +33,7 @@ ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 
 all :$(BIN) result
 
-$(BIN) : $(OBJECTS) $(CLASSES) ${HOME}/utils/lib/Loop.o
+$(BIN) : $(OBJECTS) $(CLASSES) ../../utils/Loop.o
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $^  $(AMSSTATICLIBS) $(ROOTLIBS)  $(LIBS)  -lStack
 
 result : result.cpp
@@ -44,4 +44,4 @@ $(OBJECTS): $(SRC)
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $^
 
 clean:
-	rm -rf $(OBJECTS) result
+	rm -rf *.o bin/*
