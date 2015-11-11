@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <climits>
+#include <bitset>
 
 #include "TofRecon.h"
 

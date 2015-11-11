@@ -71,6 +71,11 @@ void Acceptance::init(){
 //     }
 // }
 
+enum Span{
+    kInner = 0b010000010,
+    kFullSpan = 0b100000001,
+};
+
 bool Acceptance::process(){
     int num =  ev -> Event();
     if( num > biggest ) biggest = num;
@@ -79,18 +84,25 @@ bool Acceptance::process(){
     if (ev==NULL) return false;
     int nBetaH = ev->nBetaH();
     if (nBetaH == 0) return false;
+
     BetaHR* betaH = ev->pBetaH(0);
     if ( !betaH ) return false;
     if ( betaH -> NTofClusterH() < 3) return false;
-    if ( betaH -> GetBeta() <= 0 ) return false;
+    if ( betaH -> GetBeta() < 0.5 ) return false;
 
     TofRecon::BuildTofTracks(ev);
-    if( TofRecon::TofTracksList.size() == 0) return false;
+    int nTofTracks = TofRecon::TofTracksList.size();
+    // std::cout << "nTofTracks : " << nTofTracks << std::endl;
+    if( nTofTracks == 0) return false;
 
     // Ask that extrapolation crosses Tracker layers L2 to L8 with a safety margin of 0
     int isInsideBit = TofRecon::TofTracksList[0] -> GetPatternInsideTracker(0);
     
-    if( (isInsideBit&0b011111110) != 0b011111110 ) return false;
+    // std::cout << "std::bitset<9>(isInsideBit) : " << std::bitset<9>(isInsideBit) << std::endl;
+    //if(isInsideBit == 0) std::cout << "num : " << num << std::endl;
+
+    Span span=kFullSpan;
+    if( (isInsideBit&span) != span ) return false;
 
     h["raw"] -> Fill( ev -> GetPrimaryMC() -> Momentum);
 }
@@ -100,6 +112,8 @@ void Acceptance::write(){
 }
 
 void Acceptance::draw(){
+    float accGen = pow(3.9,2) * TMath::Pi();
+
     h["acc"] = (TH1F*)h["raw"]->Clone("hacc");
     h["acc"] -> SetTitle("hacc");
     
@@ -110,13 +124,12 @@ void Acceptance::draw(){
         float nGenPerBin = (log10(h["acc"]->GetBinLowEdge(i+1)) - log10(h["acc"]->GetBinLowEdge(i))) / (log10(pMax) - log10(pMin)) * (biggest-smallest);
         float content = h["acc"] -> GetBinContent(i);
         float error = h["acc"] -> GetBinError(i);
-        h["acc"] -> SetBinError(i, error / nGenPerBin  * pow(3.9,2) * TMath::Pi() );
-        h["acc"] -> SetBinContent(i, content / nGenPerBin  * pow(3.9,2) * TMath::Pi() );
+        h["acc"] -> SetBinError  (i, error   / nGenPerBin  * accGen );
+        h["acc"] -> SetBinContent(i, content / nGenPerBin  * accGen );
     }
 }
 
 int Acceptance::cutEvent(){
-
     return 0;
 }
 
