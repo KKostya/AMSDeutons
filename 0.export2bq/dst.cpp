@@ -250,7 +250,10 @@ int main(int argc, char **argv){
     while((c = getopt(argc, argv, "o:n:s:f:")) != -1) {
         if(c == 'o') outFname = std::string(optarg);
         else if(c == 'n') entries = atoi(optarg);
-        else if(c == 's') smearing = atoi(optarg);
+        else if(c == 's'){
+            smearing = atoi(optarg);
+            if( smearing > 0 ) smearing = -smearing;
+        }
         else if(c == 'f') inFname = optarg;
     }
     
@@ -315,7 +318,6 @@ void Dst::initPointers(){
     }
 
     if (betaH){
-        std::cout << "smearing  : " << smearing  << std::endl;
         if( smearing != 0 ) betaH->DoMCtune(); //Active smearing
         clusterHL0 = betaH -> GetClusterHL(0);
         clusterHL1 = betaH -> GetClusterHL(1);
@@ -333,7 +335,10 @@ void Dst::initPointers(){
 
 void Dst::init(){
     DstAmsBinary::init();
-    if( smearing != 0 ) TofMCPar::MCtuneDT=smearing;
+    if( smearing != 0 ){
+        TofMCPar::MCtuneDT=smearing;
+        std::cout << "Smearing activated and set to : " << smearing << std::endl;
+    }
     distanceMinimizer = new DistanceMinimizer();
 }
 
