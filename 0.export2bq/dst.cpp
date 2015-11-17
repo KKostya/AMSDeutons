@@ -87,6 +87,7 @@ void Dst::registerVariables() {
     variables.push_back(new Container<float>("Time_L1",    [this](){return clusterHL1  ? clusterHL1 -> Time              : -999;}));
     variables.push_back(new Container<float>("Time_L2",    [this](){return clusterHL2  ? clusterHL2 -> Time              : -999;}));
     variables.push_back(new Container<float>("Time_L3",    [this](){return clusterHL3  ? clusterHL3 -> Time              : -999;}));
+    variables.push_back(new Container<int>("TofTrackPatt", [this](){return tofTrack    ? tofTrack -> GetPatternInsideTracker(0) : 0; }));
     
         // Tracker                                                                                  
     variables.push_back(new Container<int>("NTrackHits",   [this](){return tr ? tr -> NTrRecHit()               : 0;}));
@@ -142,6 +143,10 @@ void Dst::registerVariables() {
     variables.push_back(new Container<double>("MLRigidityTOF_D", [this](){return distanceMinimizer -> deutonDists.rMinTOF;   }));
     variables.push_back(new Container<double>("MLRigidityTRD_D", [this](){return distanceMinimizer -> deutonDists.rMinTRD;   }));
     variables.push_back(new Container<double>("MLRigidityTracker_D", [this](){return distanceMinimizer -> deutonDists.rMinTrack; }));
+
+
+    
+
 
     variables.push_back(new Container<unsigned long long>("selStatus", [this](){
             unsigned long long selStatus = 0;
@@ -299,6 +304,7 @@ void Dst::initPointers(){
     clusterHL3 = NULL;
     mc = NULL;
     rich = NULL;
+    tofTrack = NULL;
 
     trackFitId_111 = 0;
     trackFitId_121 = 0;
@@ -309,7 +315,6 @@ void Dst::initPointers(){
     trackHitToClusterMap.clear();
 
     if(ev == NULL) return;
-
 
     level = ev->pLevel1(0);
     rich = ev->pRichRing(0);
@@ -345,12 +350,13 @@ void Dst::initPointers(){
         clusterHL3 = betaH -> GetClusterHL(3);
     }
 
-
-
     mc = ev->GetPrimaryMC();
 
     distanceMinimizer -> reset(this);
     distanceMinimizer -> CalculateDistances();
+
+    TofRecon::BuildTofTracks(ev);
+    tofTrack = TofRecon::pTofTrack(0);
 }
 
 void Dst::init(){

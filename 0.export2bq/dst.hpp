@@ -4,19 +4,21 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <tuple>
 
 #include "DstAmsBinary.hpp"
 #include "rootUtils.hpp"
 #include "Stack.hpp"
 
+#include "TofRecon.h"
 #include "TrCharge.h"
 
 #include "Geo.h"
 #include "Preselect.h"
 #include "Golden.h"
 #include "MinBias.h"
-#include <tuple>
 #include "RICH.h"
+
 
 #define MAXRAM 1e9
 
@@ -55,6 +57,7 @@ public:
     MCEventgR* mc;
     Level1R *level;
     RichRingR *rich;
+    TofTrack* tofTrack;
 
     int smearing;
     int timingOffset;
