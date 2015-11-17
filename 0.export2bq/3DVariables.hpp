@@ -1,4 +1,3 @@
-bash-4.1$ cat 3DVariables.hpp 
 #include <vector>
 #include <numeric>
 
@@ -120,6 +119,7 @@ double CorrTRD[30] = {
     1.34156,1.34009,1.33849,1.33596,1.33436,1.32501,1.29415,1.2545,1.22218,1.20732,
 };
 
+ofstream outfile;
 
 // Utility functions
 template<typename T>
@@ -145,7 +145,10 @@ class DistanceMinimizer
     double betaMeasured; 
     double etofMeasured; 
     double etrdMeasured; 
-    double etrkMeasured; 
+    double etrkMeasured;
+
+    unsigned int nevt;
+    
 
     TSpline3 * sigma_rgdt;
     TSpline3 * sigma_beta;
@@ -171,6 +174,7 @@ class DistanceMinimizer
 
 public:
 
+		float eTrackL[9];
 
     DistanceMinimizer() : rgdtMeasured(0), 
                           betaMeasured(0),
@@ -204,19 +208,33 @@ public:
         etrdMeasured = 0;
         etrkMeasured = 0;
 
-        if( dst -> ev == NULL || dst -> tr == NULL || dst -> betaH == NULL ) return;
+        AMSEventR* ev=dst -> ev;
+        if( ev == NULL || dst -> tr == NULL || dst -> betaH == NULL ) return;
+
+        nevt= ev -> Event();
+
+
+        
         rgdtMeasured = dst -> tr -> GetRigidity();
         betaMeasured = dst -> betaH -> GetBeta();
-        etofMeasured = Sum(EdepTOF(dst -> ev))/4; // The average over 4 TOF planes
-        etrdMeasured = EdepTRD(dst -> ev) / NTRDclusters(dst -> ev);
+        etofMeasured = Sum(EdepTOF(ev))/4; // The average over 4 TOF planes
+        etrdMeasured = EdepTRD(ev) / NTRDclusters(ev);
 
-        std::vector<float> eTrackX = dst -> edepLayer<0>(); eTrackX[0] = 0; eTrackX[8] = 0;
-        std::vector<float> eTrackY = dst -> edepLayer<1>(); eTrackY[0] = 0; eTrackY[8] = 0;
+				
+        //std::vector<float> eTrackX = dst -> edepLayer<0>(); eTrackX[0] = 0; eTrackX[8] = 0;
+        //std::vector<float> eTrackY = dst -> edepLayer<1>(); eTrackY[0] = 0; eTrackY[8] = 0;
 
-        etrkMeasured = (Sum(eTrackX) + Sum(eTrackY))/14;
+				for (int il=0; il<9; il++) eTrackL[il]=0;
+				for (int ic = 0; ic < ev -> NTrCluster(); ic++) {
+					TrClusterR* pclus=ev->pTrCluster(ic);
+					eTrackL[pclus->GetLayerJ()-1]+=pclus->GetEdep();
+					etrkMeasured+=pclus->GetEdep();
+				}
+        etrkMeasured /=14;
+        
     }
 
-    DistanceData FindMinimum(TF1 * RvsB) 
+    DistanceData FindMinimum(TF1 * RvsB, bool bprot) 
     {
         DistanceData distance;
         // Initialising 
@@ -258,39 +276,59 @@ public:
             if(CurrentTRD   < distance.TRD)   { DR2 = 0; distance.TRD   = CurrentTRD;   distance.rMinTRD   = rgdtTrue;} else DR2++;
             if(CurrentTrack < distance.Track) { DR3 = 0; distance.Track = CurrentTrack; distance.rMinTrack = rgdtTrue;} else DR3++;
 
-            std::cout
-						  << ", betaTrue				"		<< betaTrue        <<  std::endl
-							<< ", etofTrue        "   << etofTrue          
-							<< ", etrdTrue        "   << etrdTrue          
-							<< ", etrkTrue        "   << etrkTrue        <<  std::endl
-							<< ", rgdtDist        "   << rgdtDist          
-							<< ", betaDist        "   << betaDist          
-							<< ", etofDist        "   << etofDist          
-							<< ", etrdDist        "   << etrdDist          
-							<< ", etrkDist        "   << etrkDist        <<  std::endl
-							<< ", CurrentTOF      "   << CurrentTOF        
-							<< ", distance.TOF    "   << distance.TOF      
-							<< ", R1              "   << DR1             <<  std::endl
-							<< ", CurrentTRD      "   << CurrentTRD        
-							<< ", distance.TRD    "   << distance.TRD      
-							<< ", R2              "   << DR2             <<  std::endl
-							<< ", CurrentTrack    "   << CurrentTrack      
-							<< ", distance.Track  "   << distance.Track    
-							<< ", R3              "   << DR3             <<  std::endl;
+
+
+						if(DR1 > 25 && DR2 > 25 && DR3 > 25)  {
+
+            outfile  << 				nevt
+            	<< "," << (int)1-bprot
+							<< "," << rgdtTrue
+							<< "," << betaTrue
+							<< "," << etofTrue
+							<< "," << etrdTrue 
+							<< "," << etrkTrue 
+							<< "," << rgdtDist 
+							<< "," << betaDist 
+							<< "," << etofDist 
+							<< "," << etrdDist 
+							<< "," << etrkDist
+							<< "," <<	rgdtMeasured
+							<< "," << betaMeasured
+              << "," << etofMeasured
+              << "," << etrdMeasured
+              << "," << etrkMeasured
+							<< "," <<	sigma_rgdt->Eval(rgdtTrue)
+							<< "," <<	sigma_beta->Eval(betaTrue)
+							<< "," <<	sigma_etof->Eval(betaTrue)
+							<< "," <<	sigma_etrd->Eval(betaTrue)
+							<< "," <<	sigma_etrk->Eval(betaTrue)
+							<< "," << CurrentTOF      
+							<< "," << distance.TOF    
+							<< "," << DR1             
+							<< "," << CurrentTRD      
+							<< "," << distance.TRD    
+							<< "," << DR2             
+							<< "," << CurrentTrack    
+							<< "," << distance.Track  
+							<< "," << DR3;
+
+							for (int il=0; il<9; il++) outfile << "," << eTrackL[il];
+							outfile << std::endl;
+
+							break;
+
+						}
 
 
 
-
-
-
-            if(DR1 > 25 && DR2 > 25 && DR3 > 25) break;
+            
         }
     }
 
     void CalculateDistances()
     {
-        protonDists = FindMinimum(protons);
-        deutonDists = FindMinimum(deutons);
+        protonDists = FindMinimum(protons, true);
+        deutonDists = FindMinimum(deutons, false);
     }
 
 public:
@@ -299,4 +337,3 @@ public:
 
 };
 
-bash-4.1$ 

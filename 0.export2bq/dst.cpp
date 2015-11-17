@@ -235,6 +235,8 @@ double EdepTRD(AMSEventR * ev)
     return ret;
 }
 
+
+
 int main(int argc, char **argv){
     //Processing input options
     int c;
@@ -259,7 +261,12 @@ int main(int argc, char **argv){
     t.setSmearing(smearing);
     t.setMaxEntries(entries);
     if(!outFname.empty()) t.setOutputFileName(outFname);
+
+
+		outfile.open ("noR25cut.txt");
+    outfile << "evt,deutons,rgdtTrue,betaTrue,etofTrue,etrdTrue,etrkTrue,rgdtDist,betaDist,etofDist,etrdDist,etrkDist,rgdtMeasured,betaMeasured,etofMeasured,etrdMeasured,etrkMeasured,sigrgdt,sigbeta,sigetof,sigetrd,sigetrk,CurrentTOF,distance.TOF,R1,CurrentTRD,distance.TRD,R2,CurrentTrack,distance.Track,R3,trL1,trL2,trL3,trL4,trL5,trL6,trL7,trL8,trL9" << std::endl;
     t.go();
+    outfile.close();
     return 0;
 }
 
