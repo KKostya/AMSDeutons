@@ -48,7 +48,7 @@ def main(params):
     isPhysicsTrigger=" (PhysBPatt >> 1)&"+str(int('11111',2))+ " != 0 as isPhysicsTrigger "
     isTof="(JMembPatt>>4)&1 as isTof"
     isEcal="(JMembPatt>>11)&1 as isEcal"
-
+    
     variables='{} as binX, {},{},{},COUNT(1)'.format(b.binLowEdgeFromArray('Rfull', params['binningRgdtTheoretic']),isPhysicsTrigger,isTof,isEcal)
 
     theCommand="""SELECT binX, IF(nTofNoEcal + nEcalAll > 0,nPhysics/(nPhysics + nEcalNoTof*1000 + nTofAll*100),1) AS trigEff, nTofAll, nEcalNoTof, IF(nTofNoEcal + nEcalAll > 0,nPhysics*100/(nPhysics + nEcalAll*1000 + nTofNoEcal*100),100) AS trigEff2, nPhysics, nEcalAll, nTofNoEcal FROM (
@@ -65,4 +65,5 @@ def main(params):
 
 #for debugging only    
 if __name__ == "__main__":
-    print main(range(1,20))
+    import json
+    print main(json.load(open('../param.json')))
