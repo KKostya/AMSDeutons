@@ -56,7 +56,7 @@ void DstAmsBinary::saveChunk(){
     std::cout << "var.size() : " << nVar << std::endl;
 
     for(int iVar = 0; iVar < nVar; iVar++){
-        variables[iVar] -> save(outputFileName, chunkNumber, chunkStepNumber);
+        variables[iVar] -> save(outputFileName, chunkNumber, chunkStepNumber, outFileType);
     }
     
 

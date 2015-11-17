@@ -32,10 +32,15 @@ public:
     Dst( std::string _data ) : DstAmsBinary( _data, MAXRAM){
         std::cout << "init with #" << data.size() << std::endl;
         smearing = 0;
+        timingOffset = 0;
     }
     
     void setSmearing(int _smearing){
         this -> smearing = _smearing;
+    }
+
+    void setTimingOffset(int _timingOffset){
+        this -> timingOffset = _timingOffset;
     }
 
 public:
@@ -52,6 +57,7 @@ public:
     RichRingR *rich;
 
     int smearing;
+    int timingOffset;
     DistanceMinimizer *distanceMinimizer;
 
     std::vector<TrClusterR*> trackRawClusters;

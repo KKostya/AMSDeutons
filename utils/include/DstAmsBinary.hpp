@@ -10,6 +10,10 @@
 #include "rootUtils.hpp"
 #include "Stack.hpp"
 
+enum OutFileType{
+    kBinaryFile,
+    kTextFile
+};
 
 template <typename T> std::string getType();
 template <> std::string getType<float>();
@@ -22,7 +26,7 @@ struct ContainerBase{
     ContainerBase(std::string _name) : name(_name) {}
     std::string name;
     virtual void allocArray(int i) = 0;
-    virtual void save(const std::string & outputFileName, int chunkNumber, int chunkStepNumber) = 0;
+    virtual void save(const std::string & outputFileName, int chunkNumber, int chunkStepNumber, const OutFileType & outFileType) = 0;
     virtual void assign(int i) = 0;
     virtual size_t getSize() = 0;
     virtual void writeMetaData(std::ostream & os) = 0;
@@ -55,16 +59,27 @@ template <typename T, int SIZE = 0 > struct Container : public ContainerBase{
         var[i] = f();
     }
     
-    void save(const std::string & outputFileName, int chunkNumber, int chunkStepNumber) override {
-        std::cout << "outputFileName : " << outputFileName << std::endl;
-        std::stringstream fname;
-        fname << outputFileName <<"/" << name << "_chunk" << chunkNumber << ".bin";
-        std::cout << "fname.str() : " << fname.str() << std::endl;
-        std::ofstream myfile( fname.str(), std::ios::out | std::ios::binary);
+    void save(const std::string & outputFileName, int chunkNumber, int chunkStepNumber, const OutFileType & outFileType) override {
+        std::string extension = ".txt";
+        std::ios_base::openmode mode = std::ios::out;
 
-        // myfile.write((char*)&chunkStepNumber, sizeof(int));
-        myfile.write((char*)var, sizeof(T)*chunkStepNumber);
-        myfile.close();
+        if(outFileType == kBinaryFile){
+            extension = ".bin";
+            mode |= std::ios::binary;
+        }
+
+        std::string fname( outputFileName +"/" + name + Form("_chunk%i", chunkNumber) + extension);
+        std::ofstream myfile( fname, mode);
+        std::cout << "fname : " << fname << std::endl;
+
+        if(outFileType == kBinaryFile){
+            myfile.write((char*)var, sizeof(T)*chunkStepNumber);
+        }else{
+            for(int j = 0;j<chunkStepNumber;j++){
+                myfile << var[j] << "\n";
+            }
+        }
+        myfile.close();        
     }
 };
 
@@ -101,16 +116,26 @@ template <int SIZE> struct Container<std::vector<float>, SIZE> : public Containe
         }
     }
     
-    void save(const std::string & outputFileName, int chunkNumber, int chunkStepNumber) override {
-        for(int i = 0; i < SIZE; i++){
-            std::cout << "outputFileName : " << outputFileName << std::endl;
-            std::stringstream fname;
-            fname << outputFileName <<"/" << name << Form("_%i_chunk",i) << chunkNumber << ".bin";
-            std::cout << "fname.str() : " << fname.str() << std::endl;
-            std::ofstream myfile( fname.str(), std::ios::out | std::ios::binary);
+    void save(const std::string & outputFileName, int chunkNumber, int chunkStepNumber, const OutFileType & outFileType) override {
+        std::string extension = ".txt";
+        std::ios_base::openmode mode = std::ios::out;
+        if(outFileType == kBinaryFile){
+            extension = ".bin";
+            mode |= std::ios::binary;
+        }
 
-            // myfile.write((char*)&chunkStepNumber, sizeof(int));
-            myfile.write((char*)var[i], sizeof(float)*chunkStepNumber);
+        for(int i = 0; i < SIZE; i++){
+            std::string fname( outputFileName +"/" + name + Form("_%i_chunk%i", i, chunkNumber) + extension);
+            std::ofstream myfile( fname, mode);
+            std::cout << "fname : " << fname << std::endl;
+
+            if(outFileType == kBinaryFile){
+                myfile.write((char*)var[i], sizeof(float)*chunkStepNumber);
+            }else{
+                for(int j = 0;j<chunkStepNumber;j++){
+                    myfile << var[i][j] << "\n";
+                }
+            }
             myfile.close();
         }
     }
@@ -120,8 +145,9 @@ template <int SIZE> struct Container<std::vector<float>, SIZE> : public Containe
 class DstAmsBinary : public Loop{
 public:
     DstAmsBinary( std::string _data, int _maxRAM ) : Loop(_data),
-                                        chunkStepNumber(0),
-                                        maxRAM(_maxRAM)
+                                                     chunkStepNumber(0),
+                                                     maxRAM(_maxRAM),
+                                                     outFileType(kTextFile)
     {}
 
     virtual ~DstAmsBinary(){}
@@ -134,6 +160,9 @@ public:
     void init();
     void saveMetaData();
     int cutEvent();
+    void setOutFileType(OutFileType outFileType){
+        this -> outFileType = outFileType;
+    }
 
 protected:
     float p;
@@ -144,6 +173,8 @@ protected:
     unsigned int chunkSize;
     int nVar;
     int maxRAM;
+
+    OutFileType outFileType;
 
     std::vector<ContainerBase*> variables;
 };

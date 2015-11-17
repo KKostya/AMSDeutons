@@ -242,25 +242,45 @@ int main(int argc, char **argv){
     std::string outFname;
     std::string  inFname = "/afs/cern.ch/work/b/bcoste/protonB800.root";
     int smearing = 0;
+    int timingOffset = 0;
+    OutFileType outFileType = kBinaryFile;
 
-    if (argc==1) std::cout
-                     << "Example:  ./dst -o test.root -n 10000 -f $EOSPATH/ams/Data/AMS02/2014/ISS.B900/std/1439205227.00000001.root"
-                     << std::endl;
+    if (argc==1){
+        std::cout
+            << "Simple example:  ./dst -o output.root -n 10000 -f ${HOME}/eos/ams/Data/AMS02/2014/ISS.B900/std/1439205227.00000001.root"
+            << "\n\nUsage:"
+            << "\n\t-f: input AMS Root file"
+            << "\n\t-o: output file name"
+            << "\n\t-n: number of events"
+            << "\n\t-s: smearing, gaussian width:  TofMCPar::MCtuneDT"
+            << "\n\t-z: smearing, gaussian offset: TofMCPar::MCtuneST"
+            << "\n\t-t: change output format to text file (default is binary)"
+            << std::endl;
+        exit(-1);
+    }
 
-    while((c = getopt(argc, argv, "o:n:s:f:")) != -1) {
+    while((c = getopt(argc, argv, "to:n:s:f:z:")) != -1) {
         if(c == 'o') outFname = std::string(optarg);
         else if(c == 'n') entries = atoi(optarg);
         else if(c == 's'){
             smearing = atoi(optarg);
             if( smearing > 0 ) smearing = -smearing;
         }
+        else if(c == 'z'){
+            timingOffset = atoi(optarg);
+        }
         else if(c == 'f') inFname = optarg;
+        else if(c == 't'){
+            outFileType = kTextFile;
+        } 
     }
     
     std::cout << "inFname : " << inFname << std::endl;
     Dst t( inFname );
     t.setSmearing(smearing);
+    t.setTimingOffset(timingOffset);
     t.setMaxEntries(entries);
+    t.setOutFileType(outFileType);
     if(!outFname.empty()) t.setOutputFileName(outFname);
     t.go();
     return 0;
@@ -318,7 +338,7 @@ void Dst::initPointers(){
     }
 
     if (betaH){
-        if( smearing != 0 ) betaH->DoMCtune(); //Active smearing
+        if( smearing != 0 || timingOffset != 0) betaH->DoMCtune(); //Active smearing
         clusterHL0 = betaH -> GetClusterHL(0);
         clusterHL1 = betaH -> GetClusterHL(1);
         clusterHL2 = betaH -> GetClusterHL(2);
@@ -335,9 +355,11 @@ void Dst::initPointers(){
 
 void Dst::init(){
     DstAmsBinary::init();
-    if( smearing != 0 ){
+    if( smearing != 0 || timingOffset != 0 ){
         TofMCPar::MCtuneDT=smearing;
+        TofMCPar::MCtuneST=timingOffset;
         std::cout << "Smearing activated and set to : " << smearing << std::endl;
+        std::cout << "Timing offset activated and set to : " << timingOffset << std::endl;
     }
     distanceMinimizer = new DistanceMinimizer();
 }
