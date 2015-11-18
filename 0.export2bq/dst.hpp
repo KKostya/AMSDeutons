@@ -22,7 +22,7 @@
 
 #define MAXRAM 1e9
 
-std::vector<double> EdepTOF(AMSEventR * ev);
+std::vector<float> EdepTOF(AMSEventR * ev);
 int NTRDclusters(AMSEventR * ev);
 double EdepTRD(AMSEventR * ev);
 
@@ -52,7 +52,7 @@ public:
 
     BetaHR* betaH;
     BetaR* beta;
-    TofClusterHR *clusterHL0,*clusterHL1,*clusterHL2,*clusterHL3;
+    TofClusterHR *clusterHL[4];
     int trackFitId_111,trackFitId_121,trackFitId_131,trackFitId_151;
     MCEventgR* mc;
     Level1R *level;
@@ -62,6 +62,7 @@ public:
     int smearing;
     int timingOffset;
     DistanceMinimizer *distanceMinimizer;
+    int nlay; float qrms;// stupidity for ChargeTof
 
     std::vector<TrClusterR*> trackRawClusters;
     std::map<TrRecHitR*,std::pair<TrClusterR*, TrClusterR*> > trackHitToClusterMap;
@@ -70,7 +71,10 @@ public:
 
     template <int SIDE> std::vector<float> edepLayer();
     template <int SIDE> std::vector<float> edepTrack();
-    std::vector<double> EdepTOF(AMSEventR * ev);
+    template <typename T> void add(std::string name, std::function<T()> lambda);
+    template <typename T, int SIZE> void add(std::string name, std::function<T()> lambda);
+
+    // std::vector<double> EdepTOF(AMSEventR * ev);
 
     std::vector<float> LayerJQ();
 

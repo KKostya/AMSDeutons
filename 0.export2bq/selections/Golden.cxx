@@ -15,28 +15,26 @@
 /// Golden selections
 ////////////////////////////////////////////////
 
-template <int SEVERITY, int FIT>
 bool goldenTRACKER(AMSEventR *ev)
 {	//chiedo che il fit sui layer interni sia buono
     
-    float quality=5-(SEVERITY*10*20/100);
+    float quality=5;
     TrTrackR * traccia=ev->pTrTrack(0);
     if(!traccia) return false;
-    int fitID = traccia->iTrTrackPar(1,FIT,1);
+    int fitID = traccia->iTrTrackPar(1,3,1);
     if (fitID < 0 || !traccia->ParExists(fitID)) return false;
     if(traccia->GetNormChisqY(fitID) > 5) return false;
     if(traccia->GetNormChisqX(fitID) > 10) return false;
     return true;
 }  
 
-template <int SEVERITY, int FIT>
 bool goldenTOF(AMSEventR *ev)
 {	//chiedo che i cluster del TOF abbiano un buon match con la traccia
     int c=0;
     if (ev->nParticle()==0) return false;
     TrTrackR* track=ev->pTrTrack(0);
     if(!track) return false;
-    int fitID=track->iTrTrackPar(1,FIT,1);
+    int fitID=track->iTrTrackPar(1,3,1);
     float LONGCUT[4][10]={  9. , 8. , 8. , 8. , 8. , 8. , 8. , 9.  , 0. , 0.  , 
                            12. , 8. , 8. , 8. , 8. , 8. , 8. , 12. , 0. , 0.  , 
                            12. , 8. , 8. , 8. , 8. , 8. , 8. , 8.  , 8. , 12. , 
@@ -66,7 +64,7 @@ bool goldenTOF(AMSEventR *ev)
             tlen=track->Interpolate(cluster->Coo[2],pnt,dir,fitID);
             dlong=cluster->Coo[longit[layer]]-pnt[longit[layer]];
             dtran=cluster->Coo[tranit[layer]]-pnt[tranit[layer]];
-            if(fabs(dlong)<(LONGCUT[layer][bar])-(SEVERITY*10*LONGCUT[layer][bar]/100) && fabs(dtran)<TRANCUT[layer][bar]-SEVERITY*10*TRANCUT[layer][bar]/100)
+            if(fabs(dlong)<(LONGCUT[layer][bar]) && fabs(dtran)<TRANCUT[layer][bar])
                 goodlayer[layer]=true;
         }
     }
@@ -80,7 +78,6 @@ bool goldenTOF(AMSEventR *ev)
     return good_match;
 }
 
-template <int SEVERITY, int FIT>
 bool goldenTRD(AMSEventR* ev) 
 {
     int TRDclustersontrack=0;
@@ -91,7 +88,7 @@ bool goldenTRD(AMSEventR* ev)
 
     TrTrackR* track=ev->pTrTrack(0);
     if(!track) return false;
-    int fitID=track->iTrTrackPar(1,FIT,1);
+    int fitID=track->iTrTrackPar(1,3,1);
     bool golden=false;
     TrdHTrackR* trd_track;
     for(int i=0;/* i<ev->nTrdHTrack()*/i<1;i++)
@@ -112,22 +109,12 @@ bool goldenTRD(AMSEventR* ev)
 
                     Double_t dtx=pnt.x()-trd_track->Coo[0];
                     Double_t dty=pnt.y()-trd_track->Coo[1];
-                    if(dtx*dtx+dty*dty<(1.5-(SEVERITY*10*1.5/100))*(1.5-(SEVERITY*10*1.5/100))) golden=true;
+                    if(dtx*dtx+dty*dty<(1.5)*(1.5)) golden=true;
                 }
             }
         }
     }
     return golden;
 }
-
-
-/////////////////////////////////////////
-/////////// Instantiation ///////////////
-/////////////////////////////////////////
-
-template bool goldenTRACKER<0,3>(AMSEventR *data);
-template bool goldenTOF<0,3>(AMSEventR *data);
-template bool goldenTRD<0,3>(AMSEventR *data);
- 
 
 

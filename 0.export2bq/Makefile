@@ -48,3 +48,4 @@ $(OBJECTS): $(SRC)
 
 clean:
 	rm -rf $(OBJECTS)
+	rm -f selections/selections.a
