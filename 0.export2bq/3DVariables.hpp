@@ -253,9 +253,12 @@ public:
         // Scanning Rtrue and recording the minimal values for distance
         int DR1 = 0, DR2 = 0, DR3 = 0;
         double step = 0.05;
+        float betaPrev=0;
         for(double rgdtTrue = 0; rgdtTrue < step * 1E6; rgdtTrue += step)
         {
             double betaTrue = RvsB->Eval(rgdtTrue);
+            if (betaTrue<betaPrev+1e-8) continue;
+            betaPrev=betaTrue;
 
             // Thist uses splines for the "theoretical values"
             double etofTrue = EdepTOFbeta  -> Eval(betaTrue);  
