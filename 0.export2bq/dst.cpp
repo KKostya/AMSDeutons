@@ -271,7 +271,10 @@ int main(int argc, char **argv){
         else if(c == 'z'){
             timingOffset = atoi(optarg);
         }
-        else if(c == 'f') files.push_back(optarg);
+        else if(c == 'f'){
+            std::vector< std::string > f = generalUtils::split(optarg, " ");
+            std::copy(f.begin(), f.end(), std::back_inserter(files));
+        }
         else if(c == 't'){
             outFileType = kTextFile;
         } 
