@@ -41,16 +41,21 @@ if [ "$#" -lt 1 ]; then
     exit
 fi
 
+echo "Starting concat !"
 folder=$1
 
+echo "Looking for subfolders..."
 subfolders=($(find ${folder} -mindepth 1 -type d))
+echo "Looking for variables..."
 vars=($(find ${subfolders[0]} -name "*.bin" | xargs -n 1 basename | awk -F'_chunk' '{print $1}' | sort ))
 
 chunkSize=80
 j=0
+echo "Starting jobs:"
 for ((i=0; i < ${#subfolders[@]}; i+=chunkSize)); do
+    echo "job ${j}"
     dirs="${subfolders[@]:i:chunkSize}"
-    outFolder="output_$j"
+    outFolder="$(basename ${folder})_$j"
     concat
     ((j++))
 done
