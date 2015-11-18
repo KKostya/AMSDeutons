@@ -5,8 +5,9 @@
 
 using namespace rootUtils;
 
-void Dst::registerSelStatus(){
-    std::map<std::string, bool(*)(AMSEventR*)> cuts = {
+#define LAMBDA(expr) [this](){return expr;}
+
+Dst::Selections Dst::selections = {
         {"notFirstTwo", notFirstTwo},
         {"notInSaaCut", notInSaaCut},
         {"zenithCut", zenithCut},
@@ -52,7 +53,6 @@ void Dst::registerSelStatus(){
         {"ringBetaCons", ringBetaCons},
         {"ringNoNaFBorder", ringNoNaFBorder}
     };
-}
 
 template <typename T> void Dst::add(std::string name, std::function<T()> lambda){
     variables.push_back(new Container<T>(name, lambda));
@@ -63,88 +63,85 @@ template <typename T, int SIZE> void Dst::add(std::string name, std::function<T(
 }
 
 void Dst::registerVariables() {
-
-    registerSelStatus();
-
     // HEADER
-    add<unsigned int>("Run", [this](){return ev ? ev -> Run() : -1;});
-    add<unsigned int>("Event",           [this](){return ev ? ev -> Event()                   : -1;});
-    add<unsigned int>("UTime",           [this](){return ev ? ev -> UTime()                   : -1;});
-    add<float>("ThetaS",                 [this](){return ev ? ev -> fHeader.ThetaS            :  0;});
-    add<float>("PhiS",                   [this](){return ev ? ev -> fHeader.PhiS              :  0;});
-    add<float>("Livetime",               [this](){return ev ? ev -> LiveTime()                :  0;});
-    add<float>("Latitude",               [this](){return ev ? ev -> fHeader.ThetaM            :  0;});
-    add<unsigned long long>("fStatus",   [this](){return ev ? ev -> fStatus                   :  0;});
-    add<float>("Rcutoff",                [this](){return part ? part -> Cutoff                : -1;});
+    add<unsigned int>("Run",            LAMBDA( ev   ? ev -> Run()                   : -1));
+    add<unsigned int>("Event",          LAMBDA( ev   ? ev -> Event()                 : -1));
+    add<unsigned int>("UTime",          LAMBDA( ev   ? ev -> UTime()                 : -1));
+    add<float>("ThetaS",                LAMBDA( ev   ? ev -> fHeader.ThetaS          :  0));
+    add<float>("PhiS",                  LAMBDA( ev   ? ev -> fHeader.PhiS            :  0));
+    add<float>("Livetime",              LAMBDA( ev   ? ev -> LiveTime()              :  0));
+    add<float>("Latitude",              LAMBDA( ev   ? ev -> fHeader.ThetaM          :  0));
+    add<unsigned long long>("fStatus",  LAMBDA( ev   ? ev -> fStatus                 :  0));
+    add<float>("Rcutoff",               LAMBDA( part ? part -> Cutoff                : -1));
                                                                        
     // Triggers                                                    
-    add<int>("PhysBPatt",                [this](){return level ? level -> PhysBPatt           : -1;});
-    add<int>("JMembPatt",                [this](){return level ? level -> JMembPatt           : -1;});
+    add<int>("PhysBPatt", LAMBDA( level ? level -> PhysBPatt           : -1));
+    add<int>("JMembPatt", LAMBDA( level ? level -> JMembPatt           : -1));
                                                                                                   
     // TOF                                                                                        
-    add<float>("BetaTOF",                [this](){return beta  ? beta  -> Beta                : -1;});
-    add<float>("BetaTOFH",               [this](){return betaH ? betaH -> GetBeta()           : -1;});
-    add<float>("ChargeTOF",              [this](){return betaH       ? betaH->GetQ(nlay,qrms) : -1; });
-    add<float>("TimeTof_L0",             [this](){return clusterHL[0] ? clusterHL[0] -> Time : 0;});
-    add<float>("TimeTof_L1",             [this](){return clusterHL[1] ? clusterHL[1] -> Time : 1;});
-    add<float>("TimeTof_L2",             [this](){return clusterHL[2] ? clusterHL[2] -> Time : 2;});
-    add<float>("TimeTof_L3",             [this](){return clusterHL[3] ? clusterHL[3] -> Time : 3;});
-    add<int>("NTofClustersH",            [this](){return ev    ? ev     -> NTofClusterH()     : -1;});
-    add<int>("NTofClusters",             [this](){return ev    ? ev     -> NTofCluster()      : -1;});
-    add<int>("NTofClustersHUsed",        [this](){return betaH ? betaH ->  NTofClusterH()     : -1;});
-    add<int>("NTofClustersUsed",         [this](){return beta  ? beta  ->  NTofCluster()      : -1;});
-    add<int>("TofTrackPatt",             [this](){return tofTrack    ? tofTrack -> GetPatternInsideTracker(0) : 0; });
+    add<float>("BetaTOF",         LAMBDA( beta         ? beta  -> Beta                : -1));
+    add<float>("BetaTOFH",        LAMBDA( betaH        ? betaH -> GetBeta()           : -1));
+    add<float>("ChargeTOF",       LAMBDA( betaH        ? betaH->GetQ(nlay,qrms)       : -1));
+    add<float>("TimeTof_L0",      LAMBDA( clusterHL[0] ? clusterHL[0] -> Time         : -1));
+    add<float>("TimeTof_L1",      LAMBDA( clusterHL[1] ? clusterHL[1] -> Time         : -1));
+    add<float>("TimeTof_L2",      LAMBDA( clusterHL[2] ? clusterHL[2] -> Time         : -1));
+    add<float>("TimeTof_L3",      LAMBDA( clusterHL[3] ? clusterHL[3] -> Time         : -1));
+    add<int>("NTofClustersH",     LAMBDA( ev           ? ev     -> NTofClusterH()     : -1));
+    add<int>("NTofClusters",      LAMBDA( ev           ? ev     -> NTofCluster()      : -1));
+    add<int>("NTofClustersHUsed", LAMBDA( betaH        ? betaH ->  NTofClusterH()     : -1));
+    add<int>("NTofClustersUsed",  LAMBDA( beta         ? beta  ->  NTofCluster()      : -1));
+    add<int>("TofTrackPatt",      LAMBDA( tofTrack     ? tofTrack -> GetPatternInsideTracker(0) : 0));
     
     // Tracker                                                                                  
-    add<int>("NTrackHits",   [this](){return tr ? tr -> NTrRecHit()               : 0;});
-    add<float>("Q_all",      [this](){return tr ? tr -> GetQ_all().Mean           : 0;});
-    add<float>("InnerQ_all", [this](){return tr ? tr -> GetInnerQ_all().Mean      : 0;});
-    add<float>("L1_Hit_X",   [this](){return tr ? tr -> GetHitCooLJ(1)[0]         : 0;});
-    add<float>("L1_Hit_Y",   [this](){return tr ? tr -> GetHitCooLJ(1)[1]         : 0;});
-    add<float>("L1_Hit_Z",   [this](){return tr ? tr -> GetHitCooLJ(1)[2]         : 0;});
-    add<float>("L2_Hit_X",   [this](){return tr ? tr -> GetHitCooLJ(2)[0]         : 0;});
-    add<float>("L2_Hit_Y",   [this](){return tr ? tr -> GetHitCooLJ(2)[1]         : 0;});
-    add<float>("L2_Hit_Z",   [this](){return tr ? tr -> GetHitCooLJ(2)[2]         : 0;});
-    add<float>("ChiQUp",     [this](){return tr && tr -> ParExists(trackFitId_111) ? tr -> GetChisq(trackFitId_111)  : 0;});
-    add<float>("ChiQDown",   [this](){return tr && tr -> ParExists(trackFitId_121) ? tr -> GetChisq(trackFitId_121)  : 0;});
-    add<float>("ChiQ",       [this](){return tr && tr -> ParExists(trackFitId_131) ? tr -> GetChisq(trackFitId_131)  : 0;});
-    add<float>("ChiQL1",     [this](){return tr && tr -> ParExists(trackFitId_151) ? tr -> GetChisq(trackFitId_151)  : 0;});
-    add<float>("RUp",        [this](){return tr && tr -> ParExists(trackFitId_111) ? tr -> GetRigidity(trackFitId_111)  : 0;});
-    add<float>("RDown",      [this](){return tr && tr -> ParExists(trackFitId_121) ? tr -> GetRigidity(trackFitId_121)  : 0;});
-    add<float>("R",          [this](){return tr && tr -> ParExists(trackFitId_131) ? tr -> GetRigidity(trackFitId_131)  : 0;});
-    add<float>("RL1",        [this](){return tr && tr -> ParExists(trackFitId_151) ? tr -> GetRigidity(trackFitId_151)  : 0;});
+    add<int>("NTrackHits",   LAMBDA( tr ? tr -> NTrRecHit()               : 0));
+    add<float>("Q_all",      LAMBDA( tr ? tr -> GetQ_all().Mean           : 0));
+    add<float>("InnerQ_all", LAMBDA( tr ? tr -> GetInnerQ_all().Mean      : 0));
+    add<float>("L1_Hit_X",   LAMBDA( tr ? tr -> GetHitCooLJ(1)[0]         : 0));
+    add<float>("L1_Hit_Y",   LAMBDA( tr ? tr -> GetHitCooLJ(1)[1]         : 0));
+    add<float>("L1_Hit_Z",   LAMBDA( tr ? tr -> GetHitCooLJ(1)[2]         : 0));
+    add<float>("L2_Hit_X",   LAMBDA( tr ? tr -> GetHitCooLJ(2)[0]         : 0));
+    add<float>("L2_Hit_Y",   LAMBDA( tr ? tr -> GetHitCooLJ(2)[1]         : 0));
+    add<float>("L2_Hit_Z",   LAMBDA( tr ? tr -> GetHitCooLJ(2)[2]         : 0));
+    add<float>("ChiQUp",     LAMBDA( tr && tr -> ParExists(trackFitId_111) ? tr -> GetChisq(trackFitId_111)  : 0));
+    add<float>("ChiQDown",   LAMBDA( tr && tr -> ParExists(trackFitId_121) ? tr -> GetChisq(trackFitId_121)  : 0));
+    add<float>("ChiQ",       LAMBDA( tr && tr -> ParExists(trackFitId_131) ? tr -> GetChisq(trackFitId_131)  : 0));
+    add<float>("ChiQL1",     LAMBDA( tr && tr -> ParExists(trackFitId_151) ? tr -> GetChisq(trackFitId_151)  : 0));
+    add<float>("RUp",        LAMBDA( tr && tr -> ParExists(trackFitId_111) ? tr -> GetRigidity(trackFitId_111)  : 0));
+    add<float>("RDown",      LAMBDA( tr && tr -> ParExists(trackFitId_121) ? tr -> GetRigidity(trackFitId_121)  : 0));
+    add<float>("R",          LAMBDA( tr && tr -> ParExists(trackFitId_131) ? tr -> GetRigidity(trackFitId_131)  : 0));
+    add<float>("RL1",        LAMBDA( tr && tr -> ParExists(trackFitId_151) ? tr -> GetRigidity(trackFitId_151)  : 0));
 
-    add<std::vector<float>, 9>("EDepLayerX", [this](){return edepLayer<0>(); });
-    add<std::vector<float>, 9>("EDepLayerY", [this](){return edepLayer<1>(); });
-    add<std::vector<float>, 9>("EDepTrackX", [this](){return edepTrack<0>(); });
-    add<std::vector<float>, 9>("EDepTrackY", [this](){return edepTrack<1>(); });
-    add<std::vector<float>, 9>("LayerJQ",    [this](){return LayerJQ(); });
+    add<std::vector<float>, 9>("EDepLayerX", LAMBDA( edepLayer<0>();));
+    add<std::vector<float>, 9>("EDepLayerY", LAMBDA( edepLayer<1>();));
+    add<std::vector<float>, 9>("EDepTrackX", LAMBDA( edepTrack<0>();));
+    add<std::vector<float>, 9>("EDepTrackY", LAMBDA( edepTrack<1>();));
+    add<std::vector<float>, 9>("LayerJQ",    LAMBDA( LayerJQ();));
 
     // Rich
-    add<float>("BetaRICH",            [this](){return rich ? rich -> getBeta()               : 0;});
-    add<float>("RichBetaConsistency", [this](){return rich ? rich -> getBetaConsistency()    : 0;});
+    add<float>("BetaRICH",            LAMBDA( rich ? rich -> getBeta()               : 0));
+    add<float>("RichBetaConsistency", LAMBDA( rich ? rich -> getBetaConsistency()    : 0));
 
     // // MC
-    add<float>("GenMomentum", [this](){return mc ? mc -> Momentum          : -999;});
+    add<float>("GenMomentum", LAMBDA( mc ? mc -> Momentum          : -999));
 
     for(int iCoo=0;iCoo<3;iCoo++){
         add<float>(Form("GenCoo%i",iCoo), [this, iCoo](){return mc ? mc -> Coo[iCoo]  : -999;});
         add<float>(Form("GenDir%i",iCoo), [this, iCoo](){return mc ? mc -> Dir[iCoo]  : -999;});
     }    
 
-    add<double>("DistanceTOF_P", [this](){return distanceMinimizer -> protonDists.TOF;       });
-    add<double>("DistanceTRD_P", [this](){return distanceMinimizer -> protonDists.TRD;       });
-    add<double>("DistanceTracker_P", [this](){return distanceMinimizer -> protonDists.Track;     });
-    add<double>("MLRigidityTOF_P", [this](){return distanceMinimizer -> protonDists.rMinTOF;   });
-    add<double>("MLRigidityTRD_P", [this](){return distanceMinimizer -> protonDists.rMinTRD;   });
-    add<double>("MLRigidityTracker_P", [this](){return distanceMinimizer -> protonDists.rMinTrack; });
+    add<double>("DistanceTOF_P",       LAMBDA( distanceMinimizer -> protonDists.TOF;      ));
+    add<double>("DistanceTRD_P",       LAMBDA( distanceMinimizer -> protonDists.TRD;      ));
+    add<double>("DistanceTracker_P",   LAMBDA( distanceMinimizer -> protonDists.Track;    ));
+    add<double>("MLRigidityTOF_P",     LAMBDA( distanceMinimizer -> protonDists.rMinTOF;  ));
+    add<double>("MLRigidityTRD_P",     LAMBDA( distanceMinimizer -> protonDists.rMinTRD;  ));
+    add<double>("MLRigidityTracker_P", LAMBDA( distanceMinimizer -> protonDists.rMinTrack;));
 
-    add<double>("DistanceTOF_D", [this](){return distanceMinimizer -> deutonDists.TOF;       });
-    add<double>("DistanceTRD_D", [this](){return distanceMinimizer -> deutonDists.TRD;       });
-    add<double>("DistanceTracker_D", [this](){return distanceMinimizer -> deutonDists.Track;     });
-    add<double>("MLRigidityTOF_D", [this](){return distanceMinimizer -> deutonDists.rMinTOF;   });
-    add<double>("MLRigidityTRD_D", [this](){return distanceMinimizer -> deutonDists.rMinTRD;   });
-    add<double>("MLRigidityTracker_D", [this](){return distanceMinimizer -> deutonDists.rMinTrack; });
+    add<double>("DistanceTOF_D",       LAMBDA( distanceMinimizer -> deutonDists.TOF;      ));
+    add<double>("DistanceTRD_D",       LAMBDA( distanceMinimizer -> deutonDists.TRD;      ));
+    add<double>("DistanceTracker_D",   LAMBDA( distanceMinimizer -> deutonDists.Track;    ));
+    add<double>("MLRigidityTOF_D",     LAMBDA( distanceMinimizer -> deutonDists.rMinTOF;  ));
+    add<double>("MLRigidityTRD_D",     LAMBDA( distanceMinimizer -> deutonDists.rMinTRD;  ));
+    add<double>("MLRigidityTracker_D", LAMBDA( distanceMinimizer -> deutonDists.rMinTrack;));
 
     variables.push_back(new Container<unsigned long long>("selStatus", [this](){
                 unsigned long long selStatus = 0;
@@ -244,7 +241,8 @@ int main(int argc, char **argv){
     int c;
     int entries = 0;
     std::string outFname;
-    std::string  inFname = "/afs/cern.ch/work/b/bcoste/protonB800.root";
+    std::vector<std::string>  files;
+
     int smearing = 0;
     int timingOffset = 0;
     OutFileType outFileType = kBinaryFile;
@@ -273,14 +271,15 @@ int main(int argc, char **argv){
         else if(c == 'z'){
             timingOffset = atoi(optarg);
         }
-        else if(c == 'f') inFname = optarg;
+        else if(c == 'f') files.push_back(optarg);
         else if(c == 't'){
             outFileType = kTextFile;
         } 
     }
+
+    if(files.size() == 0) files.push_back("/afs/cern.ch/work/b/bcoste/protonB800.root");
     
-    std::cout << "inFname : " << inFname << std::endl;
-    Dst t( inFname );
+    Dst t( files );
     t.setSmearing(smearing);
     t.setTimingOffset(timingOffset);
     t.setMaxEntries(entries);

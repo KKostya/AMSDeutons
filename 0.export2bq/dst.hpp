@@ -20,7 +20,7 @@
 #include "RICH.h"
 
 
-#define MAXRAM 1e9
+#define MAXRAM 3000000000LL
 
 std::vector<float> EdepTOF(AMSEventR * ev);
 int NTRDclusters(AMSEventR * ev);
@@ -31,6 +31,12 @@ class DistanceMinimizer;
 
 class Dst : public DstAmsBinary{
 public:
+    Dst( std::vector<std::string> _data ) : DstAmsBinary( _data, MAXRAM){
+        std::cout << "init with #" << data.size() << std::endl;
+        smearing = 0;
+        timingOffset = 0;
+    }
+    
     Dst( std::string _data ) : DstAmsBinary( _data, MAXRAM){
         std::cout << "init with #" << data.size() << std::endl;
         smearing = 0;
@@ -67,7 +73,8 @@ public:
     std::vector<TrClusterR*> trackRawClusters;
     std::map<TrRecHitR*,std::pair<TrClusterR*, TrClusterR*> > trackHitToClusterMap;
 
-    std::vector<std::pair<std::string, std::function<bool(AMSEventR*)> > > selections;
+    typedef std::map<std::string, bool(*)(AMSEventR*)> Selections;
+    static Selections selections;
 
     template <int SIDE> std::vector<float> edepLayer();
     template <int SIDE> std::vector<float> edepTrack();
@@ -79,8 +86,6 @@ public:
     std::vector<float> LayerJQ();
 
     virtual void initPointers();
-private:
-    void registerSelStatus();
 };
 
 #include "3DVariables.hpp"
