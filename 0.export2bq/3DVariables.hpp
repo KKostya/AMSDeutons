@@ -257,7 +257,7 @@ public:
         for(double rgdtTrue = 0; rgdtTrue < step * 1E6; rgdtTrue += step)
         {
             double betaTrue = RvsB->Eval(rgdtTrue);
-            if (betaTrue<betaPrev+1e-8) continue;
+            if (betaTrue<betaPrev+1e-7) continue;
             betaPrev=betaTrue;
 
             // Thist uses splines for the "theoretical values"
