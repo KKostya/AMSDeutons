@@ -8,31 +8,33 @@ from periodic_thread import PeriodicThread
 import pandas as pd
 import numpy  as np
 
-def readBinary(dirname,varToLoad=None):
+def read(dirname,varToLoad=None, cutList=None):
     print 'loading : ' + dirname
     df = dict()
     data=dict()
 
     varType=dict()
-
+    
     if isinstance(varToLoad, basestring): 
         tmp=varToLoad
         varToLoad=[tmp]
 
-    if varToLoad is not None: varToLoad=tuple(map(lambda x: x+'_', varToLoad))
+    if varToLoad is not None: 
+        varToLoad=tuple(map(lambda x: x+'_', varToLoad))
+        if cutList is not None and 'selStatus_' not in varToLoad:
+            varToLoad = varToLoad + ('selStatus_',)
 
     try:
         for line in open(dirname+'/metadata.txt'):
             words=line.split()
-            if words[0] == 'chunkSize' or words[0] == 'nVar' : continue
+            if words[0] in ['chunkSize', 'nVar', 'selStatus:'] : continue
             varType[words[0]] = words[2][0] + words[1]
 
         for file in os.listdir(dirname):
             if ( varToLoad is not None and file.startswith(varToLoad)) or ( varToLoad is None and not file.endswith("metadata.txt") ):
                 var=file.split('_chunk')[0]
-                print 'var : '+var
                 data[var] = np.fromfile(fromCache(dirname+'/'+file), np.dtype(varType[var]))
-                print 'data['+var+'] : '+str(len(data[var]))
+                #print 'data['+var+'] : '+str(len(data[var]))
                 #print fromCache(dirname+'/'+file)
 
         print 'end of loading'
@@ -40,6 +42,10 @@ def readBinary(dirname,varToLoad=None):
     except IOError as e:
         print e
         df = pd.DataFrame()
+
+    if cutList is not None:
+        cut=makeSelectionMask(df,dirname, cutList)
+        df=df[cut]
 
     return df
 
@@ -86,5 +92,50 @@ def fromCache(pathname):
     # print 'name : ' + pathname
     # print 'cached name : ' + res
     return res
+
+
+def getSelStatus(dirname):
+    metadataFile=dirname+'/metadata.txt'
+    try:
+        f=open(metadataFile)
+    except IOError:
+        print 'Could not open file: '+metadataFile
+        return None
+
+    for l in f:
+        if l[:11] != 'selStatus: ': continue
+        cuts=l[11:-1].split(',')
+
+    return cuts
+    
+def makeSelectionMask(df,dirname, cutList):
+    cuts=getSelStatus(dirname)
+
+    if cuts is None:
+        print 'selStatus not found in '+metadataFile
+        return None
+
+    bitIndex=dict()
+    for index in range(len(cuts)):
+        bitIndex[cuts[index]]=index
+
+    selMask=0 # has a 1 for every bit that has to be checked
+    statusMask=0 # take the bit value for every bit that has to be checked
+    for cut in cutList:
+        val=1
+        if cut[0]=='!':
+            val=0
+            cut=cut[1:]
+
+        if cut in bitIndex:
+            selMask+=1<<bitIndex[cut]
+            statusMask+=val<<bitIndex[cut]
+        else:
+            print 'Cut ' + cut + ' not found !'
+            return None
+
+        
+    return  (df.selStatus^statusMask)&selMask==0
+
 
 
