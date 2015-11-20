@@ -144,7 +144,13 @@ template <int SIZE> struct Container<std::vector<float>, SIZE> : public Containe
 
 class DstAmsBinary : public Loop{
 public:
-    DstAmsBinary( std::string _data, int _maxRAM ) : Loop(_data),
+    DstAmsBinary( std::vector<std::string> _data, long long _maxRAM ) : Loop(_data),
+                                                                  chunkStepNumber(0),
+                                                                  maxRAM(_maxRAM),
+                                                                  outFileType(kTextFile)
+    {}
+
+    DstAmsBinary( std::string _data, long long _maxRAM ) : Loop(_data),
                                                      chunkStepNumber(0),
                                                      maxRAM(_maxRAM),
                                                      outFileType(kTextFile)
@@ -158,7 +164,7 @@ public:
     void end();
     bool process();
     void init();
-    void saveMetaData();
+    virtual void saveMetaData(std::string filename);
     int cutEvent();
     void setOutFileType(OutFileType outFileType){
         this -> outFileType = outFileType;
@@ -169,10 +175,10 @@ protected:
     float R;
     bool isMC;
     int nChi2Cut;
-    unsigned int chunkStepNumber;
-    unsigned int chunkSize;
+    unsigned long long chunkStepNumber;
+    unsigned long long chunkSize;
     int nVar;
-    int maxRAM;
+    long long maxRAM;
 
     OutFileType outFileType;
 

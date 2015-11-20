@@ -86,6 +86,7 @@ public:
     std::vector<float> LayerJQ();
 
     virtual void initPointers();
+    void saveMetaData(std::string filename);
 };
 
 #include "3DVariables.hpp"

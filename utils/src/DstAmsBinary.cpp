@@ -6,7 +6,7 @@
 using namespace rootUtils;
 
 void DstAmsBinary::init(){
-    maxRootFiles = 1;
+    maxRootFiles = 0;
     setOutputFile(false);
     Loop::init();
 
@@ -46,7 +46,7 @@ bool DstAmsBinary::process(){
 
 void DstAmsBinary::end(){
     if( chunkStepNumber > 0 ) saveChunk();
-    saveMetaData();
+    saveMetaData(outputFileName+"/metadata.txt");
 }
 
 void DstAmsBinary::saveChunk(){
@@ -64,9 +64,9 @@ void DstAmsBinary::saveChunk(){
     chunkNumber++;
 }
 
-void DstAmsBinary::saveMetaData()
+void DstAmsBinary::saveMetaData(std::string filename)
 {
-    std::ofstream myfile( outputFileName+"/metadata.txt", std::ios::out);
+    std::ofstream myfile( filename, std::ios::out);
     myfile << "nVar "           << nVar          << std::endl;
     myfile << "chunkSize "      << chunkSize     << std::endl;
     for(int iVar=0; iVar < nVar; iVar++){

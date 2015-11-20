@@ -54,6 +54,16 @@ Dst::Selections Dst::selections = {
         {"ringNoNaFBorder", ringNoNaFBorder}
     };
 
+void Dst::saveMetaData(std::string filename){
+    DstAmsBinary::saveMetaData(filename);
+    std::ofstream myfile( filename, std::ios::out|std::ios::app);
+    myfile << "selStatus: ";
+    for(auto const &it : selections) myfile << it.first << ",";
+    myfile.close();
+
+
+}
+
 template <typename T> void Dst::add(std::string name, std::function<T()> lambda){
     variables.push_back(new Container<T>(name, lambda));
 }
@@ -249,14 +259,17 @@ int main(int argc, char **argv){
 
     if (argc==1){
         std::cout
-            << "Simple example:  ./dst -o output.root -n 10000 -f ${HOME}/eos/ams/Data/AMS02/2014/ISS.B900/std/1439205227.00000001.root"
+            << "Simple example:  ./bin/dst -o outputFolder -n 10000 -f ${HOME}/eos/ams/Data/AMS02/2014/ISS.B900/std/1439205227.00000001.root"
             << "\n\nUsage:"
             << "\n\t-f: input AMS Root file"
-            << "\n\t-o: output file name"
-            << "\n\t-n: number of events"
-            << "\n\t-s: smearing, gaussian width:  TofMCPar::MCtuneDT"
-            << "\n\t-z: smearing, gaussian offset: TofMCPar::MCtuneST"
-            << "\n\t-t: change output format to text file (default is binary)"
+            << "\n\t    support multiples files, ex: ./bin/dst -f \"file1.root file2.root\""
+            << "\n\t                               : ./bin/dst -f file1.root -f file2.root"
+            << "\n\t                               : ./bin/dst -f file1.root,file2.root\n"
+            << "\n\t-o: output file name\n"
+            << "\n\t-n: number of events\n"
+            << "\n\t-s: smearing, gaussian width:  TofMCPar::MCtuneDT\n"
+            << "\n\t-z: smearing, gaussian offset: TofMCPar::MCtuneST\n"
+            << "\n\t-t: change output format to text file (default is binary)\n"
             << std::endl;
         exit(-1);
     }
@@ -272,7 +285,7 @@ int main(int argc, char **argv){
             timingOffset = atoi(optarg);
         }
         else if(c == 'f'){
-            std::vector< std::string > f = generalUtils::split(optarg, " ");
+            std::vector< std::string > f = generalUtils::split(optarg, " ,");
             std::copy(f.begin(), f.end(), std::back_inserter(files));
         }
         else if(c == 't'){
@@ -350,8 +363,10 @@ void Dst::initPointers(){
     distanceMinimizer -> reset(this);
     distanceMinimizer -> CalculateDistances();
 
-    TofRecon::BuildTofTracks(ev);
-    tofTrack = TofRecon::pTofTrack(0);
+    if(level){
+        TofRecon::BuildTofTracks(ev);
+        tofTrack = TofRecon::pTofTrack(0);
+    }
 }
 
 void Dst::init(){

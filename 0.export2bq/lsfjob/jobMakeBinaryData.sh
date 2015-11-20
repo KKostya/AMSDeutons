@@ -1,12 +1,17 @@
 #!/bin/bash -x
-if [ "$#" -lt 2 ]; then
-    echo usage: ./jobMakeBinaryData.sh jobName jobNumber
+if [ "$#" -lt 1 ]; then
+    echo usage: ./jobMakeBinaryData.sh jobName
     exit
 fi
 
 smearing=""
+timingOffset=""
+if [ "$#" -gt 1 ]; then
+    smearing=" -s $2 "
+fi
+
 if [ "$#" -gt 2 ]; then
-    smearing=" -s $3"
+    timingOffset=" -z $3 "
 fi
 
 klist
@@ -35,24 +40,44 @@ done
 
 
 LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
-ls -lrt
 
+echo "rootuple vanilla :  ${ROOTUPLES[@]}"
+
+#change the eos mounting point
+
+name=$(basename $(echo ${ROOTUPLES[@]} | awk '{print $1}'))
+
+filesNewMountingPoint=()
 for inputFile in ${ROOTUPLES[@]}; do
     #change the eos mounting point
-    fileNameNewMountingPoint=`echo $inputFile | awk -F'eos/' '{printf("'${eosRoot}/'%s",$2)}'`
-    echo $fileNameNewMountingPoint
-    theLocalFile=`basename "$inputFile"`
-    cp ${fileNameNewMountingPoint} .
-    ./main -o "${theLocalFile%.*}".output -f ${theLocalFile} ${smearing}
-    rm -f ${theLocalFile}
-    # cd *.output/
-    # for binaryFile in *.bin; do
-    #     bzip2 ${binaryFile}
-    # done
-    # cd ..
-    cp -R *.output/ ${eosRoot}/ams/user/${initial}/${USER}/binaryAmsData/${jobName}
-    rm -rf *.output/
+    filesNewMountingPoint+=" $(echo $inputFile | awk -F'eos/' '{printf("'${eosRoot}/'%s",$2)}')"
 done
+
+
+./main -o "${name%.*}".output -f "${filesNewMountingPoint[@]}" ${smearing} ${timingOffset} 
+echo "output copy started at : $(date)"
+cp -R *.output/ ${eosRoot}/ams/user/${initial}/${USER}/binaryAmsData/${jobName}
+echo "output copy done at : $(date)"
+rm -rf *.output/
+echo "output rm done at : $(date)"
 
 /afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select -b fuse umount eos 
 
+
+
+# for inputFile in ${ROOTUPLES[@]}; do
+#     #change the eos mounting point
+#     fileNameNewMountingPoint=`echo $inputFile | awk -F'eos/' '{printf("'${eosRoot}/'%s",$2)}'`
+#     echo $fileNameNewMountingPoint
+#     theLocalFile=`basename "$inputFile"`
+#     echo "input copy started at : $(date)"
+#     cp ${fileNameNewMountingPoint} .
+#     echo "copy done at : $(date)"
+#     ./main -o "${theLocalFile%.*}".output -f ${theLocalFile} ${smearing} ${timingOffset}
+#     rm -f ${theLocalFile}
+#     echo "output copy started at : $(date)"
+#     cp -R *.output/ ${eosRoot}/ams/user/${initial}/${USER}/binaryAmsData/${jobName}
+#     echo "output copy done at : $(date)"
+#     rm -rf *.output/
+#     echo "output rm done at : $(date)"
+# done

@@ -61,9 +61,13 @@ def plot_matrix(frame, xInf=None,yInf=None,xSup=None,ySup=None, **args):
     return ret
 
 
+def binNumber(df,var,nBins,firstBin,lastBin):
+    binWidth=(lastBin-firstBin)/float(nBins)
+    return (df[var]-firstBin).floordiv(binWidth)
+
 def binning(df,var,nBins,firstBin,lastBin):
     binWidth=(lastBin-firstBin)/float(nBins)
-    return firstBin + binWidth * (df[var]-firstBin).floordiv(binWidth)
+    return firstBin + binWidth * binNumber(df,var,nBins,firstBin,lastBin)
 
 def plotDataFrame2D(df,nBinsX,firstBinX,lastBinX,nBinsY,firstBinY,lastBinY,varX,varY):
     # Plot a 2D histogram of varX vs varY

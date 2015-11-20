@@ -4,19 +4,22 @@ if [ "$#" -lt 1 ]; then
     exit
 fi
 
-jobName=$1
-# chunkSize=1
+export jobName=$1
+
+# chunkSize=40000000000 # 40GB of data per job
 # MAXJOB=1
 # queue=8nm
-chunkSize=20
+
+chunkSize=40000000000 # 40GB of data per job
 MAXJOB=1000
 queue=1nd
+
 export eosRoot=${HOME}/eos
 export executable=../bin/dst
 export initial="$(echo ${USER} | head -c 1)"
-
-#files=("${eosRoot}/ams/Data/AMS02/2014/ISS.B950/pass6"/*.root)
-files=("${eosRoot}/ams/MC/AMS02/2014/protons.B1034/pr.pl1.1200.qgsp_bic_ams"/*.root)
+export queue
+files=("${eosRoot}/ams/Data/AMS02/2014/ISS.B950/pass6"/*.root)
+# files=("${eosRoot}/ams/MC/AMS02/2014/protons.B1034/pr.pl1.1200.qgsp_bic_ams"/*.root)
 
 if [ "$#" -gt 1 ]; then
     echo "New file dir provided : $2" 
@@ -85,17 +88,44 @@ export executable=$executable
 $(declare -p libs)
 END
 
-for ((i=0; i < ${#files[@]}; i+=chunkSize)); do
-    export ROOTUPLES="${files[@]:i:chunkSize}"
-    j=$((i/chunkSize))
-    if (( j >= MAXJOB )); then
-	break
-    fi    
+function splitBySize(){
+    if [ "$#" -lt 2 ]; then
+        echo usage: ./splitBySize.sh chunkSize listOfFiles
+        exit
+    fi
 
-    echo "first libs : ${libs[@]} and rootuples : ${ROOTUPLES[@]}"
+    chunkSize=$1
 
-    bsubCommand="bsub -J ${jobName}_${j} -q ${queue} k5reauth -R -- $(pwd)/${jobName}/jobMakeBinaryData.sh ${jobName} ${j}"
-    $bsubCommand
+    listOfFiles=("$@")
+    listOfFiles=("${listOfFiles[@]:1}")
+
+    size=0
+    out=()
+    for f in "${listOfFiles[@]}"
+    do
+        out+=($f)
+        ((size+=$(stat   --printf="%s" $f)))
+        if (( "${size}" >   "${chunkSize}" )); then
+            echo ${out[@]}
+            out=()
+            size=0
+        fi
+    done
+
+    if (( "${#out[@]}" != 0 ));then
+        echo ${out[@]}
+    fi
+}
+
+function launchJob(){
+    export ROOTUPLES="$@"
+    bsubCommand="bsub -q ${queue} k5reauth -R -- $(pwd)/${jobName}/jobMakeBinaryData.sh ${jobName}"
+    eval $bsubCommand
+    #$(pwd)/${jobName}/jobMakeBinaryData.sh ${jobName}
     echo ${ROOTUPLES}>>${jobName}/inputFileList.log
-done
+}
+export -f launchJob
+
+splitBySize ${chunkSize} ${files[@]} | head -n ${MAXJOB} | xargs -L 1 -I{} bash -i -c "launchJob {}"
+
 

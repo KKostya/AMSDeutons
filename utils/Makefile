@@ -5,7 +5,7 @@ AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
 AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -Llib -lntuple_slc6_PG_dynamic
 INCLUDES      := -Iinclude
 ROOT_INCLUDES := -I$(AMSROOTLIBS)
-DEBUG	      := -g
+DEBUG	      := -O3
 
 #Ca va chier dans le compilo
 ROOTCFG  := root-config

@@ -7,6 +7,7 @@ CLASSES = $(ADDCLASS) $(ADDCLASS:include/%.h=src/%.cpp)
 
 BIN    =$(EXEC:%=bin/%)
 SRC    =$(EXEC:%=./%.cpp)
+HEADER =$(EXEC:%=./%.hpp)
 OBJECTS=$(EXEC:%=./%.o)
 
 
@@ -15,7 +16,7 @@ AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
 AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG_dynamic
 LIBS	      := -L../utils/lib -lRootUtils -lGeneralUtils
 INCLUDES      := -I. -Iselections/ -I$(AMSROOTLIBS) -Iinclude/ -I../utils/include
-DEBUG	      := -g
+DEBUG	      := -O3
 
 #Ca va chier dans le compilo
 ROOTCFG  := root-config
@@ -43,9 +44,9 @@ $(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@  dst.o $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) selections/selections.a -lDstAmsBinary
 
 
-$(OBJECTS): $(SRC)
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $^
+$(OBJECTS): $(SRC) $(HEADER)
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 clean:
-	rm -rf $(OBJECTS)
+	rm -rf $(OBJECTS) bin/dst
 	rm -f selections/selections.a
