@@ -7,6 +7,35 @@ import shutil
 from periodic_thread import PeriodicThread
 import pandas as pd
 import numpy  as np
+import glob
+
+def concat(globPath, varToLoad=None, filter=None, maxFiles=100000, masks=None):
+    files = glob.glob(globPath)[:maxFiles]
+                      
+    def loadAndFilter(f):
+        try:
+            df=read(f,varToLoad,masks)
+        except MemoryError:
+            print 'MemoryError, skipping'
+            raise StopIteration
+
+        if filter is not None: return df[filter(df)]
+        else : return df
+    
+    dfs=[]
+    for f in files:
+        try:
+            df=loadAndFilter(f)
+        except StopIteration:
+            dfs.pop()
+            break
+
+        dfs.append(df)
+
+    df = pd.concat(dfs)
+
+    return df
+
 
 def read(dirname,varToLoad=None, cutList=None):
     print 'loading : ' + dirname
@@ -33,12 +62,21 @@ def read(dirname,varToLoad=None, cutList=None):
         for file in os.listdir(dirname):
             if ( varToLoad is not None and file.startswith(varToLoad)) or ( varToLoad is None and not file.endswith("metadata.txt") ):
                 var=file.split('_chunk')[0]
-                data[var] = np.fromfile(fromCache(dirname+'/'+file), np.dtype(varType[var]))
+                try:
+                    data[var] = np.fromfile(fromCache(dirname+'/'+file), np.dtype(varType[var]))
+                except MemoryError:
+                    print 'Memory error in np.fromfile, skipping next files: '+dirname
+                    raise
                 #print 'data['+var+'] : '+str(len(data[var]))
                 #print fromCache(dirname+'/'+file)
 
         print 'end of loading'
-        df = pd.DataFrame(data)
+        try:
+            df = pd.DataFrame(data)
+        except MemoryError:
+            print 'Memory error in pd.DataFrame, skipping the file: '+dirname
+            raise
+
     except IOError as e:
         print e
         df = pd.DataFrame()
