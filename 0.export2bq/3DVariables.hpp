@@ -119,6 +119,13 @@ double CorrTRD[30] = {
     1.34156,1.34009,1.33849,1.33596,1.33436,1.32501,1.29415,1.2545,1.22218,1.20732,
 };
 
+
+
+
+
+
+
+
 ofstream outfile;
 
 // Utility functions
@@ -168,8 +175,14 @@ class DistanceMinimizer
     TSpline3 * CorrRICH;
 
     //////////////////////// Theoretic curves /////////////////////////////
-    TF1 * protons = new TF1("f1","((x)^2/0.938^2/(1 + (x)^2/0.938^2))^0.5",0.1,100);
-    TF1 * deutons = new TF1("f1","((x)^2/1.875^2/(1 + (x)^2/1.875^2))^0.5",0,100);
+    TF1 * protons = new TF1("fp","((x)^2/0.938^2/(1 + (x)^2/0.938^2))^0.5",0.1,100);
+    TF1 * deutons = new TF1("fd","((x)^2/1.875^2/(1 + (x)^2/1.875^2))^0.5",0.1,100);
+
+    // Laurent's added 3-polynomial of ETracker points
+		// The degree 3 ensured that it was monotonic
+		TF1* fETrackBeta = new TF1("fETrackBeta","pol3",0.4, 1);
+		
+
 
 
 public:
@@ -207,6 +220,7 @@ public:
         etofMeasured = 0;
         etrdMeasured = 0;
         etrkMeasured = 0;
+        fETrackBeta->SetParameters(1.50051636, -4.04471459,  4.2095067 , -1.5178394);
 
         AMSEventR* ev=dst -> ev;
         if( ev == NULL || dst -> tr == NULL || dst -> betaH == NULL ) return;
@@ -257,13 +271,13 @@ public:
         for(double rgdtTrue = 0; rgdtTrue < step * 1E6; rgdtTrue += step)
         {
             double betaTrue = RvsB->Eval(rgdtTrue);
-            if (betaTrue<betaPrev+1e-7) continue;
+            if (betaTrue<betaPrev+1e-5) continue;
             betaPrev=betaTrue;
 
             // Thist uses splines for the "theoretical values"
             double etofTrue = EdepTOFbeta  -> Eval(betaTrue);  
             double etrdTrue = EdepTRDbeta  -> Eval(betaTrue);  
-            double etrkTrue = EdepTrackbeta-> Eval(betaTrue);  
+            double etrkTrue = fETrackBeta-> Eval(betaTrue);  
 
             double rgdtDist = weightedDiff(rgdtTrue, rgdtMeasured, sigma_rgdt->Eval(rgdtTrue));
             double betaDist = weightedDiff(betaTrue, betaMeasured, sigma_beta->Eval(betaTrue));
