@@ -33,11 +33,12 @@ def concat(globPath, varToLoad=None, filter=None, maxFiles=100000, masks=None):
         dfs.append(df)
 
     df = pd.concat(dfs)
+    del dfs
 
     return df
 
 
-def read(dirname,varToLoad=None, cutList=None):
+def read(dirname,varToLoad=None, masks=None):
     print 'loading : ' + dirname
     df = dict()
     data=dict()
@@ -50,7 +51,7 @@ def read(dirname,varToLoad=None, cutList=None):
 
     if varToLoad is not None: 
         varToLoad=tuple(map(lambda x: x+'_', varToLoad))
-        if cutList is not None and 'selStatus_' not in varToLoad:
+        if masks is not None and 'selStatus_' not in varToLoad:
             varToLoad = varToLoad + ('selStatus_',)
 
     try:
@@ -81,8 +82,8 @@ def read(dirname,varToLoad=None, cutList=None):
         print e
         df = pd.DataFrame()
 
-    if cutList is not None:
-        cut=makeSelectionMask(df,dirname, cutList)
+    if masks is not None:
+        cut=makeSelectionMask(df,dirname, masks)
         df=df[cut]
 
     return df
@@ -172,7 +173,6 @@ def makeSelectionMask(df,dirname, cutList):
             print 'Cut ' + cut + ' not found !'
             return None
 
-        
     return  (df.selStatus^statusMask)&selMask==0
 
 
