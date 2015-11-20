@@ -7,6 +7,13 @@ using namespace rootUtils;
 
 #define LAMBDA(expr) [this](){return expr;}
 
+Dst::CodeTrackId Dst::codeTrackId = {
+    {"Up",   111},
+    {"Down", 121},
+    {"",     131},
+    {"L1",   151}
+};
+
 Dst::Selections Dst::selections = {
         {"notFirstTwo", notFirstTwo},
         {"notInSaaCut", notInSaaCut},
@@ -54,24 +61,6 @@ Dst::Selections Dst::selections = {
         {"ringNoNaFBorder", ringNoNaFBorder}
     };
 
-void Dst::saveMetaData(std::string filename){
-    DstAmsBinary::saveMetaData(filename);
-    std::ofstream myfile( filename, std::ios::out|std::ios::app);
-    myfile << "selStatus: ";
-    for(auto const &it : selections) myfile << it.first << ",";
-    myfile.close();
-
-
-}
-
-template <typename T> void Dst::add(std::string name, std::function<T()> lambda){
-    variables.push_back(new Container<T>(name, lambda));
-}
-
-template <typename T, int SIZE> void Dst::add(std::string name, std::function<T()> lambda){
-    variables.push_back(new Container<T,SIZE>(name, lambda));
-}
-
 void Dst::registerVariables() {
     // HEADER
     add<unsigned int>("Run",            LAMBDA( ev   ? ev -> Run()                   : -1));
@@ -92,10 +81,10 @@ void Dst::registerVariables() {
     add<float>("BetaTOF",         LAMBDA( beta         ? beta  -> Beta                : -1));
     add<float>("BetaTOFH",        LAMBDA( betaH        ? betaH -> GetBeta()           : -1));
     add<float>("ChargeTOF",       LAMBDA( betaH        ? betaH->GetQ(nlay,qrms)       : -1));
-    add<float>("TimeTof_L0",      LAMBDA( clusterHL[0] ? clusterHL[0] -> Time         : -1));
-    add<float>("TimeTof_L1",      LAMBDA( clusterHL[1] ? clusterHL[1] -> Time         : -1));
-    add<float>("TimeTof_L2",      LAMBDA( clusterHL[2] ? clusterHL[2] -> Time         : -1));
-    add<float>("TimeTof_L3",      LAMBDA( clusterHL[3] ? clusterHL[3] -> Time         : -1));
+
+    for(int iLayer: {0,1,2,3})
+        add<float>(Form("TimeTof_L%i",iLayer),   [this,iLayer]{return clusterHL[iLayer] ? clusterHL[iLayer] -> Time         : -1;});
+
     add<int>("NTofClustersH",     LAMBDA( ev           ? ev     -> NTofClusterH()     : -1));
     add<int>("NTofClusters",      LAMBDA( ev           ? ev     -> NTofCluster()      : -1));
     add<int>("NTofClustersHUsed", LAMBDA( betaH        ? betaH ->  NTofClusterH()     : -1));
@@ -106,20 +95,18 @@ void Dst::registerVariables() {
     add<int>("NTrackHits",   LAMBDA( tr ? tr -> NTrRecHit()               : 0));
     add<float>("Q_all",      LAMBDA( tr ? tr -> GetQ_all().Mean           : 0));
     add<float>("InnerQ_all", LAMBDA( tr ? tr -> GetInnerQ_all().Mean      : 0));
-    add<float>("L1_Hit_X",   LAMBDA( tr ? tr -> GetHitCooLJ(1)[0]         : 0));
-    add<float>("L1_Hit_Y",   LAMBDA( tr ? tr -> GetHitCooLJ(1)[1]         : 0));
-    add<float>("L1_Hit_Z",   LAMBDA( tr ? tr -> GetHitCooLJ(1)[2]         : 0));
-    add<float>("L2_Hit_X",   LAMBDA( tr ? tr -> GetHitCooLJ(2)[0]         : 0));
-    add<float>("L2_Hit_Y",   LAMBDA( tr ? tr -> GetHitCooLJ(2)[1]         : 0));
-    add<float>("L2_Hit_Z",   LAMBDA( tr ? tr -> GetHitCooLJ(2)[2]         : 0));
-    add<float>("ChiQUp",     LAMBDA( tr && tr -> ParExists(trackFitId_111) ? tr -> GetChisq(trackFitId_111)  : 0));
-    add<float>("ChiQDown",   LAMBDA( tr && tr -> ParExists(trackFitId_121) ? tr -> GetChisq(trackFitId_121)  : 0));
-    add<float>("ChiQ",       LAMBDA( tr && tr -> ParExists(trackFitId_131) ? tr -> GetChisq(trackFitId_131)  : 0));
-    add<float>("ChiQL1",     LAMBDA( tr && tr -> ParExists(trackFitId_151) ? tr -> GetChisq(trackFitId_151)  : 0));
-    add<float>("RUp",        LAMBDA( tr && tr -> ParExists(trackFitId_111) ? tr -> GetRigidity(trackFitId_111)  : 0));
-    add<float>("RDown",      LAMBDA( tr && tr -> ParExists(trackFitId_121) ? tr -> GetRigidity(trackFitId_121)  : 0));
-    add<float>("R",          LAMBDA( tr && tr -> ParExists(trackFitId_131) ? tr -> GetRigidity(trackFitId_131)  : 0));
-    add<float>("RL1",        LAMBDA( tr && tr -> ParExists(trackFitId_151) ? tr -> GetRigidity(trackFitId_151)  : 0));
+
+    
+    std::map<std::string, int> axis = { {"X", 0}, {"Y", 1}, {"Z", 2}};
+
+    for( auto const &it: axis )
+        for(int iLayer: {1,2})
+            add<float>("L"+std::to_string(iLayer)+"_Hit_"+it.first,   [this,iLayer,it](){return  tr ? tr -> GetHitCooLJ(iLayer)[it.second]         : 0;});
+
+    for( auto const &it: codeTrackId ){
+        add<float>("ChiQ"+it.first, [this,it]{return tr && tr -> ParExists(trackFitId[it.second])   ? tr -> GetChisq(trackFitId[it.second])  : 0;});
+        add<float>("R"   +it.first, [this,it]{return tr && tr -> GetRigidity(trackFitId[it.second]) ? tr -> GetRigidity(trackFitId[it.second])  : 0;});
+    }
 
     add<std::vector<float>, 9>("EDepLayerX", LAMBDA( edepLayer<0>();));
     add<std::vector<float>, 9>("EDepLayerY", LAMBDA( edepLayer<1>();));
@@ -317,10 +304,7 @@ void Dst::initPointers(){
     rich = NULL;
     tofTrack = NULL;
 
-    trackFitId_111 = 0;
-    trackFitId_121 = 0;
-    trackFitId_131 = 0;
-    trackFitId_151 = 0;
+    for( auto &it: trackFitId) it.second = 0;
 
     trackRawClusters.clear();
     trackHitToClusterMap.clear();
@@ -346,16 +330,17 @@ void Dst::initPointers(){
             trackHitToClusterMap[hit] = make_pair(xCluster, yCluster);
         }
 
-        trackFitId_111 = tr -> iTrTrackPar(1,1,1);
-        trackFitId_121 = tr -> iTrTrackPar(1,2,1);
-        trackFitId_131 = tr -> iTrTrackPar(1,3,1);
-        trackFitId_151 = tr -> iTrTrackPar(1,5,1);
+        for( auto &it: trackFitId ){
+            int algo = it.first/100;
+            int pattern = (it.first-100*algo)/10;
+            int refit = it.first-100*algo-10*pattern;
+            it.second = tr -> iTrTrackPar(algo,pattern,refit);
+        }
     }
 
     if (betaH){
         if( smearing != 0 || timingOffset != 0) betaH->DoMCtune(); //Active smearing
         for(int iLayer = 0;iLayer<4;iLayer++) clusterHL[iLayer] = betaH -> GetClusterHL(iLayer);
-
     }
 
     mc = ev->GetPrimaryMC();

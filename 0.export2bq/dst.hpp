@@ -35,6 +35,7 @@ public:
         std::cout << "init with #" << data.size() << std::endl;
         smearing = 0;
         timingOffset = 0;
+        for( auto &it: codeTrackId ) trackFitId[it.second] = 0;
     }
     
     Dst( std::string _data ) : DstAmsBinary( _data, MAXRAM){
@@ -59,7 +60,7 @@ public:
     BetaHR* betaH;
     BetaR* beta;
     TofClusterHR *clusterHL[4];
-    int trackFitId_111,trackFitId_121,trackFitId_131,trackFitId_151;
+    std::map<int,int> trackFitId;
     MCEventgR* mc;
     Level1R *level;
     RichRingR *rich;
@@ -76,17 +77,37 @@ public:
     typedef std::map<std::string, bool(*)(AMSEventR*)> Selections;
     static Selections selections;
 
+    typedef std::map<std::string, int> CodeTrackId;
+    static CodeTrackId codeTrackId;
+
     template <int SIDE> std::vector<float> edepLayer();
     template <int SIDE> std::vector<float> edepTrack();
-    template <typename T> void add(std::string name, std::function<T()> lambda);
-    template <typename T, int SIZE> void add(std::string name, std::function<T()> lambda);
+
+    template <typename T> void add(std::string name, std::function<T()> lambda){
+        variables.push_back(new Container<T>(name, lambda));
+    }
+
+    template <typename T, int SIZE> void add(std::string name, std::function<T()> lambda){
+        variables.push_back(new Container<T,SIZE>(name, lambda));
+    }
+
+    // template <typename T> void add(std::string name, std::function<T()> lambda);
+    // template <typename T, int SIZE> void add(std::string name, std::function<T()> lambda);
 
     // std::vector<double> EdepTOF(AMSEventR * ev);
 
     std::vector<float> LayerJQ();
 
     virtual void initPointers();
-    void saveMetaData(std::string filename);
+
+    void saveMetaData(std::string filename){
+        DstAmsBinary::saveMetaData(filename);
+        std::ofstream myfile( filename, std::ios::out|std::ios::app);
+        myfile << "selStatus: ";
+        for(auto const &it : selections) myfile << it.first << ",";
+        myfile.close();
+    }
+
 };
 
 #include "3DVariables.hpp"
