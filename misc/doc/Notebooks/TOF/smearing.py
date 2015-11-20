@@ -1,6 +1,6 @@
 import matplotlib
 
-display=True
+display=False
 
 if not display:
     matplotlib.use('Agg')
@@ -17,12 +17,17 @@ import random
 sys.path.insert(0,'../../../../utils/python')
 
 import readBinary
-from utils import *
+import utils
 import matplotlib.pyplot as plt
 
 import os
 
-maxFiles={ 'MC':40, 'Data':160}
+maxFiles={ 'MC':400, 'Data':4}
+#maxFiles={ 'MC':200, 'Data':200}
+# maxFiles={ 'MC':40, 'Data':40}
+# maxFiles={ 'MC':20, 'Data':1}
+# maxFiles={ 'MC':1, 'Data':1}
+#utils.useCache=False
 
 def loadBinaryOld(dirname,varToLoad=None):
     print 'loading : '
@@ -49,11 +54,16 @@ def makeDataframe(files, name, varToLoad, oldLoading=False):
     if oldLoading:
         loadFunction = loadBinaryOld
     else :
-        loadFunction = readBinary
+        loadFunction = utils.readBinary
 
     def loadAndFilter(dirname,varToLoad=None):
         df=loadFunction(dirname,varToLoad)
-        df = df[(df.Time_L0 > -999) & (df.Time_L1 > -999) & (df.Time_L2 > -999) & (df.Time_L3 > -999) & (df.R < 30) & (df.R > 1) & (df.BetaTOFH > 0.5) & (df.BetaTOFH < 1.2) & (df.NTofClustersHUsed == 4) & (df.ChiQ > 0) & (df.ChiQ < 10)]
+        if len(df.columns) != 3: 
+            print 'Wrong column size : '+str(len(df.columns))
+            return pd.DataFrame()
+        #df = df[(df.Time_L0 > -999) & (df.Time_L1 > -999) & (df.Time_L2 > -999) & (df.Time_L3 > -999) & (df.R < 30) & (df.R > 1) & (df.BetaTOFH > 0.5) & (df.BetaTOFH < 1.2) & (df.NTofClustersHUsed == 4) & (df.ChiQ > 0) & (df.ChiQ < 10)]
+       df = df[((df.selStatus&2097151)==2097151)]
+       df=df[['BetaTOFH','R']]
         return df
 
     df = pd.concat(map(lambda f: loadAndFilter(f,varToLoad), files[:maxFiles[name]]))
@@ -62,23 +72,26 @@ def makeDataframe(files, name, varToLoad, oldLoading=False):
     df.index.name = name
     return df
 
-varToLoadNew=('Time_L','R','BetaTOF','NTofClustersHUsed','ChiQ')
+#varToLoadNew=('Time_L','R','BetaTOF','NTofClustersHUsed','ChiQ')
+varToLoadNew=('R','BetaTOFH','selStatus')
 varToLoadOld=('time_L','R','beta','NTofClusterH')
 
 newCol=zip(varToLoadOld,varToLoadNew)
 
 mc  ='/afs/cern.ch/user/b/bcoste/myeos/binaryAmsData/protons.B1034_pr.pl1.1200.qgsp_bic_ams_noSmearing/*.00000001.output'
-data='/afs/cern.ch/user/b/bcoste/myeos/binaryAmsData/ISS.B950_pass6_allVariables/*.00000001.output'
+data='/afs/cern.ch/user/b/bcoste/myeos/binaryAmsData/ISS.B950_pass6_allVariables_chunked/*/'
 
-if len(sys.argv) > 1:
-    mc = '/afs/cern.ch/user/b/bcoste/myeos/binaryAmsData/smearingMinus'+sys.argv[1]+'/*.00000001.output'
+if len(sys.argv) == 2:
+    mc = '/afs/cern.ch/user/b/bcoste/myeos/binaryAmsData/minus'+sys.argv[1]+'/*'
     print mc
+elif len(sys.argv) == 3:
+    mc = '/afs/cern.ch/user/b/bcoste/myeos/binaryAmsData/smearing'+sys.argv[1]+'OffsetPlus'+sys.argv[2]+'/*.00000001.output'
 
 filesMC   = glob.glob(mc)
 filesData = glob.glob(data)
 
-random.shuffle(filesMC)
-random.shuffle(filesData)
+# random.shuffle(filesMC)
+# random.shuffle(filesData)
 
 dfMC   = makeDataframe( filesMC, "MC", varToLoadNew)
 dfData = makeDataframe( filesData, "Data", varToLoadNew)
@@ -90,9 +103,6 @@ dfData = makeDataframe( filesData, "Data", varToLoadNew)
 print 'data : '+data
 print 'mc : '+mc
 
-def binning(df,var,nBins,firstBin,lastBin):
-    binWidth=(lastBin-firstBin)/nBins
-    return firstBin + binWidth * (df[var]-firstBin).floordiv(binWidth)
 
 def plotDataFrame2D(df,nBinsX,firstBinX,lastBinX,nBinsY,firstBinY,lastBinY,varX,varY):
     binX='bin_'+varX
@@ -113,15 +123,15 @@ for df in [dfData,dfMC]:
 
 
 def makeHistAndFit(data,init,hist_range,ylimit,widthSecondFit,funcFit=None,**kwargs):
-    if funcFit is None: funcFit=gaussian
+    if funcFit is None: funcFit=utils.gaussian
     if len(data):
         n, bins, patches = plt.hist(data,normed=True,range=hist_range,bins=100,histtype='step',linewidth=2.0,**kwargs)
         plt.ylim(ylimit)
         xdata, ydata = ((bins[:-1] + bins[1:])*0.5,n)
-        out = fit(funcFit,xdata,ydata,init)
+        out = utils.fit(funcFit,xdata,ydata,init)
         if len(out[0]) > 2:
             x,y = zip(*filter(lambda x: -math.fabs(out[0][2])*widthSecondFit < x[0]-out[0][1] < math.fabs(out[0][2])*widthSecondFit,zip(xdata,ydata)))
-            out = fit(funcFit,x,y,out[0])
+            out = utils.fit(funcFit,x,y,out[0])
             plt.plot(x,funcFit(out[0],x),linewidth=2.0)
         else : plt.plot(xdata,funcFit(out[0],xdata),linewidth=2.0)
         return out[0]
@@ -134,6 +144,7 @@ def fitAllRigBin(data,var,rigBins,init,hist_range,ylimit,widthSecondFit,**kwargs
         if display:
             plt.figure(name)
             plt.title(name)
+            # plt.savefig(name+'.png')
         par.append( makeHistAndFit( df[(df['R']>=rigBins[i]) & (df['R']<rigBins[i+1])][var].values, init, hist_range,ylimit,widthSecondFit,**kwargs) )
     return par
 
@@ -145,7 +156,8 @@ variables={}
 rigBins=np.linspace(2,29,40)
 print rigBins
 
-variables['BetaTOFH']=([9.0, 0.95, 0.05], (0.8, 1.1), (0,12), 1)
+#variables['BetaTOFH']=([9.0, 0.95, 0.05], (0.8, 1.1), (0,12), 1.6)
+variables['invBetaH']=([9.0, 1.05, 0.05], (0.8, 1.2), (0,12), 1.4)
 # variables['BetaTOF'] =([9.0, 0.95, 0.05], (0.8, 1.1), (0,12), 1)
 # variables['Time_L3-Time_L0']=([1.0, 6.0, 1.0], (4,7),(0,1), 1)
 # variables['Time_L3-Time_L1']=([1.0, 6.0, 1.0], (4,7),(0,1), 1)
@@ -166,6 +178,7 @@ canvasMean={ 'Time_L3-Time_L0':(0.99,1.03),
              'Time_L3-Time_L2':(0.80,1.10),
              'Time_L3-Time_L1':(0.98,1.03),
              'Time_L1-Time_L0':(0.70,1.10),
+             'invBetaH':          (0.98,1.02),
              'BetaTOFH':          (0.98,1.01),
              'BetaTOF':           (0.98,1.01)}
 
@@ -173,6 +186,7 @@ canvasStd={ 'Time_L3-Time_L0':(0.80,1.30),
             'Time_L3-Time_L2':(0.80,1.10),
             'Time_L3-Time_L1':(0.85,1.30),
             'Time_L1-Time_L0':(0.80,1.10),
+            'invBetaH':       (0.80,1.40),
             'BetaTOFH':       (0.80,1.40),
             'BetaTOF':        (0.80,1.40)}
 
@@ -193,7 +207,8 @@ for var in variables:
     plt.plot(rigBins[:-1],ratioStd,'o')
     plt.plot((rigBins[0],rigBins[-1]),(1,1))
     plt.ylim(canvasStd[var])
-    if(len(sys.argv) > 1): plt.savefig(var+'_smearingMinus'+sys.argv[1]+'.png')
+    if len(sys.argv) == 2: plt.savefig(var+'_smearingMinus'+sys.argv[1]+'.png')
+    elif len(sys.argv) == 3: plt.savefig(var+'_smearing'+sys.argv[1]+'OffsetPlus'+sys.argv[2]+'.png')
     else: plt.savefig(var+'_noSmearing.png')
 
 # plt.figure()    
@@ -202,3 +217,5 @@ for var in variables:
 
 if display:
     plt.show()
+
+print 'done'
