@@ -178,9 +178,11 @@ class DistanceMinimizer
     TF1 * protons = new TF1("fp","((x)^2/0.938^2/(1 + (x)^2/0.938^2))^0.5",0.1,100);
     TF1 * deutons = new TF1("fd","((x)^2/1.875^2/(1 + (x)^2/1.875^2))^0.5",0.1,100);
 
-    // Laurent's added 3-polynomial of ETracker points
+		// Laurent's added 3-polynomial of ETracker points
 		// The degree 3 ensured that it was monotonic
 		TF1* fETrackBeta = new TF1("fETrackBeta","pol3",0.4, 1);
+		TF1* fETRDBeta   = new TF1("fETRDBeta",  "pol2",0.4, 1);
+		TF1* fETOFBeta   = new TF1("fETOFBeta",  "pol5",0.4, 1);
 		
 
 
@@ -221,6 +223,8 @@ public:
         etrdMeasured = 0;
         etrkMeasured = 0;
         fETrackBeta->SetParameters(1.50051636, -4.04471459,  4.2095067 , -1.5178394);
+        fETRDBeta  ->SetParameters(17.69329971,  -30.2543069 ,  15.1275584 );
+        fETOFBeta  ->SetParameters(56.15254105, -276.13822103, 600.37793391, -668.0716316, 368.33924203, -78.73769398);
 
         AMSEventR* ev=dst -> ev;
         if( ev == NULL || dst -> tr == NULL || dst -> betaH == NULL ) return;
@@ -275,9 +279,9 @@ public:
             betaPrev=betaTrue;
 
             // Thist uses splines for the "theoretical values"
-            double etofTrue = EdepTOFbeta  -> Eval(betaTrue);  
-            double etrdTrue = EdepTRDbeta  -> Eval(betaTrue);  
-            double etrkTrue = fETrackBeta-> Eval(betaTrue);  
+            double etofTrue = fETOFBeta  -> Eval(betaTrue);  
+            double etrdTrue = fETRDBeta   -> Eval(betaTrue);  
+            double etrkTrue = fETrackBeta -> Eval(betaTrue);  
 
             double rgdtDist = weightedDiff(rgdtTrue, rgdtMeasured, sigma_rgdt->Eval(rgdtTrue));
             double betaDist = weightedDiff(betaTrue, betaMeasured, sigma_beta->Eval(betaTrue));
