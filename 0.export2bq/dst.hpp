@@ -74,7 +74,7 @@ public:
     std::vector<TrClusterR*> trackRawClusters;
     std::map<TrRecHitR*,std::pair<TrClusterR*, TrClusterR*> > trackHitToClusterMap;
 
-    typedef std::map<std::string, bool(*)(AMSEventR*)> Selections;
+    typedef std::vector<std::pair<std::string, bool(*)(AMSEventR*)>> Selections;
     static Selections selections;
 
     typedef std::map<std::string, int> CodeTrackId;
