@@ -155,6 +155,7 @@ class DistanceMinimizer
     double etrkMeasured;
 
     unsigned int nevt;
+
     
 
     TSpline3 * sigma_rgdt;
@@ -190,6 +191,7 @@ class DistanceMinimizer
 public:
 
 		float eTrackL[9];
+		unsigned int nTofc;
 
     DistanceMinimizer() : rgdtMeasured(0), 
                           betaMeasured(0),
@@ -235,8 +237,9 @@ public:
         
         rgdtMeasured = dst -> tr -> GetRigidity();
         betaMeasured = dst -> betaH -> GetBeta();
-        etofMeasured = Sum(EdepTOF(ev))/4; // The average over 4 TOF planes
-        etrdMeasured = EdepTRD(ev) / NTRDclusters(ev);
+        //etofMeasured = Sum(EdepTOF(ev))/4; // The average over 4 TOF planes
+        if (EdepTRD(ev) != -1 && NTRDclusters(ev) != -1)
+					etrdMeasured = EdepTRD(ev) / NTRDclusters(ev);
 
 				
         //std::vector<float> eTrackX = dst -> edepLayer<0>(); eTrackX[0] = 0; eTrackX[8] = 0;
@@ -249,6 +252,10 @@ public:
 					etrkMeasured+=pclus->GetEdep();
 				}
         etrkMeasured /=14;
+
+        nTofc=ev -> NTofCluster();
+        for(int ic=0; ic< nTofc ; ic++)   etofMeasured += ev->pTofCluster(ic)->Edep;
+        etofMeasured/=4;
         
     }
 
@@ -261,12 +268,13 @@ public:
         distance.Track = 1000000; distance.rMinTrack = 0; 
 
         //Checking that we're good
-        if(rgdtMeasured <= 0) return distance;
-        if(betaMeasured <= 0) return distance;
-        if(betaMeasured >= 2) return distance;
-        if(etofMeasured <= 0) return distance;
-        if(etrdMeasured <= 0) return distance;
-        if(etrkMeasured <= 0) return distance;
+        if (rgdtMeasured <= 0) return distance;
+        if (betaMeasured <= 0) return distance;
+        if (betaMeasured >= 2) return distance;
+        if (etofMeasured <= 0) return distance;
+        if (etrdMeasured <= 0) return distance;
+        if (etrkMeasured <= 0) return distance;
+
 
         // Scanning Rtrue and recording the minimal values for distance
         int DR1 = 0, DR2 = 0, DR3 = 0;
@@ -301,7 +309,7 @@ public:
 
 						if(DR1 > 25 && DR2 > 25 && DR3 > 25)  {
 
-            outfile  << 				nevt
+            outfile  << nevt
             	<< "," << (int)1-bprot
 							<< "," << rgdtTrue
 							<< "," << betaTrue
@@ -332,8 +340,7 @@ public:
 							<< "," << CurrentTrack    
 							<< "," << distance.Track  
 							<< "," << DR3;
-
-							for (int il=0; il<9; il++) outfile << "," << eTrackL[il];
+							//for (int il=0; il<9; il++) outfile << "," << eTrackL[il];
 							outfile << std::endl;
 
 							break;
