@@ -91,11 +91,19 @@ double ETOF[30] = {
 		3.82136,3.63074,3.45281,3.30736,3.15405,3.01766,2.88775,2.76864,2.6594,2.56601,
 		2.46595,2.37101,2.29062,2.20088,2.10814,2.0407,1.97511,1.95733,1.94137,1.93476,
 };
-double ETrack[30] = {
+/*double ETrack[30] = {
 		0.433866,0.403712,0.378137,0.354177,0.330174,0.309673,0.290184,0.275008,0.261107,0.246993,
 		0.233908,0.221272,0.21022,0.199872,0.190632,0.182479,0.173477,0.167334,0.159739,0.15309,
 		0.147908,0.142102,0.136652,0.131178,0.125278,0.122466,0.119541,0.118683,0.11835,0.118275,
+};*/
+
+double ETrack[30]={
+		0.455469,	0.423853,	0.395121,	0.369948,	0.347769,	0.327987,	0.3103,  	0.294531,	0.280963,	0.269078,
+		0.257223,	0.245605,	0.23467, 	0.2258, 	0.216827,	0.209071,	0.202184,	0.195579,	0.189428,	0.183676,
+		0.179251,	0.173987,	0.168831,	0.163942,	0.160387,	0.156104,	0.154149,	0.153156,	0.152782,	0.152665
 };
+
+
 double ETRD[30] = {
 		7.62645,7.38946,7.24668,6.92716,6.5943,6.16163,5.8724,5.65727,5.42682,5.15488,
 		4.91008,4.66791,4.43929,4.24111,4.02018,3.82748,3.67884,3.48597,3.33569,3.20963,
@@ -240,11 +248,14 @@ public:
 				if (EdepTRD(ev) != -1 && NTRDclusters(ev) != -1)
 				etrdMeasured = EdepTRD(ev) / NTRDclusters(ev);
 			
-				TrTrackR* pTrTrack=ev->pTrTrack(0);
-				for(int i=0; i<pTrTrack->NTrRecHit();i++){
-					TrClusterR* pclus = pTrTrack->pTrRecHit(i)->GetYCluster();
+				
+				for (int i=0; i<ev->NTrCluster(); i++) {
+					TrClusterR* pclus = ev->pTrCluster(i);
+					int ilay = pclus->GetLayerJ();
+					if (ilay<2 || ilay > 8 || pclus->GetSide()!=1 ) continue;
 					etrkMeasured+=pclus->GetEdep();
 				}
+				etrkMeasured/=7; // because average per layer, layers 2-3-4-5-6-7-8
 
 				nTofc=ev -> NTofCluster();
 				for(int ic=0; ic< nTofc ; ic++)	 etofMeasured += ev->pTofCluster(ic)->Edep;
@@ -280,15 +291,18 @@ public:
 						betaPrev=betaTrue;
 
 						// Thist uses splines for the "theoretical values"
-						double etofTrue = fETOFBeta	-> Eval(betaTrue);	
-						double etrdTrue = fETRDBeta	 -> Eval(betaTrue);	
-						double etrkTrue = fETrackBeta -> Eval(betaTrue);	
+						double etofTrue = fETOFBeta	-> Eval(betaTrue);	 // tof is fine
+						double etrdTrue = 1.5*fETRDBeta	 -> Eval(betaTrue);	 // dummy factor to have same mean with theoretical
+						double etrkTrue = fETrackBeta -> Eval(betaTrue);	 // again, dummy factor
 
 						double rgdtDist = weightedDiff(rgdtTrue, rgdtMeasured, sigma_rgdt->Eval(rgdtTrue));
 						double betaDist = weightedDiff(betaTrue, betaMeasured, sigma_beta->Eval(betaTrue));
 						double etofDist = weightedDiff(etofTrue, etofMeasured, sigma_etof->Eval(betaTrue));
-						double etrdDist = weightedDiff(etrdTrue, etrdMeasured, sigma_etrd->Eval(betaTrue));
+						// tof fine for mean, untouched for sigmas ; two others take half-width sigma
+						//double etrdDist = weightedDiff(etrdTrue, etrdMeasured, sigma_etrd->Eval(betaTrue));
 						double etrkDist = weightedDiff(etrkTrue, etrkMeasured, sigma_etrk->Eval(betaTrue));
+						double etrdDist = weightedDiff(etrdTrue, etrdMeasured, 1);
+						//double etrkDist = weightedDiff(etrkTrue, etrkMeasured, 1.5);
 
 						double CurrentTOF	 = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etofDist,2), 0.5);
 						double CurrentTRD	 = pow(pow(rgdtDist,2) + pow(betaDist,2) + pow(etrdDist,2), 0.5);
