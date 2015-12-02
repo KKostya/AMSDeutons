@@ -13,7 +13,7 @@ OBJECTS=$(EXEC:%=./%.o)
 ### Options
 AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
 AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG_dynamic
-LIBS	      := -L../utils/lib -lRootUtils -lGeneralUtils
+LIBS	      := -L../utils/lib -lRootUtils -lGeneralUtils $(shell cernlib mathlib)
 INCLUDES      := -I. -Iselections/ -I$(AMSROOTLIBS) -Iinclude/ -I../utils/include
 DEBUG	      := -g
 
