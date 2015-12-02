@@ -130,6 +130,32 @@ double CorrTRD[30] = {
 
 
 
+////////////// SIGMA INVERSE //////////////////
+//double sigmaEL1Uinv[30]={0.970957,1.04192,1.10556,1.14401,1.24219,1.26227,1.30781,1.35168,1.45222,1.47188,1.57204,1.73897,1.66397,1.81122,1.87095,2.03394,2.19796,2.21012,2.31127,2.5424,2.57978,2.74788,2.86475,3.11243,3.11764,3.2911,3.31339,3.33095,3.36837,3.43848,};
+double sigmaEtofUinv[30]={
+		0.0101297,0.0110989,0.0120282,0.0131133,0.0144645,0.0158628,0.0169694,0.0186552,0.02047,0.0220818,
+		0.0236242,0.0256012,0.0279676,0.0301341,0.0326991,0.0355509,0.038673,0.0417572,0.0447985,0.0482951,
+		0.05181,0.0555078,0.0596518,0.0640575,0.0704583,0.075315,0.0723733,0.0690903,0.0686398,0.0685094
+	};
+
+double sigmaEtofDinv[30]={
+		0.00853534,0.00903033,0.0101331,0.0115938,0.012811,0.0138879,0.0158775,0.0173705,0.0191504,0.0216741,
+		0.0237663,0.0258621,0.0285843,0.031213,0.0335755,0.0369004,0.0395596,0.0435354,0.0464305,0.0504471,
+		0.0527212,0.0580913,0.0618128,0.0653969,0.0748281,0.0804738,0.081752,0.0764883,0.0761559,0.0762702
+	};
+
+//double sigmaEtrackinv[30]={0.41056,0.436897,0.462218,0.488687,0.51566,0.543865,0.573436,0.595749,0.629892,0.667451,0.697552,0.730861,0.764488,0.795942,0.826946,0.859546,0.896498,0.935313,0.9639,1.01319,1.04522,1.07816,1.13431,1.16763,1.19834,1.2238,1.24327,1.2485,1.26364,1.25528,};
+//double sigmabetainv[30]={0,0,0,0,0,0.0929367,0.0565443,0.0437849,0.0379531,0.0341387,0.031662,0.029738,0.0288943,0.0279256,0.0275206,0.0276242,0.0277547,0.0282102,0.0286772,0.0292948,0.0299222,0.0308157,0.0313665,0.0322035,0.0331144,0.0338065,0.0344434,0.0353787,0.0359952,0.0362678,};
+//double sigmaRinv[24]={0.348232,0.199008,0.127109,0.0903188,0.065722,0.0492337,0.0375834,0.029166,0.0230523,0.0181399,0.0145463,0.0119335,0.00979743,0.00829124,0.00724542,0.00635019,0.00567553,0.00530079,0.00503532,0.00483557,0.00472022,0.00448518,0.00443712,0,};
+///////////////////////////////////////////////////////
+
+////////////// CURVE TEORICHE //////////////////
+//double EL1[30]={0.245547,0.237816,0.227947,0.219182,0.21111,0.202293,0.193406,0.186228,0.178492,0.170928,0.162972,0.156751,0.149985,0.14368,0.136937,0.130776,0.126023,0.120878,0.115004,0.11083,0.106096,0.101696,0.0966076,0.0935387,0.0900668,0.0871954,0.0861131,0.0857362,0.0856461,0.0857493,};
+double ETOFU[30]={6.79949,6.45587,6.11214,5.79775,5.49986,5.20407,4.94075,4.6989,4.46422,4.24133,4.04447,3.84596,3.67633,3.51737,3.37001,3.21704,3.08622,2.98246,2.86636,2.75453,2.64742,2.54568,2.46139,2.35995,2.25499,2.15223,2.10089,2.07612,2.03444,2.02878,};
+//double ETrack[30]={0.455469,0.423853,0.395121,0.369948,0.347769,0.327987,0.3103,0.294531,0.280963,0.269078,0.257223,0.245605,0.23467,0.2258,0.216827,0.209071,0.202184,0.195579,0.189428,0.183676,0.179251,0.173987,0.168831,0.163942,0.160387,0.156104,0.154149,0.153156,0.152782,0.152665,};
+double ETOFD[30]={9.42785,8.40718,7.59028,6.93065,6.38188,5.91976,5.50794,5.14134,4.81215,4.52703,4.27131,4.05617,3.84279,3.66294,3.4782,3.32355,3.1771,3.04323,2.91502,2.79547,2.68128,2.59665,2.49237,2.38775,2.28355,2.21541,2.13379,2.10078,2.07869,2.02932,};
+
+
 
 
 
@@ -171,14 +197,19 @@ class DistanceMinimizer
 		TSpline3 * sigma_etof;
 		TSpline3 * sigma_etrk;
 		TSpline3 * sigma_etrd;
+		TSpline3 * sigma_etofu;
+		TSpline3 * sigma_etofd;
 
 		TSpline3 * EdepTOFbeta;
 		TSpline3 * EdepTrackbeta;
 		TSpline3 * EdepTRDbeta;
+		TSpline3 * EdepTOFUbeta;
+		TSpline3 * EdepTOFDbeta;
+		
 
-		TSpline3 * Corr_TOF;
+		/*TSpline3 * Corr_TOF;
 		TSpline3 * Corr_Track;
-		TSpline3 * Corr_TRD;
+		TSpline3 * Corr_TRD;*/ //not used?
 
 		TSpline3 * Rgenmis;
 		TSpline3 * CorrRICH;
@@ -198,8 +229,7 @@ class DistanceMinimizer
 
 public:
 
-		float eTrackL[9];
-		unsigned int nTofc;
+		float etofUMeas, etofDMeas, etofHMeas;
 
 		DistanceMinimizer() : rgdtMeasured(0), 
 													betaMeasured(0),
@@ -213,14 +243,19 @@ public:
 				sigma_etof	= new TSpline3("Cubic Spline", Beta_cent,	sigmaEtofinv,	 30);
 				sigma_etrk	= new TSpline3("Cubic Spline", Beta_cent,	sigmaEtrackinv, 30);
 				sigma_etrd	= new TSpline3("Cubic Spline", Beta_cent,	sigmaETRDinv,	 30);
+				sigma_etofu	= new TSpline3("Cubic Spline", Beta_cent,	sigmaEtofUinv,	 30);
+				sigma_etofd	= new TSpline3("Cubic Spline", Beta_cent,	sigmaEtofDinv,	 30);
+				
 
 				EdepTOFbeta	 = new TSpline3("Cubic Spline",Beta_cent,ETOF,30);
-				EdepTrackbeta = new TSpline3("Cubic Spline",Beta_cent,ETrack,30);
+				EdepTrackbeta= new TSpline3("Cubic Spline",Beta_cent,ETrack,30);
 				EdepTRDbeta	 = new TSpline3("Cubic Spline",Beta_cent,ETRD,30);
+				EdepTOFUbeta = new TSpline3("Cubic Spline",Beta_cent,ETOFU,30);
+				EdepTOFDbeta = new TSpline3("Cubic Spline",Beta_cent,ETOFD,30);
 
-				Corr_TOF			= new TSpline3("Cubic Spline",Beta_cent,CorrTOF,30);
+				/*Corr_TOF			= new TSpline3("Cubic Spline",Beta_cent,CorrTOF,30);
 				Corr_Track		= new TSpline3("Cubic Spline",Beta_cent,CorrTrack,30);
-				Corr_TRD			= new TSpline3("Cubic Spline",Beta_cent,CorrTRD,30);
+				Corr_TRD			= new TSpline3("Cubic Spline",Beta_cent,CorrTRD,30);*/
 
 				Rgenmis			 = new TSpline3("",R_mis,R_gen,34);
 				CorrRICH			= new TSpline3("",R_rich,Corr_rich,25);
@@ -229,9 +264,15 @@ public:
 		void reset(Dst* dst){
 				rgdtMeasured = 0;
 				betaMeasured = 0;
+
 				etofMeasured = 0;
 				etrdMeasured = 0;
 				etrkMeasured = 0;
+
+				etofUMeas=0;
+				etofDMeas=0;
+				etofHMeas=0;
+				
 				fETrackBeta->SetParameters(1.50051636, -4.04471459,	4.2095067 , -1.5178394);
 				fETRDBeta	->SetParameters(17.69329971,	-30.2543069 ,	15.1275584 );
 				fETOFBeta	->SetParameters(56.15254105, -276.13822103, 600.37793391, -668.0716316, 368.33924203, -78.73769398);
@@ -257,8 +298,21 @@ public:
 				}
 				etrkMeasured/=7; // because average per layer, layers 2-3-4-5-6-7-8
 
-				nTofc=ev -> NTofCluster();
-				for(int ic=0; ic< nTofc ; ic++)	 etofMeasured += ev->pTofCluster(ic)->Edep;
+
+				for(int ic=0; ic<ev->NTofClusterH(); ic++) {
+					TofClusterHR* pclus	= ev->pTofClusterH(ic);
+					float edep          = pclus->GetEdep();
+					if (pclus->Layer<=1)	etofUMeas+=edep;
+					else                  etofDMeas+=edep;
+					etofHMeas+=edep;
+				}
+				etofUMeas/=2;
+				etofDMeas/=2;
+				etofHMeas/=4;
+				
+
+
+				for(int ic=0; ic< ev -> NTofCluster() ; ic++)	 etofMeasured += ev->pTofCluster(ic)->Edep;
 				etofMeasured/=4;
 				
 		}
@@ -294,10 +348,15 @@ public:
 						double etofTrue = fETOFBeta	-> Eval(betaTrue);	 // tof is fine
 						double etrdTrue = 1.5*fETRDBeta	 -> Eval(betaTrue);	 // dummy factor to have same mean with theoretical
 						double etrkTrue = fETrackBeta -> Eval(betaTrue);	 // again, dummy factor
+						double etofUMeas = EdepTOFUbeta -> Eval(betaTrue);
+						double etofDMeas = EdepTOFUbeta -> Eval(betaTrue);
 
 						double rgdtDist = weightedDiff(rgdtTrue, rgdtMeasured, sigma_rgdt->Eval(rgdtTrue));
 						double betaDist = weightedDiff(betaTrue, betaMeasured, sigma_beta->Eval(betaTrue));
 						double etofDist = weightedDiff(etofTrue, etofMeasured, sigma_etof->Eval(betaTrue));
+						double etofuDist = weightedDiff(etofTrue,etofUMeas,   sigma_etofu->Eval(betaTrue));
+						double etofdDist = weightedDiff(etofTrue,etofDMeas,   sigma_etofd->Eval(betaTrue));
+						
 						// tof fine for mean, untouched for sigmas ; two others take half-width sigma
 						//double etrdDist = weightedDiff(etrdTrue, etrdMeasured, sigma_etrd->Eval(betaTrue));
 						double etrkDist = weightedDiff(etrkTrue, etrkMeasured, sigma_etrk->Eval(betaTrue));
@@ -328,6 +387,8 @@ public:
 							<< "," << etofDist 
 							<< "," << etrdDist 
 							<< "," << etrkDist
+							<< "," << etofuDist
+							<< "," << etofdDist
 							<< "," <<	rgdtMeasured
 							<< "," << betaMeasured
 							<< "," << etofMeasured
@@ -346,7 +407,10 @@ public:
 							<< "," << DR2						 
 							<< "," << CurrentTrack		
 							<< "," << distance.Track	
-							<< "," << DR3;
+							<< "," << DR3
+							<< "," << etofUMeas
+							<< "," << etofDMeas
+							<< "," << etofHMeas;
 							//for (int il=0; il<9; il++) outfile << "," << eTrackL[il];
 							outfile << std::endl;
 

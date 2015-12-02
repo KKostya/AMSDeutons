@@ -264,7 +264,7 @@ int main(int argc, char **argv){
 
 
 		outfile.open ("noR25cut.txt");
-    outfile << "evt,deutons,rgdtTrue,betaTrue,etofTrue,etrdTrue,etrkTrue,rgdtDist,betaDist,etofDist,etrdDist,etrkDist,rgdtMeasured,betaMeasured,etofMeasured,etrdMeasured,etrkMeasured,sigrgdt,sigbeta,sigetof,sigetrd,sigetrk,CurrentTOF,distance.TOF,RTof,CurrentTRD,distance.TRD,RTRD,CurrentTrack,distance.Track,RTrack,nTRDC,nTrdTrack" << std::endl;
+    outfile << "evt,deutons,rgdtTrue,betaTrue,etofTrue,etrdTrue,etrkTrue,rgdtDist,betaDist,etofDist,etrdDist,etrkDist,etofuDist,etofdDist,rgdtMeasured,betaMeasured,etofMeasured,etrdMeasured,etrkMeasured,sigrgdt,sigbeta,sigetof,sigetrd,sigetrk,CurrentTOF,distance.TOF,RTof,CurrentTRD,distance.TRD,RTRD,CurrentTrack,distance.Track,RTrack,etofUMeas,etofDMeas,etofHMeas" << std::endl;
     t.go();
     outfile.close();
     return 0;
