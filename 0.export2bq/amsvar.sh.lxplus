@@ -76,6 +76,6 @@ export STAGE_SVCCLASS=amsuser
 export CASTOR_INSTANCE=castorpublic
 
 # Enabling C++11
-source /opt/rh/devtoolset-3/enable
+source /afs/cern.ch/sw/lcg/external/gcc/4.9.3/x86_64-slc6/setup.sh
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$AMSWD/lib/linuxx8664gcc5.34:$PWD/../utils/lib/
