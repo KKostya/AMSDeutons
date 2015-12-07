@@ -23,3 +23,10 @@ log
 *.root
 0.export2bq/protonB*
 0.export2bq/lsfjob/*/
+utils/lib/*
+0.export2bq/*/
+misc/doc/Notebooks/TOF/*
+misc/doc/Notebooks/rich/*
+*.gitignore
+*.root_hist
+0.export2bq/gitversion.hpp

@@ -11,15 +11,17 @@ export jobName=$1
 # queue=8nm
 
 chunkSize=40000000000 # 40GB of data per job
-MAXJOB=1000
+MAXJOB=100
 queue=2nd
 
+export toGoogleCloudStorage=1
 export eosRoot=${HOME}/eos
 export executable=../bin/dst
 export initial="$(echo ${USER} | head -c 1)"
 export queue
-#files=("${eosRoot}/ams/Data/AMS02/2014/ISS.B950/pass6"/*.root)
-files=("${eosRoot}/ams/MC/AMS02/2014/protons.B1033/pr.pl1.10200.qgsp_bic_ams"/*.root)
+files=("${eosRoot}/ams/Data/AMS02/2014/ISS.B950/pass6"/*.root)
+#files=("${eosRoot}/ams/MC/AMS02/2014/protons.B1033/pr.pl1.10200.qgsp_bic_ams"/*.root)
+export libs=(../../utils/lib/libRootUtils.so  ../../utils/lib/libGeneralUtils.so ../../utils/lib/libDstAmsBinary.so)
 
 if [ "$#" -gt 1 ]; then
     echo "New file dir provided : $2" 
@@ -33,12 +35,18 @@ if [ "$gitStatus" != "" ]; then
     exit
 fi
 
-export libs=(../../utils/lib/libRootUtils.so  ../../utils/lib/libGeneralUtils.so ../../utils/lib/libDstAmsBinary.so)
+
 
 
 if [[ ! -f "$executable" ]]; then
     echo Executable: ${executable} not found !
     echo Exit !
+    exit
+fi
+
+if [[ ! -f "/afs/cern.ch/user/k/kostams/public/VirtualEnv/env.sh" ]]; then
+    echo "/afs/cern.ch/user/k/kostams/public/VirtualEnv/env.sh not found !"
+    echo "Exit !"
     exit
 fi
 
@@ -90,10 +98,26 @@ fi
 cp jobMakeBinaryData.sh ${jobName}
 
 cat << END > $jobName/env.sh
+export toGoogleCloudStorage=$toGoogleCloudStorage
 export eosRoot=$eosRoot
 export executable=$executable
 $(declare -p libs)
 END
+
+function splitByNumber(){
+    if [ "$#" -lt 2 ]; then
+        echo usage: ./splitBySize.sh chunkSize listOfFiles
+        exit
+    fi
+
+    chunkSize=$1
+    listOfFiles=("$@")
+    listOfFiles=("${listOfFiles[@]:1}")
+
+    for ((i=0; i < ${#listOfFiles[@]}; i+=chunkSize)); do
+        echo "${listOfFiles[@]:i:chunkSize}"
+    done
+}
 
 function splitBySize(){
     if [ "$#" -lt 2 ]; then
@@ -133,6 +157,10 @@ function launchJob(){
 }
 export -f launchJob
 
-splitBySize ${chunkSize} ${files[@]} | head -n ${MAXJOB} | xargs -L 1 -I{} bash -i -c "launchJob {}"
 
 
+if (( "${toGoogleCloudStorage}" > 0 )); then
+    splitByNumber 1 ${files[@]} | head -n ${MAXJOB} | xargs -L 1 -I{} bash -i -c "launchJob {}"
+else
+    splitBySize ${chunkSize} ${files[@]} | head -n ${MAXJOB} | xargs -L 1 -I{} bash -i -c "launchJob {}"
+fi

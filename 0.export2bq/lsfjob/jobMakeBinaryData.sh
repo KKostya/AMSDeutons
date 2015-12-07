@@ -27,6 +27,10 @@ source ${homeDir}/env.sh
 jobName=$1
 jobNumber=$2
 
+if (( "${toGoogleCloudStorage:=0}" > 0 )); then
+    outputFormat=" -m zip "
+fi
+
 mkdir eos
 eosRoot=`pwd`/eos
 echo "making local eos mounting point ..."
@@ -42,6 +46,7 @@ done
 LD_LIBRARY_PATH=.:${LD_LIBRARY_PATH}
 
 echo "rootuple vanilla :  ${ROOTUPLES[@]}"
+echo "${ROOTUPLES[@]}" >> ${homeDir}/jobStarted.txt
 
 #change the eos mounting point
 
@@ -54,16 +59,39 @@ for inputFile in ${ROOTUPLES[@]}; do
 done
 
 
-./main -o "${name%.*}".output -f "${filesNewMountingPoint[@]}" ${smearing} ${timingOffset} 
-echo "output copy started at : $(date)"
-cp -R *.output/ ${eosRoot}/ams/user/${initial}/${USER}/binaryAmsData/${jobName}
-echo "output copy done at : $(date)"
+./main -o "${name%.*}".output -f "${filesNewMountingPoint[@]}" ${smearing} ${timingOffset} ${outputFormat}
+
+copyResult=1
+
+if (( "${toGoogleCloudStorage}" > 0 )); then
+    copyResult=0
+
+    pushd .
+    source /afs/cern.ch/user/k/kostams/public/VirtualEnv/env.sh
+    popd
+    for zippedFile in "${name%.*}".output/*.gz; do
+        gsutil cp ${zippedFile} gs://ams-datasets/fat.ISSB950
+        if (( "$?" != 0 )); then
+          echo "gsutil failed. Copying the files to EOS instead"  
+          copyResult=1
+        else
+            echo "${ROOTUPLES[@]}" >> ${homeDir}/successGoogleCloudExport.txt
+        fi
+    done
+fi
+
+if (( "${copyResult}" > 0 )); then
+    echo "output copy started at : $(date)"
+    cp -R *.output/ ${eosRoot}/ams/user/${initial}/${USER}/binaryAmsData/${jobName}
+    echo "output copy done at : $(date)"
+    echo "${ROOTUPLES[@]}" >> ${homeDir}/successEOSCopy.txt
+fi
+
 rm -rf *.output/
 echo "output rm done at : $(date)"
 
+#echo "${${homeDir}
 /afs/cern.ch/project/eos/installation/0.3.15/bin/eos.select -b fuse umount eos 
-
-
 
 # for inputFile in ${ROOTUPLES[@]}; do
 #     #change the eos mounting point
