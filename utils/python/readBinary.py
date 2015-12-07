@@ -8,13 +8,34 @@ from periodic_thread import PeriodicThread
 import pandas as pd
 import numpy  as np
 import glob
+import inspect
+import pickle
 
-def concat(globPath, varToLoad=None, filter=None, maxFiles=100000, masks=None):
+def map_reduce(globPath, mapper, reducer, varToLoad=None, maxFiles=100000, useCachedMapper=False, mask=None):
     files = glob.glob(globPath)[:maxFiles]
-                      
+    if not files: print 'No file found in: '+globPath; return
+    def mapperCached(f):
+        if useCachedMapper is False: return mapper( read(f, varToLoad, mask))
+        cachedName=inspect.getsource(mapper)+f+str(varToLoad)+str(mask)
+        def funcNotInCache(fUseless):
+            file=open('/tmp/customCache/'+str(cachedName.__hash__()),'w')
+            pickle.dump( mapper( read(f, varToLoad, mask)),  file)
+            file.close()
+
+        file=open(fromCache( cachedName, funcNotInCache))
+        ret = pickle.load( file )
+        file.close()
+        return ret
+                   
+    return reducer( map( mapperCached, files ) )
+
+
+def concat(globPath, varToLoad=None, filter=None, maxFiles=100000, mask=None):
+    files = glob.glob(globPath)[:maxFiles]
+    
     def loadAndFilter(f):
         try:
-            df=read(f,varToLoad,masks)
+            df=read(f,varToLoad,mask)
         except MemoryError:
             print 'MemoryError, skipping'
             raise StopIteration
@@ -38,57 +59,57 @@ def concat(globPath, varToLoad=None, filter=None, maxFiles=100000, masks=None):
     return df
 
 
-def read(dirname,varToLoad=None, masks=None):
+def read(dirname,varToLoad=None, mask=None):
     print 'loading : ' + dirname
     df = dict()
     data=dict()
 
     varType=dict()
-    
-    if isinstance(varToLoad, basestring): 
-        tmp=varToLoad
-        varToLoad=[tmp]
+    if isinstance(varToLoad, basestring): varToLoad=[varToLoad]
 
     if varToLoad is not None: 
         varToLoad=tuple(map(lambda x: x+'_', varToLoad))
-        if masks is not None and 'selStatus_' not in varToLoad:
+        if mask is not None and 'selStatus_' not in varToLoad:
             varToLoad = varToLoad + ('selStatus_',)
 
+    for line in open(dirname+'/metadata.txt'):
+        words=line.split()
+        if words[0] in ['chunkSize', 'nVar'] or words[0][-1] is ':' : continue
+        vartype=words[2][0] + words[1]
+        if vartype == 'd8': vartype = 'f8'
+        varType[words[0]] = vartype
+
+    print varType
     try:
-        for line in open(dirname+'/metadata.txt'):
-            words=line.split()
-            if words[0] in ['chunkSize', 'nVar', 'selStatus:'] : continue
-            varType[words[0]] = words[2][0] + words[1]
-
-        for file in os.listdir(dirname):
-            if ( varToLoad is not None and file.startswith(varToLoad)) or ( varToLoad is None and not file.endswith("metadata.txt") ):
+        if varToLoad is None:
+            for file in os.listdir(dirname):
+                if file.endswith("metadata.txt"): continue
                 var=file.split('_chunk')[0]
-                try:
-                    data[var] = np.fromfile(fromCache(dirname+'/'+file), np.dtype(varType[var]))
-                except MemoryError:
-                    print 'Memory error in np.fromfile, skipping next files: '+dirname
-                    raise
-                #print 'data['+var+'] : '+str(len(data[var]))
-                #print fromCache(dirname+'/'+file)
+                data[var] = np.fromfile(fromCache(dirname+'/'+file), np.dtype(varType[var]))
+        else:
+            for var in varToLoad:
+                var=var.strip('_')
+                data[var] = np.fromfile(fromCache(dirname+'/'+var+'_chunk0.bin'), np.dtype(varType[var]))
+                    
+    except MemoryError:
+        print 'Memory error in np.fromfile, skipping next files: '+dirname
+        raise
 
-        print 'end of loading'
-        try:
-            df = pd.DataFrame(data)
-        except MemoryError:
-            print 'Memory error in pd.DataFrame, skipping the file: '+dirname
-            raise
+    print 'end of loading'
+    
+    try:
+        df = pd.DataFrame(data)
+    except MemoryError:
+        print 'Memory error in pd.DataFrame, skipping the file: '+dirname
+        raise
 
-    except IOError as e:
-        print e
-        df = pd.DataFrame()
 
-    if masks is not None:
-        cut=makeSelectionMask(df,dirname, masks)
+    if mask is not None:
+        cut=makeSelectionMask(df,dirname, mask)
         df=df[cut]
 
     return df
 
-useCache=True
 
 def evictCache():
     print 'evicting cache...'
@@ -115,8 +136,8 @@ def cacheThread(func):
 def toCache(pathname):
     shutil.copy(pathname, '/tmp/customCache/'+str(pathname.__hash__()))
     
-def fromCache(pathname):
-    if not useCache:
+def fromCache(pathname, funcNotInCache=None, useCache=True):
+    if useCache is False:
         return pathname
 
     if not os.path.exists('/tmp/customCache'):
@@ -124,7 +145,8 @@ def fromCache(pathname):
 
     if not os.path.exists('/tmp/customCache/'+str(pathname.__hash__())):
         #print 'not in cache'
-        toCache(pathname)
+        if funcNotInCache is None: toCache(pathname)
+        else: funcNotInCache(pathname)
     
     res='/tmp/customCache/'+str(pathname.__hash__())
     if os.path.isdir(pathname): res += '/'
@@ -141,6 +163,7 @@ def getSelStatus(dirname):
         print 'Could not open file: '+metadataFile
         return None
 
+    cuts=None
     for l in f:
         if l[:11] != 'selStatus: ': continue
         cuts=l[11:-1].split(',')
@@ -151,7 +174,7 @@ def makeSelectionMask(df,dirname, cutList):
     cuts=getSelStatus(dirname)
 
     if cuts is None:
-        print 'selStatus not found in '+metadataFile
+        print 'selStatus not found in '+dirname
         return None
 
     bitIndex=dict()

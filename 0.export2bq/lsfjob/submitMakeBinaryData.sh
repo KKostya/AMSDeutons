@@ -12,18 +12,25 @@ export jobName=$1
 
 chunkSize=40000000000 # 40GB of data per job
 MAXJOB=1000
-queue=1nd
+queue=2nd
 
 export eosRoot=${HOME}/eos
 export executable=../bin/dst
 export initial="$(echo ${USER} | head -c 1)"
 export queue
-files=("${eosRoot}/ams/Data/AMS02/2014/ISS.B950/pass6"/*.root)
-# files=("${eosRoot}/ams/MC/AMS02/2014/protons.B1034/pr.pl1.1200.qgsp_bic_ams"/*.root)
+#files=("${eosRoot}/ams/Data/AMS02/2014/ISS.B950/pass6"/*.root)
+files=("${eosRoot}/ams/MC/AMS02/2014/protons.B1033/pr.pl1.10200.qgsp_bic_ams"/*.root)
 
 if [ "$#" -gt 1 ]; then
     echo "New file dir provided : $2" 
     files=("$2"/*.root)
+fi
+
+gitStatus=$(git status --porcelain ../dst.cpp ../dst.hpp ../../utils/include/DstAmsBinary.hpp ../../utils/src/DstAmsBinary.cpp ../../utils/include/Loop.hpp ../../utils/src/Loop.cpp ../selections/* ../3DVariables.hpp)
+if [ "$gitStatus" != "" ]; then
+    echo "These files need to be committed before launching the jobs:"
+    echo "${gitStatus}"
+    exit
 fi
 
 export libs=(../../utils/lib/libRootUtils.so  ../../utils/lib/libGeneralUtils.so ../../utils/lib/libDstAmsBinary.so)

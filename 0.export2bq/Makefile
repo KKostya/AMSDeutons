@@ -34,19 +34,23 @@ ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 
 all :$(BIN)
 
+gitversion.hpp: ../.git/HEAD ../.git/index
+	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
+
 selections/selections.a:
 	make --directory=selections
 
 utils:
 	make --directory=../utils
 
-$(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils 
+$(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@  dst.o $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) selections/selections.a -lDstAmsBinary
 
 
-$(OBJECTS): $(SRC) $(HEADER)
+$(OBJECTS): $(SRC) $(HEADER) gitversion.hpp
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 clean:
 	rm -rf $(OBJECTS) bin/dst
 	rm -f selections/selections.a
+	rm -f gitversion.hpp

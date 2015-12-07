@@ -8,7 +8,7 @@
 
 #include "DstAmsBinary.hpp"
 #include "rootUtils.hpp"
-#include "Stack.hpp"
+#include "gitversion.hpp"
 
 #include "TofRecon.h"
 #include "TrCharge.h"
@@ -103,6 +103,7 @@ public:
     void saveMetaData(std::string filename){
         DstAmsBinary::saveMetaData(filename);
         std::ofstream myfile( filename, std::ios::out|std::ios::app);
+        myfile << "gitversion: " << gitversion << "\n";
         myfile << "selStatus: ";
         for(auto const &it : selections) myfile << it.first << ",";
         myfile.close();
