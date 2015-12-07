@@ -35,7 +35,7 @@ public:
         for( std::map<std::string,TGraph*>::iterator it = gr.begin(); it!=gr.end(); ++it ){
             delete it->second;
         }
-        if(closeOutputFileOnDestroy) outputFile -> Close();
+        if(closeOutputFileOnDestroy && outputFile ) outputFile -> Close();
     }
     
     Loop( std::vector< std::string > _data = std::vector< std::string >() );

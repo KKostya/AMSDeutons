@@ -3,11 +3,28 @@
 
 #include "Loop.hpp"
 
-Loop::Loop( std::string _data) : closeOutputFileOnDestroy(true), isSaveAMSTree(false), useList(false), writeList(true), maxEntries(0), maxRootFiles(0), isOutputFile(true){
+Loop::Loop( std::string _data) :    closeOutputFileOnDestroy(true),
+                                    isSaveAMSTree(false),
+                                    useList(false),
+                                    writeList(true),
+                                    maxEntries(0),
+                                    maxRootFiles(0),
+                                    isOutputFile(true),
+                                    outputFile(NULL)
+{
     data.push_back(_data);
 }
 
-Loop::Loop( std::vector< std::string > _data) : data(_data), closeOutputFileOnDestroy(true), isSaveAMSTree(false), useList(false), writeList(true), maxEntries(0), maxRootFiles(0), isOutputFile(true){
+Loop::Loop( std::vector< std::string > _data) : data(_data),
+                                                closeOutputFileOnDestroy(true),
+                                                isSaveAMSTree(false),
+                                                useList(false),
+                                                writeList(true),
+                                                maxEntries(0),
+                                                maxRootFiles(0),
+                                                isOutputFile(true),
+                                                outputFile(NULL)
+{
 
 }
 
