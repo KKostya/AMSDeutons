@@ -47,18 +47,28 @@ bool DstAmsBinary::process(){
 void DstAmsBinary::end(){
     if( chunkStepNumber > 0 ) saveChunk();
     saveMetaData(outputFileName+"/metadata.txt");
+    if( outFileType == kZippedCsvForBigQuery ){
+        for(int chunk = 0; chunk < chunkNumber; chunk++) system(Form("zip -m %s/bq_chunk%i %s/bq_chunk%i.csv", outputFileName.c_str(), + chunk, outputFileName.c_str(), + chunk));
+    }
 }
 
 void DstAmsBinary::saveChunk(){
-    static int chunkNumber = 0;
-        
     std::cout << "saving chunk" << std::endl;
     std::cout << "var.size() : " << nVar << std::endl;
 
-    for(int iVar = 0; iVar < nVar; iVar++){
-        variables[iVar] -> save(outputFileName, chunkNumber, chunkStepNumber, outFileType);
+    if(outFileType == kCsvForBigQuery || outFileType == kZippedCsvForBigQuery ){
+        std::ofstream myfile( outputFileName +"/bq"+ Form("_chunk%i", chunkNumber) + ".csv" );
+        for(int step = 0; step < chunkStepNumber; step++){
+            std::stringstream line;
+            for(int iVar = 0; iVar < nVar; iVar++) variables[iVar] -> append( line, step);
+            myfile << line.str().substr(0, line.str().size()-1) << std::endl; // Removing trailing coma
+        }
+        myfile.close();
+    }else{
+        for(int iVar = 0; iVar < nVar; iVar++){
+            variables[iVar] -> save(outputFileName, chunkNumber, chunkStepNumber, outFileType);
+        }
     }
-    
 
     chunkStepNumber = 0;
     chunkNumber++;

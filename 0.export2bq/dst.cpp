@@ -256,12 +256,16 @@ int main(int argc, char **argv){
             << "\n\t-n: number of events\n"
             << "\n\t-s: smearing, gaussian width:  TofMCPar::MCtuneDT\n"
             << "\n\t-z: smearing, gaussian offset: TofMCPar::MCtuneST\n"
-            << "\n\t-t: change output format to text file (default is binary)\n"
+            << "\n\t-m: mode for output file"
+            << "\n\t    bin = binary format (default)"
+            << "\n\t    txt = text file with one file per variable"
+            << "\n\t    csv = csv file (all variables in same file)"
+            << "\n\t    zip = zipped csv file (BigQuery compatible)"
             << std::endl;
         exit(-1);
     }
 
-    while((c = getopt(argc, argv, "to:n:s:f:z:")) != -1) {
+    while((c = getopt(argc, argv, "m:o:n:s:f:z:")) != -1) {
         if(c == 'o') outFname = std::string(optarg);
         else if(c == 'n') entries = atoi(optarg);
         else if(c == 's'){
@@ -275,8 +279,18 @@ int main(int argc, char **argv){
             std::vector< std::string > f = generalUtils::split(optarg, " ,");
             std::copy(f.begin(), f.end(), std::back_inserter(files));
         }
-        else if(c == 't'){
-            outFileType = kTextFile;
+        else if(c == 'm'){
+            std::map<std::string, OutFileType> outFileDict = { {"bin", kBinaryFile},
+                                                               {"txt", kTextFile},
+                                                               {"csv", kCsvForBigQuery},
+                                                               {"zip", kZippedCsvForBigQuery}
+            };
+            
+            if( outFileDict.find(optarg) == outFileDict.end() ){
+                std::cout << "This file format does not exist !\nPlease choose between c, b or t" << std::endl;
+                exit(-1);
+            }
+            outFileType = outFileDict[optarg];
         } 
     }
 

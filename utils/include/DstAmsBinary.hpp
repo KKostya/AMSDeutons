@@ -12,7 +12,9 @@
 
 enum OutFileType{
     kBinaryFile,
-    kTextFile
+    kTextFile,
+    kCsvForBigQuery,
+    kZippedCsvForBigQuery
 };
 
 template <typename T> std::string getType();
@@ -26,6 +28,7 @@ struct ContainerBase{
     ContainerBase(std::string _name) : name(_name) {}
     std::string name;
     virtual void allocArray(int i) = 0;
+    virtual void append(std::stringstream & outFile, int step) = 0;
     virtual void save(const std::string & outputFileName, int chunkNumber, int chunkStepNumber, const OutFileType & outFileType) = 0;
     virtual void assign(int i) = 0;
     virtual size_t getSize() = 0;
@@ -59,6 +62,10 @@ template <typename T, int SIZE = 0 > struct Container : public ContainerBase{
         var[i] = f();
     }
     
+    void append(std::stringstream & line, int step) {
+        line << var[step]  << ",";
+    }
+
     void save(const std::string & outputFileName, int chunkNumber, int chunkStepNumber, const OutFileType & outFileType) override {
         std::string extension = ".txt";
         std::ios_base::openmode mode = std::ios::out;
@@ -115,6 +122,10 @@ template <int SIZE> struct Container<std::vector<float>, SIZE> : public Containe
             var[i][stepNum] = res[i];
         }
     }
+
+    void append(std::stringstream & line, int step) {
+        for(int i = 0; i < SIZE; i++) line << var[i][step] << ",";
+    }
     
     void save(const std::string & outputFileName, int chunkNumber, int chunkStepNumber, const OutFileType & outFileType) override {
         std::string extension = ".txt";
@@ -145,15 +156,17 @@ template <int SIZE> struct Container<std::vector<float>, SIZE> : public Containe
 class DstAmsBinary : public Loop{
 public:
     DstAmsBinary( std::vector<std::string> _data, long long _maxRAM ) : Loop(_data),
-                                                                  chunkStepNumber(0),
-                                                                  maxRAM(_maxRAM),
-                                                                  outFileType(kTextFile)
+                                                                        chunkStepNumber(0),
+                                                                        chunkNumber(0),
+                                                                        maxRAM(_maxRAM),
+                                                                        outFileType(kTextFile)
     {}
 
     DstAmsBinary( std::string _data, long long _maxRAM ) : Loop(_data),
-                                                     chunkStepNumber(0),
-                                                     maxRAM(_maxRAM),
-                                                     outFileType(kTextFile)
+                                                           chunkStepNumber(0),
+                                                           chunkNumber(0),
+                                                           maxRAM(_maxRAM),
+                                                           outFileType(kTextFile)
     {}
 
     virtual ~DstAmsBinary(){}
@@ -177,6 +190,7 @@ protected:
     int nChi2Cut;
     unsigned long long chunkStepNumber;
     unsigned long long chunkSize;
+    int chunkNumber;
     int nVar;
     long long maxRAM;
 
