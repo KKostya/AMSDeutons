@@ -260,14 +260,19 @@ int main(int argc, char **argv){
             << "\n\t    bin = binary format (default)"
             << "\n\t    txt = text file with one file per variable"
             << "\n\t    csv = csv file (all variables in same file)"
-            << "\n\t    zip = zipped csv file (BigQuery compatible)"
+            << "\n\t    zip = zipped csv file (BigQuery compatible)\n"
+            << "\n\t-v: git version"
             << std::endl;
         exit(-1);
     }
 
-    while((c = getopt(argc, argv, "m:o:n:s:f:z:")) != -1) {
+    while((c = getopt(argc, argv, "vm:o:n:s:f:z:")) != -1) {
         if(c == 'o') outFname = std::string(optarg);
         else if(c == 'n') entries = atoi(optarg);
+        else if(c == 'v'){
+            std::cout << gitversion << std::endl;
+            return 0;
+        }
         else if(c == 's'){
             smearing = atoi(optarg);
             if( smearing > 0 ) smearing = -smearing;
