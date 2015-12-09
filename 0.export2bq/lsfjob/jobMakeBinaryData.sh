@@ -51,6 +51,7 @@ echo "rootuple vanilla :  ${ROOTUPLES[@]}"
 
 #change the eos mounting point
 
+echo "option in job: ${optional}"
 for inputFile in ${ROOTUPLES[@]}; do
     echo "${inputFile}" >> ${homeDir}/1.jobStarted.txt
     name=$(basename ${inputFile})
@@ -58,7 +59,7 @@ for inputFile in ${ROOTUPLES[@]}; do
     #change the eos mounting point
     fileNewMountingPoint="$(echo $inputFile | awk -F'eos/' '{printf("'${eosRoot}/'%s",$2)}')"
 
-    ./main -o "${name%.*}".output -f "${fileNewMountingPoint}" ${smearing} ${timingOffset} ${outputFormat} -n 1000
+    ./main -o "${name%.*}".output -f "${fileNewMountingPoint}" ${smearing} ${timingOffset} ${outputFormat}
 
     copyResult=1
 
@@ -66,11 +67,14 @@ for inputFile in ${ROOTUPLES[@]}; do
         copyResult=0
         for zippedFile in "${name%.*}".output/*.gz; do
             echo "$(date): gsutil copy started"
-            #gsutil cp ${zippedFile} gs://ams-datasets/fat.ISSB950
-            gsutil cp ${zippedFile} gs://ams-datasets/test
+            google_cloud_bucket=gs://ams-datasets/test
+            if [ "${optional}" == "FullProd" ]; then
+                google_cloud_bucket=gs://ams-datasets/ISS.B950.FULL
+            fi
+            gsutil cp ${zippedFile} ${google_cloud_bucket}
             if (( "$?" != 0 )); then
                 echo "$(date): gsutil failed. Retrying..."  
-                gsutil cp ${zippedFile} gs://ams-datasets/test
+                gsutil cp ${zippedFile} ${google_cloud_bucket}
                 if (( "$?" != 0 )); then
                     echo "$(date): gsutil failed twice. Copying the file to EOS instead"  
                     copyResult=1

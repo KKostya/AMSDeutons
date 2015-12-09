@@ -4,15 +4,20 @@ if [ "$#" -lt 1 ]; then
     exit
 fi
 
-export jobName=$1
+export optional=$3
 
 # chunkSize=40000000000 # 40GB of data per job
 # MAXJOB=1
 # queue=8nm
 
 chunkSize=40000000000 # 40GB of data per job
-MAXJOB=2
 queue=8nm
+MAXJOB=1
+
+if [ "${optional}" == "FullProd" ]; then
+    MAXJOB=4000
+    queue=1nw
+fi
 
 export toGoogleCloudStorage=1
 export eosRoot=${HOME}/eos
@@ -24,8 +29,13 @@ files=("${eosRoot}/ams/Data/AMS02/2014/ISS.B950/pass6"/*.root)
 export libs=(../../utils/lib/libRootUtils.so  ../../utils/lib/libGeneralUtils.so ../../utils/lib/libDstAmsBinary.so)
 
 if [ "$#" -gt 1 ]; then
-    echo "New file dir provided : $2" 
-    files=("$2"/*.root)
+    if [[ ! -f "$2" ]]; then
+        echo "File not found: $2"
+        exit
+    else
+        echo "New list of files provided : $2" 
+        files=($(cat $2))
+    fi
 fi
 
 gitStatus=$(git status --porcelain ../dst.cpp ../dst.hpp ../../utils/include/DstAmsBinary.hpp ../../utils/src/DstAmsBinary.cpp ../../utils/include/Loop.hpp ../../utils/src/Loop.cpp ../selections/* ../3DVariables.hpp)
@@ -53,6 +63,7 @@ if [[ ! -f "/afs/cern.ch/user/k/kostams/public/VirtualEnv/ipython/bin/activate" 
     exit
 fi
 
+export jobName=$1
 if [[ -d "$jobName" ]]; then
     echo folder: $jobName exists !
     echo Please, choose another job name
@@ -108,8 +119,8 @@ $(declare -p libs)
 END
 
 function splitByNumber(){
+    # usage: ./splitBySize.sh chunkSize listOfFiles
     if [ "$#" -lt 2 ]; then
-        echo usage: ./splitBySize.sh chunkSize listOfFiles
         exit
     fi
 
@@ -123,8 +134,8 @@ function splitByNumber(){
 }
 
 function splitBySize(){
+    # usage: ./splitBySize.sh chunkSize listOfFiles
     if [ "$#" -lt 2 ]; then
-        echo usage: ./splitBySize.sh chunkSize listOfFiles
         exit
     fi
 
@@ -159,6 +170,9 @@ function launchJob(){
     #$(pwd)/${jobName}/jobMakeBinaryData.sh ${jobName}
     for filename in ${ROOTUPLES}; do
         echo ${filename}>>${jobName}/0.inputFileList.txt
+        if [ "${optional}" == "FullProd" ]; then
+            echo ${filename}>>/afs/cern.ch/user/b/bcoste/public/lsfJobs/ISS.B950.processed.txt
+        fi
     done
 }
 export -f launchJob
