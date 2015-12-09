@@ -11,8 +11,8 @@ export jobName=$1
 # queue=8nm
 
 chunkSize=40000000000 # 40GB of data per job
-MAXJOB=100
-queue=2nd
+MAXJOB=2
+queue=8nm
 
 export toGoogleCloudStorage=1
 export eosRoot=${HOME}/eos
@@ -35,8 +35,11 @@ if [ "$gitStatus" != "" ]; then
     exit
 fi
 
-
-
+if [ "$(../bin/dst -v | tail -n +8)" != "$(git rev-parse --verify HEAD)" ]; then
+    echo "bin/dst version is not at git HEAD"
+    echo "Commit and recompile before launching the jobs"
+    exit
+fi
 
 if [[ ! -f "$executable" ]]; then
     echo Executable: ${executable} not found !
@@ -44,8 +47,8 @@ if [[ ! -f "$executable" ]]; then
     exit
 fi
 
-if [[ ! -f "/afs/cern.ch/user/k/kostams/public/VirtualEnv/env.sh" ]]; then
-    echo "/afs/cern.ch/user/k/kostams/public/VirtualEnv/env.sh not found !"
+if [[ ! -f "/afs/cern.ch/user/k/kostams/public/VirtualEnv/ipython/bin/activate" ]]; then
+    echo "/afs/cern.ch/user/k/kostams/public/VirtualEnv/ipython/bin/activate not found !"
     echo "Exit !"
     exit
 fi
@@ -152,15 +155,14 @@ function launchJob(){
     export ROOTUPLES="$@"
     bsubCommand="bsub -q ${queue} k5reauth -R -- $(pwd)/${jobName}/jobMakeBinaryData.sh ${jobName}"
     eval $bsubCommand
+    # Comment previous line and uncomment next one to run the job in local
     #$(pwd)/${jobName}/jobMakeBinaryData.sh ${jobName}
-    echo ${ROOTUPLES}>>${jobName}/inputFileList.log
+    for filename in ${ROOTUPLES}; do
+        echo ${filename}>>${jobName}/0.inputFileList.txt
+    done
 }
 export -f launchJob
 
+#splitByNumber ${chunkSize} ${files[@]} | head -n ${MAXJOB} | xargs -L 1 -I{} bash -i -c "launchJob {}"
+splitBySize ${chunkSize} ${files[@]} | head -n ${MAXJOB} | xargs -L 1 -I{} bash -i -c "launchJob {}"
 
-
-if (( "${toGoogleCloudStorage}" > 0 )); then
-    splitByNumber 1 ${files[@]} | head -n ${MAXJOB} | xargs -L 1 -I{} bash -i -c "launchJob {}"
-else
-    splitBySize ${chunkSize} ${files[@]} | head -n ${MAXJOB} | xargs -L 1 -I{} bash -i -c "launchJob {}"
-fi
