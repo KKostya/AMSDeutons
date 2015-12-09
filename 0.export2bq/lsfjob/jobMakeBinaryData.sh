@@ -58,7 +58,7 @@ for inputFile in ${ROOTUPLES[@]}; do
     #change the eos mounting point
     fileNewMountingPoint="$(echo $inputFile | awk -F'eos/' '{printf("'${eosRoot}/'%s",$2)}')"
 
-    ./main -o "${name%.*}".output -f "${fileNewMountingPoint}" ${smearing} ${timingOffset} ${outputFormat}
+    ./main -o "${name%.*}".output -f "${fileNewMountingPoint}" ${smearing} ${timingOffset} ${outputFormat} -n 1000
 
     copyResult=1
 
