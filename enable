@@ -11,7 +11,7 @@ export AMSWD=${Offline}/vdev
 export AMSDataDir=${Offline}/AMSDataDir
 export AMSSTATICLIBS="-L${AMSWD}/lib/linuxx8664icc6.04 -lntuple_slc6_PG_dynamic"
 export ROOTSYS=$Offline/root/Linux/root6-04-08-icc16
-export CXX=g++
+export CXX=icc
 
 source $ROOTSYS/bin/thisroot.sh
 source /afs/cern.ch/sw/lcg/external/gcc/4.9.3/x86_64-slc6/setup.sh  /afs/cern.ch/sw/lcg/external
@@ -21,10 +21,10 @@ export ROOTLIBS="-L/cvmfs/ams.cern.ch/Offline/root/Linux/root6-04-08-icc16/lib -
 
 
 # Some Choutko shit, it works without it so let's disable it
-# source /afs/cern.ch/sw/IntelSoftware/linux/x86_64/xe2016/compilers_and_libraries/linux/bin/compilervars.sh   intel64
-# #source /afs/cern.ch/sw/IntelSoftware/linux/x86_64/xe2016/composerxe/bin/compilervars.sh   intel64
-# export INTELDIR=/afs/cern.ch/sw/IntelSoftware/linux/x86_64/xe2016
-# export INTELVER=compilers_and_libraries_2016.0.109
+source /afs/cern.ch/sw/IntelSoftware/linux/x86_64/xe2016/compilers_and_libraries/linux/bin/compilervars.sh   intel64
+source /afs/cern.ch/sw/IntelSoftware/linux/x86_64/xe2016/composerxe/bin/compilervars.sh   intel64
+export INTELDIR=/afs/cern.ch/sw/IntelSoftware/linux/x86_64/xe2016
+export INTELVER=compilers_and_libraries_2016.0.109
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
