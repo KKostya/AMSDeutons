@@ -1,6 +1,5 @@
-INCLUDE=-I./utils -I$(amsUtils)/include -I.
-AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG
-LIBS=`root-config --cflags --libs | sed 's/-lPhysics//g' | sed 's/-lGraf3d//g' | sed 's/-lPostscript//g' `  -L$(amsUtils)/lib
+INCLUDE=-I./utils -I../../utils/include -I.
+LIBS=`root-config --cflags --libs | sed 's/-lPhysics//g' | sed 's/-lGraf3d//g' | sed 's/-lPostscript//g' ` -lMathMore -L../../utils/lib
 #LIBS=`root-config --cflags --libs`
 OPTIMIZATION=-O3
 CXXFLAGS=-Wall -Weffc++ -pedantic -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter\
@@ -48,7 +47,7 @@ test_model: tests/test_model.cpp pd_model.o generalUtils.o
 
 gui: gui.cpp gui.hpp pd_model.o generalUtils.o
 	rootcint -f guiLinkDef.cpp -c ${INCLUDE} gui.hpp guiLinkDef.hpp
-	g++ ${INCLUDE} `root-config --cflags --glibs` gui.cpp guiLinkDef.cpp -o gui pd_model.o generalUtils.o `root-config --glibs`
+	g++ ${INCLUDE} `root-config --cflags --glibs` -lMathMore gui.cpp guiLinkDef.cpp -o gui pd_model.o generalUtils.o `root-config --glibs`
 
 sigma: sigma.cpp sigma.hpp pd_model.o generalUtils.o gui.hpp
 	g++ ${INCLUDE} sigma.cpp -o sigma pd_model.o generalUtils.o  -lGraphFromHistos -lStack $(LIBS)

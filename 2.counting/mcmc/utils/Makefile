@@ -1,5 +1,4 @@
 INCLUDE=-I./utils -I$(amsUtils)/include -I.
-AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG
 LIBS=`root-config --cflags --libs | sed 's/-lPhysics//g' | sed 's/-lGraf3d//g' | sed 's/-lPostscript//g' `  -L$(amsUtils)/lib
 #LIBS=`root-config --cflags --libs`
 OPTIMIZATION=-g

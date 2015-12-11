@@ -1,6 +1,6 @@
 # Change the two first lines
 
-EXEC = acceptance
+EXEC = main
 ADDCLASS= 
 
 CLASSES = $(ADDCLASS) $(ADDCLASS:include/%.h=src/%.cpp)
@@ -12,16 +12,13 @@ OBJECTS=$(EXEC:%=./%.o)
 
 ### Options
 AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
-AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG_dynamic
 LIBS	      := -L../../utils/lib/ -lRootUtils -lGeneralUtils
 INCLUDES      := -I. -I$(AMSROOTLIBS) -Iinclude/ -I../../utils/include
 DEBUG	      := -O3
 
 #Ca va chier dans le compilo
 ROOTCFG  := root-config 
-CXX      :=$(shell $(ROOTCFG) --cxx) -std=c++11
 CXXFLAGS :=$(DEBUG)  $(shell $(ROOTCFG) --cflags) -D_PGTRACK_ -Wno-write-strings # TH1F...
-ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 
 
 #$?  List of dependencies changed more recently than current target.

@@ -1,5 +1,5 @@
 ROOTINC=`root-config --cflags`
-AMSINC=-I$(AMSSRC)/include
+AMSINC=-I$(AMSWD)/include
 CFLAGS= -g
 
 selections.a: Geo.o Golden.o MinBias.o Preselect.o RICH.o 
