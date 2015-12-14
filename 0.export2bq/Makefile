@@ -19,7 +19,7 @@ DEBUG	      := -O3
 
 #Ca va chier dans le compilo
 ROOTCFG  := root-config
-CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-write-strings -Wno-unknown-pragmas # TH1F...
+CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-write-strings -wd3180 # TH1F...
 
 
 #$?  List of dependencies changed more recently than current target.
