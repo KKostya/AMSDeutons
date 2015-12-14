@@ -56,6 +56,7 @@ Dst::Selections Dst::selections = {
         {"ringExpPhe", ringExpPhe},
         {"ringBetaCons", ringBetaCons},
         {"ringNoNaFBorder", ringNoNaFBorder}
+
     };
 
 void Dst::registerVariables() {
@@ -123,19 +124,21 @@ void Dst::registerVariables() {
         add<float>(Form("GenDir%i",iCoo), [this, iCoo](){return mc ? mc -> Dir[iCoo]  : -999;});
     }    
 
-    add<double>("DistanceTOF_P",       LAMBDA( distanceMinimizer -> protonDists.TOF;      ));
-    add<double>("DistanceTRD_P",       LAMBDA( distanceMinimizer -> protonDists.TRD;      ));
+    add<double>("DistanceTOF_P",       LAMBDA( distanceMinimizer -> protonDists.UTOF;      ));
+    add<double>("DistanceTRD_P",       LAMBDA( distanceMinimizer -> protonDists.LTOF;      ));
     add<double>("DistanceTracker_P",   LAMBDA( distanceMinimizer -> protonDists.Track;    ));
-    add<double>("MLRigidityTOF_P",     LAMBDA( distanceMinimizer -> protonDists.rMinTOF;  ));
-    add<double>("MLRigidityTRD_P",     LAMBDA( distanceMinimizer -> protonDists.rMinTRD;  ));
-    add<double>("MLRigidityTracker_P", LAMBDA( distanceMinimizer -> protonDists.rMinTrack;));
-
-    add<double>("DistanceTOF_D",       LAMBDA( distanceMinimizer -> deutonDists.TOF;      ));
-    add<double>("DistanceTRD_D",       LAMBDA( distanceMinimizer -> deutonDists.TRD;      ));
+    add<double>("DistanceBeta_P",      LAMBDA( distanceMinimizer -> protonDists.Beta;     ));
+    add<double>("DistanceRig_P",       LAMBDA( distanceMinimizer -> protonDists.Rig;      ));
+    add<double>("DistanceTotal_P",     LAMBDA( distanceMinimizer -> protonDists.Total;    ));
+    
+    
+    add<double>("DistanceUTOF_D",      LAMBDA( distanceMinimizer -> deutonDists.UTOF;     ));
+    add<double>("DistanceLTRD_D",      LAMBDA( distanceMinimizer -> deutonDists.LTOF;     ));
     add<double>("DistanceTracker_D",   LAMBDA( distanceMinimizer -> deutonDists.Track;    ));
-    add<double>("MLRigidityTOF_D",     LAMBDA( distanceMinimizer -> deutonDists.rMinTOF;  ));
-    add<double>("MLRigidityTRD_D",     LAMBDA( distanceMinimizer -> deutonDists.rMinTRD;  ));
-    add<double>("MLRigidityTracker_D", LAMBDA( distanceMinimizer -> deutonDists.rMinTrack;));
+    add<double>("DistanceBeta_D",      LAMBDA( distanceMinimizer -> deutonDists.Beta;     ));
+    add<double>("DistanceRig_P",       LAMBDA( distanceMinimizer -> deutonDists.Rig;      ));
+    add<double>("DistanceTotal_D",     LAMBDA( distanceMinimizer -> deutonDists.Total;    ));    
+    
 
     variables.push_back(new Container<unsigned long long>("selStatus", [this](){
         unsigned long long selStatus = 0;
@@ -306,6 +309,7 @@ int main(int argc, char **argv){
     t.setMaxEntries(entries);
     t.setOutFileType(outFileType);
     if(!outFname.empty()) t.setOutputFileName(outFname);
+
     t.go();
 
     return 0;
