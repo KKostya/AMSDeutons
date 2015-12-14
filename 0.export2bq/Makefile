@@ -40,6 +40,9 @@ selections/selections.a:
 utils:
 	make --directory=../utils
 
+bin/to_root: to_root.cpp
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $(ROOTLIBS) $^
+
 $(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@  dst.o $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) selections/selections.a -lDstAmsBinary
 
