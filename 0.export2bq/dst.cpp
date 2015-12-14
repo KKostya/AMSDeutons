@@ -233,6 +233,8 @@ double EdepTRD(AMSEventR * ev)
     return ret;
 }
 
+
+
 int main(int argc, char **argv){
     //Processing input options
     int c;
@@ -307,7 +309,7 @@ int main(int argc, char **argv){
     t.setMaxEntries(entries);
     t.setOutFileType(outFileType);
     if(!outFname.empty()) t.setOutputFileName(outFname);
-    t.go();
+
     return 0;
 }
 
