@@ -1,5 +1,6 @@
 import argparse
 import os.path
+import glob
 import numpy as np 
 import pandas as pd
 
@@ -24,7 +25,7 @@ def dump_binaries_as_csv(dirtoload, step=100000, ext="_chunk0.bin"):
             nVar = int(words[1])
             continue
             
-        if words[0] in ['chunkSize', 'selStatus:']: 
+        if words[0][-1] == ':': 
             continue
             
         varName, tsize, tname  = words[0], int(words[1]), words[2][0]
@@ -71,7 +72,7 @@ if __name__ == "__main__":
     args = parser.parse_args()            
 
     # Learning how many chunks are there
-    nchunks = len(glob.glob(os.path.join(args.indir,"Run*.bin"))
+    nchunks = len(glob.glob(os.path.join(args.indir,"Run*.bin")))
     for i in range(nchunks):
         varNames = dump_binaries_as_csv(args.indir, ext="_chunk{0}.bin".format(i))
     with open("bins.txt","w") as binFile:
