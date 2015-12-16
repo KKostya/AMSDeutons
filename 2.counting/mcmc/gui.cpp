@@ -4,7 +4,7 @@
 MyMainFrame::MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h)
     : nGenBins(19),
       TGMainFrame(p,w,h, kHorizontalFrame),
-      model(nGenBins),
+      model(nGenBins,"tof"),
       rightMargin(0.2),
       snapZScale(true),
       fileFlux("initialConditionsGui.txt"){
@@ -13,7 +13,6 @@ MyMainFrame::MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h)
     initPoint();
 
     TGHorizontalFrame *hFrame=new TGHorizontalFrame(this, 200,40);
-
 
     tabFrame = createTabFrame(hFrame);
     hFrame -> AddFrame(tabFrame);
@@ -33,47 +32,26 @@ MyMainFrame::MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h)
     Resize(GetDefaultSize());
     MapWindow();
 
-    DoDraw();
+    updatePredictedHistoAndDrawAll();
 }
 
 TGTab* MyMainFrame::createTabFrame(TGHorizontalFrame* frParent){
-    TGTab *fTab = new TGTab(frParent, 300, 300);
+    fTab = new TGTab(frParent, 300, 300);
     fTab->Connect("Selected(Int_t)", "TestDialog", this, "DoTab(Int_t)");
 
-    TGCompositeFrame *tf1 = fTab->AddTab("Tab 1");
-    addMain(tf1);
-
-    TGCompositeFrame *tf2 = fTab->AddTab("Tab 2");
-    addDiff(tf2);
-
-    TGCompositeFrame *tf3 = fTab->AddTab("Tab 3");
-    addContrib(tf3);
+    addMain();
+    addDiff();
+    addContrib();
+    addSlicePerRigBin();
 
     return fTab;
-}
-
-TGVerticalFrame * MyMainFrame::predictedMatrixFrame(TGHorizontalFrame* fr){
-    TGVerticalFrame *vframe=new TGVerticalFrame(fr, 40,200);
-    {
-        canvas["predicted"] = new TRootEmbeddedCanvas ("Ecanvas",vframe,500,500);
-        canvas["predicted"] -> GetCanvas() -> SetRightMargin(rightMargin);
- 
-        vframe->AddFrame(canvas["predicted"], new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,
-                                                     10,10,10,1));
-
-
-        fr -> AddFrame(vframe,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
-
-        predictedMatrix = model.GetPredictionFast(point);
-        getHisto(predictedMatrix,h["predicted"]);
-    }
 }
 
 TGVerticalFrame* MyMainFrame::createButtonFrame(TGFrame* frParent){
     TGVerticalFrame *outFrame = new TGVerticalFrame(frParent, 20,40);
 
-    TGTextButton *draw = new TGTextButton(outFrame,"&Draw");
-    draw->Connect("Clicked()","MyMainFrame",this,"DoDraw()");
+    // TGTextButton *draw = new TGTextButton(outFrame,"&Draw");
+    // draw->Connect("Clicked()","MyMainFrame",this,"DoDraw()");
 
     TGTextButton *exit = new TGTextButton(outFrame,"&Exit ",
                                           "gApplication->Terminate()");
@@ -104,17 +82,18 @@ TGVerticalFrame* MyMainFrame::createButtonFrame(TGFrame* frParent){
                                      TGNumberFormat::kNEANonNegative,
                                      TGNumberFormat::kNELLimitMinMax,
                                      0, nGenBins-1);
-    binToCompare->Connect("ValueSet(Long_t)", "MyMainFrame", this, "DoDraw()");
+
+    binToCompare->Connect("ValueSet(Long_t)", "MyMainFrame", this, "drawAll()");
     (binToCompare->GetNumberEntry())->Connect("ReturnPressed()", "MyMainFrame", this,
-                                              "DoDraw()");
+                                              "drawAll()");
 
     valueToCompare = new TGNumberEntry(outFrame, 0, 10, -1, TGNumberFormat::kNESInteger);
-    valueToCompare->Connect("ValueSet(Long_t)", "MyMainFrame", this, "DoDraw()");
+    valueToCompare->Connect("ValueSet(Long_t)", "MyMainFrame", this, "drawAll()");
     (valueToCompare->GetNumberEntry())->Connect("ReturnPressed()", "MyMainFrame", this,
-                                              "DoDraw()");
+                                              "drawAll()");
 
 
-    outFrame->AddFrame(draw);
+    // outFrame->AddFrame(draw);
     outFrame->AddFrame(save);
     outFrame->AddFrame(clear);
     outFrame->AddFrame(clearDeuton);
@@ -130,44 +109,41 @@ TGVerticalFrame* MyMainFrame::createButtonFrame(TGFrame* frParent){
     return outFrame;
 }
 
-TGVerticalFrame * MyMainFrame::observedMatrixFrame(TGHorizontalFrame* fr){
-    TGVerticalFrame *vframe=new TGVerticalFrame(fr, 40,200);
-    {
-        canvas["observed"] = new TRootEmbeddedCanvas ("observedCan",vframe,500,500);
-        vframe->AddFrame(canvas["observed"], new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,
-                                                     10,10,10,1));
 
-        h["observed"] = new TH2F("hObserved","hObserved", model.getRgdtBinsM().size()-1,model.getRgdtBinsM().data(), model.getBetaBinsM().size()-1,model.getBetaBinsM().data());
-        observedMatrix = model.getObservedDataFromFile("../datasets/observed_data.txt");
-        getHisto(observedMatrix, h["observed"]);
-        canvas["observed"] -> GetCanvas() -> SetRightMargin(rightMargin);
- 
-        zAxisMin = h["observed"] -> GetMinimum();
-        zAxisMax = h["observed"] -> GetMaximum();
-                
-        fr -> AddFrame(vframe,new TGLayoutHints(kLHintsCenterX,2,2,2,2));
-    }
+void MyMainFrame::addHistoFrame(std::string name, TGCompositeFrame* fr){
+    TGVerticalFrame *vframe=new TGVerticalFrame(fr, 40,200);
+    canvas[name] = new TRootEmbeddedCanvas (name.c_str(),vframe,500,500);
+    vframe->AddFrame(canvas[name], new TGLayoutHints(kLHintsExpandX | kLHintsExpandY, 10,10,10,1));
+
+    canvas[name] -> GetCanvas() -> SetRightMargin(rightMargin);
+    fr -> AddFrame(vframe,new TGLayoutHints(kLHintsLeft,2,2,2,2));
+
 }
 
-void MyMainFrame::addDiff(TGCompositeFrame* fr){
-    TGVerticalFrame *vframe=new TGVerticalFrame(fr, 40,200);
-    {
-        canvas["diff"] = new TRootEmbeddedCanvas ("observedCan",vframe,500,500);
-        vframe->AddFrame(canvas["diff"], new TGLayoutHints(kLHintsExpandX | kLHintsExpandY,
-                                                           10,10,10,1));
+void MyMainFrame::addDiff(){
+    h["diff"] = new TH2F("hDiff","(predicted-observed)/observed", model.getRgdtBinsM().size()-1,model.getRgdtBinsM().data(), model.getBetaBinsM().size()-1,model.getBetaBinsM().data());
 
-        canvas["diff"] -> GetCanvas() -> SetRightMargin(rightMargin);
- 
 
-        h["diff"] = new TH2F("hDiff","hDiff", model.getRgdtBinsM().size()-1,model.getRgdtBinsM().data(), model.getBetaBinsM().size()-1,model.getBetaBinsM().data());
-        h["diff"] -> Add(h["predicted"],h["observed"],1,-1);
-        h["diff"] -> Divide(h["observed"]);
-                
-        fr -> AddFrame(vframe,new TGLayoutHints(kLHintsLeft,2,2,2,2));
-    }
+    TGHorizontalFrame* fr = AddTabFrame("Tab diff");
+    addHistoFrame("diff", fr);
 }
 
-void MyMainFrame::addContrib(TGCompositeFrame* frParent){
+void MyMainFrame::addSlicePerRigBin(){
+    TGHorizontalFrame* fr = AddTabFrame("Tab slice");
+    addHistoFrame("slicePerRigBin", fr);
+    // addHistoFrame("slicePerRigBinRatio", fr);
+
+    TGVerticalFrame *vframe=new TGVerticalFrame(fr, 20,20);
+    slicedBinNumberButton = new TGNumberEntry(vframe, 20, 10, -1, TGNumberFormat::kNESInteger);
+    slicedBinNumberButton -> Connect("ValueSet(Long_t)", "MyMainFrame", this, "drawTabSlice()");
+    (slicedBinNumberButton -> GetNumberEntry())->Connect("ReturnPressed()", "MyMainFrame", this, "drawTabSlice()");    
+    vframe -> AddFrame(slicedBinNumberButton);
+    fr ->  AddFrame(vframe);
+}
+
+void MyMainFrame::addContrib(){
+    TGHorizontalFrame* frParent = AddTabFrame("Tab contrib");
+
     h["contrib"] = new TH2F("hContrib","hContrib", model.getRgdtBinsM().size()-1,model.getRgdtBinsM().data(), model.getBetaBinsM().size()-1,model.getBetaBinsM().data());
     h["contribCustom"] = new TH2F("hContribCustom","hContribCustom", model.getRgdtBinsM().size()-1,model.getRgdtBinsM().data(), model.getBetaBinsM().size()-1,model.getBetaBinsM().data());
     h["contribDiff"] = new TH2F("hContribDiff","hContribDiff", model.getRgdtBinsM().size()-1,model.getRgdtBinsM().data(), model.getBetaBinsM().size()-1,model.getBetaBinsM().data());
@@ -203,39 +179,6 @@ void MyMainFrame::addContrib(TGCompositeFrame* frParent){
     
 }
 
-void MyMainFrame::updateContribHisto(){
-    MatrixF likelihoodMatrix = predictedMatrix;
-    likelihoodMatrix.map(
-                         [this](float expected , int n, int m){
-                             // if(expected > 100000){
-                             //     std::cout << expected << "\t" << observed.get(n,m) << std::endl;
-                             // }
-                             return model.GetCellLogLikelihood(expected,n,m);
-                         });
-
-    getHisto(likelihoodMatrix,h["contrib"]);
-}
-void MyMainFrame::updateContribCustomHisto(){
-    std::cout << "updateContribHisto" << std::endl;
-    
-    SearchSpace modifiedPoint = point;
-    int bin = binToCompare -> GetNumberEntry()->GetIntNumber();
-    int value = valueToCompare -> GetNumberEntry()->GetIntNumber();
-    modifiedPoint.fluxP[bin] = value;
-    
-    MatrixF modifiedPredictedMatrix = model.GetPredictionFast(modifiedPoint);
-
-    modifiedPredictedMatrix.map(
-                         [this](float expected , int n, int m){
-                             // if(expected > 100000){
-                             //     std::cout << expected << "\t" << observed.get(n,m) << std::endl;
-                             // }
-                             return model.GetCellLogLikelihood(expected,n,m);
-                         });
-
-    getHisto(modifiedPredictedMatrix,h["contribCustom"]);
-}
-
 TGHorizontalFrame* MyMainFrame::createFluxFrame(TGHorizontalFrame* frParent){
     TGHorizontalFrame* outFrame=new TGHorizontalFrame(frParent,200);
     {
@@ -258,10 +201,9 @@ TGHorizontalFrame* MyMainFrame::createFluxFrame(TGHorizontalFrame* frParent){
                 binFrame -> AddFrame(binNumber);
                 
                 bin[it->first][i] = new TGNumberEntry(binFrame, value[it->first][i], 10, -1, TGNumberFormat::kNESInteger);
-                bin[it->first][i]->Connect("ValueSet(Long_t)", "MyMainFrame", this, "DoDraw()");
+                bin[it->first][i]->Connect("ValueSet(Long_t)", "MyMainFrame", this, "updatePredictedHistoAndDrawAll()");
                 (bin[it->first][i]->GetNumberEntry())->Connect("ReturnPressed()", "MyMainFrame", this,
-                                                               "DoDraw()");
-
+                                                               "updatePredictedHistoAndDrawAll()");
                 
                 binFrame -> AddFrame(bin[it->first][i]);
                 
@@ -277,27 +219,36 @@ TGHorizontalFrame* MyMainFrame::createFluxFrame(TGHorizontalFrame* frParent){
     return outFrame;
 }
 
-void MyMainFrame::addMain(TGCompositeFrame* frParent){
+TGHorizontalFrame* MyMainFrame::AddTabFrame(std::string name){
+    TGCompositeFrame *frParent = fTab->AddTab(name.c_str());
     TGHorizontalFrame *fr = new TGHorizontalFrame(frParent, 40,200);
-    observedMatrixFrame(fr);
-    predictedMatrixFrame(fr);
-    
     frParent -> AddFrame(fr);
+    return fr;
+}
+
+void MyMainFrame::addMain(){
+    TGHorizontalFrame* fr = AddTabFrame("Tab Main");
+
+    matrix["predicted"] = model.GetPredictionFast(point);
+    matrix["observed"] = model.getObservedDataFromFile("../datasets/observed_data.txt");
+
+    for( auto &name: {"predicted","observed"}){
+        h[name] = new TH2F(name, name, model.getRgdtBinsM().size()-1,model.getRgdtBinsM().data(), model.getBetaBinsM().size()-1,model.getBetaBinsM().data());
+        getHisto(matrix[name], h[name]);
+        addHistoFrame(name, fr);
+    }
+
+    zAxisMin = h["observed"] -> GetMinimum();
+    zAxisMax = h["observed"] -> GetMaximum();
+
 }
 
 
 void MyMainFrame::initPoint(){
     readFlux(fileFlux,point.fluxP, point.fluxD);
-    
-    predictedMatrix = model.GetPredictionFast(point);
-    h["predicted"] = new TH2F("hPredicted","hPredicted", model.getRgdtBinsM().size()-1,model.getRgdtBinsM().data(), model.getBetaBinsM().size()-1,model.getBetaBinsM().data());
-
     gStyle -> SetOptStat(0);
 
 }
-
-
-
 
 int main(int argc, char **argv) {
     TApplication theApp("App",&argc,argv);
