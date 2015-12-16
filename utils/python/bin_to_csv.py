@@ -1,5 +1,6 @@
 import argparse
 import os.path
+import glob
 import numpy as np 
 import pandas as pd
 import glob
@@ -25,7 +26,7 @@ def dump_binaries_as_csv(dirtoload, step=100000, ext="_chunk0.bin"):
             nVar = int(words[1])
             continue
             
-        if words[0] in ['chunkSize', 'selStatus:']: 
+        if words[0][-1] == ':': 
             continue
             
         varName, tsize, tname  = words[0], int(words[1]), words[2][0]

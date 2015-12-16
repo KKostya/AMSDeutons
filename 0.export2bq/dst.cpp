@@ -138,15 +138,15 @@ void Dst::registerVariables() {
     add<double>("MLRigidityTracker_D", LAMBDA( distanceMinimizer -> deutonDists.rMinTrack;));
 
     variables.push_back(new Container<unsigned long long>("selStatus", [this](){
-                unsigned long long selStatus = 0;
-                int nsel=0;
-                if(!ev) return selStatus;
-                for(auto const &it : selections){
-                    if(it.second(ev)) selStatus += 1LLU << nsel;
-                    nsel++;
-                }
-                return selStatus;
-            }));
+        unsigned long long selStatus = 0;
+        int nsel=0;
+        if(!ev) return selStatus;
+        for(auto const &it : selections){
+            if(it.second(ev)) selStatus += 1LLU << nsel;
+            nsel++;
+        }
+        return selStatus;
+    }));
 }
 
 
@@ -230,6 +230,8 @@ double EdepTRD(AMSEventR * ev)
     return ret;
 }
 
+
+
 int main(int argc, char **argv){
     //Processing input options
     int c;
@@ -305,6 +307,7 @@ int main(int argc, char **argv){
     t.setOutFileType(outFileType);
     if(!outFname.empty()) t.setOutputFileName(outFname);
     t.go();
+
     return 0;
 }
 
