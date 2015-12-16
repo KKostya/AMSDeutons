@@ -24,6 +24,26 @@ Stack::Stack(TH1 *h){
     push_back(h);
 }
 
+void Stack::clear(){
+    vec.clear();
+    // vecGraph.clear();
+    // vecLine.clear();  
+    // vecTF1.clear();
+    // drawingOption.clear();
+    mapLegEntry.clear();
+    if(leg) leg -> Clear();
+
+    limitsX.first = 0;
+    limitsX.second = 0;
+    limitsY.first = 0;
+    limitsY.second = 0;
+
+    if(frame){
+        //delete frame;
+        frame = NULL;
+    }
+}
+
 std::string Stack::indexName( std::string _name ){
     canvasNameNumberOfInstance[ _name ]++;
     
@@ -523,9 +543,11 @@ void Stack::drawGraph( TGraph* gr, int objectNumber ){
 
 Stack* Stack::draw(TVirtualPad* customCanvas){
     if( customCanvas == NULL ) return draw();
-    if( can != NULL ) delete can;
+    if( can != NULL && can != customCanvas ){
+        delete can;
+    }
+    
     can = (TPad*) customCanvas;
-
     can -> SetTitle(title.c_str());
 
     return draw();

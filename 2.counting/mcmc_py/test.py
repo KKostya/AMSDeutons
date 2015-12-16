@@ -1,8 +1,17 @@
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy import interpolate
 
-df=pd.read_csv('fullfile.pd')
+pFlux = pd.read_csv('../../misc/doc/protons_1800-SM.pd')
+protonFluxInterpolated = interpolate.interp1d(pFlux.Rigidity_GV_inf, pFlux.Phi)
 
-gen_bin=df['Gen_bin'].unique()
+def reweightFormula(rig):
+    # return fluxData/fluxMC, with fluxMC ~ 1/rig
+    return protonFluxInterpolated(rig)/(1/rig)
 
-for i in gen_bin:
-    df[df['Gen_bin']==i][['R_bin','B_bin','count']].set_index(['R_bin','B_bin']).unstack().fillna(0)['count'].drop(-1,axis=0).drop(-1,axis=1).to_csv('beta_vs_rgdt_GenBin'+str(i)+'.pd',index_label='R_bin/B_bin')
+x=np.arange(pFlux.Rigidity_GV_inf.min(), 20, 0.02)
+y=reweightFormula(x)
+plt.plot(x,y)
+plt.show()
+

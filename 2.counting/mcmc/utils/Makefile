@@ -28,22 +28,22 @@ CXXFLAGS=-Wall -Weffc++ -pedantic -Wno-sign-compare -Wno-unused-variable -Wno-un
 all: mcmc test_model test_matrix
 
 mcmc:	mcmc.cpp pd_model.o generalUtils.o
-	g++ ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} $(LIBS) $^ -o mcmc -std=c++11
+	$(CXX) ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} $(LIBS) $^ -o mcmc -std=c++11
 
 reader:	reader.cpp
-	g++ ${OPTIMIZATION} -std=c++11  -L${amsUtils}/lib ${INCLUDE} reader.cpp -o reader  ${LIBS} -lRootUtils  -lStack -lGeneralUtils
+	$(CXX) ${OPTIMIZATION} -std=c++11  -L${amsUtils}/lib ${INCLUDE} reader.cpp -o reader  ${LIBS} -lRootUtils  -lStack -lGeneralUtils
 
 generalUtils.o: utils/generalUtils.cpp utils/generalUtils.hpp 
-	g++ ${OPTIMIZATION} ${INCLUDE} -c $< -std=c++11 
+	$(CXX) ${OPTIMIZATION} ${INCLUDE} -c $< -std=c++11 
 
 pd_model.o: pd_model.cpp  pd_model.hpp
-	g++ ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} -c $< -std=c++11 
+	$(CXX) ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} -c $< -std=c++11 
 
 test_matrix: tests/test_matrix.cpp utils/Matrix.hpp  generalUtils.o
-	g++ ${INCLUDE} $(CXXFLAGS) -o $@ $< -std=c++11 
+	$(CXX) ${INCLUDE} $(CXXFLAGS) -o $@ $< -std=c++11 
 
 test_model: tests/test_model.cpp pd_model.o generalUtils.o
-	g++ ${INCLUDE} $(CXXFLAGS) -o $@ $^ -std=c++11 
+	$(CXX) ${INCLUDE} $(CXXFLAGS) -o $@ $^ -std=c++11 
 
 clean:
 	rm -f mcmc reader test_model test_matrix *.o

@@ -5,9 +5,11 @@
 ###################################################
 
 # BIG QUERY
-protonMC="AMS.protonsB800"
-deutonMC="AMS.dB1030_GG_Blic"
-tableData="AMS.Data"
+dataset="AMS"
+
+protonMC="protonB1034_smeared"
+deutonMC="d1030_GG_Blic_smeared"
+tableData="newISS_B950"
 
 # MCMC
 redoMCMC=True
@@ -15,15 +17,15 @@ redoMatrices=True
 
 #  BINNINGS
 betaMeasuredNBins=100
-betaMeasuredMin=0.5
-betaMeasuredMax=1.2
+betaMeasuredMin=0.75
+betaMeasuredMax=1.1
 rgdtMeasuredNBins=50
 rgdtMeasuredMin=1
 rgdtMeasuredMax=10
 betaTheoreticMax=0.5
 
 # PRESELECTION
-cut3TOFLayers=' NTofClustersUsed >= 3 '
+preselectionList=[' NTofClustersUsed >= 3 ']
 selStatusPreselection=["downGoing"]
 
 # TRACK SELECTION
@@ -43,11 +45,13 @@ selStatusTrackSelection=[
 # END OF PARAMETER DEFINITION
 #
 ####################################################
+protonMC, deutonMC, tableData = ['.'.join([dataset,table]) for table in [protonMC, deutonMC, tableData]]
 
 import sys
 import numpy as np
 import pandas as pd
 import bigQueryPlotting as b
+import utils
 import math
 
 sys.path.insert(0,'2.counting/mcmc_py')
@@ -113,9 +117,8 @@ binningRgdtMeasured = np.logspace((math.log(rgdtMeasuredMin)/math.log(10)), (mat
 #     + lowerX + ' as lowerX ' \
 #     + 'FROM ' + tableMC
 
-
-preselectionMC  =b.makeSelectionMask( protonMC,   selStatusPreselection) + " AND " + cut3TOFLayers
-preselectionData=b.makeSelectionMask( tableData, selStatusPreselection) + " AND " + cut3TOFLayers
+preselectionMC  =b.makeSelectionMask( protonMC,   selStatusPreselection)  + " and " + " and ".join(preselectionList)
+preselectionData=b.makeSelectionMask( tableData, selStatusPreselection)   + " and " + " and ".join(preselectionList)
 
 # Track Selection magic
 
@@ -139,10 +142,15 @@ l={'binningBetaTheoretic':binningBetaTheoretic.tolist(),
    'trackSelectionMC':trackSelectionMC,
    'trackSelectionData':trackSelectionData,
    'protonMC':protonMC,
+   'deutonMC':deutonMC,
    'tableData':tableData,
+   'tableJMDCTimeInData':dataset+'.JMDCTimeInData_'+tableData.split('.')[-1],
    'redoMCMC':redoMCMC,
    'redoMatrices':redoMatrices,
+   'preselectionList':preselectionList,
+   'selStatusPreselection':selStatusPreselection,
+   'selStatusTrackSelection':selStatusTrackSelection
 }
 
 #map(lambda obj: json.dump(obj,f), l)
-json.dump(l,f,indent=4)
+json.dump(l,f,indent=4, sort_keys=True)

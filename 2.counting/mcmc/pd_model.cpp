@@ -160,39 +160,39 @@ std::tuple<float,float> getGenBin(std::fstream & fs){
     return res;
 }
 
-PDModel PDModel::FromCSVSBiDim(const std::vector<std::string> & matricesFiles, const std::string & maskFile )
-{
+// PDModel PDModel::FromCSVSBiDim(const std::vector<std::string> & matricesFiles, const std::string & maskFile )
+// {
 
-    std::vector<float> rT, rM, bT, bM;
-    std::vector<MatrixF> betaVsRig;
-    std::tuple<float, float> betaTrueBinTuple;
-    for(int i = 0;i<matricesFiles.size();i++){
-        std::fstream file(matricesFiles[i%19]);        
+//     std::vector<float> rT, rM, bT, bM;
+//     std::vector<MatrixF> betaVsRig;
+//     std::tuple<float, float> betaTrueBinTuple;
+//     for(int i = 0;i<matricesFiles.size();i++){
+//         std::fstream file(matricesFiles[i%19]);        
 
-        if( ! file.good() ){
-            std::cout << "i%19 : " << i%19 << std::endl;
-            std::cout << "The file : " << matricesFiles[i%19] << " does not exist or is corrupted" << std::endl;
-            exit(-1);
-        }
+//         if( ! file.good() ){
+//             std::cout << "i%19 : " << i%19 << std::endl;
+//             std::cout << "The file : " << matricesFiles[i%19] << " does not exist or is corrupted" << std::endl;
+//             exit(-1);
+//         }
 
-        betaVsRig.push_back( CSV::getMatrixAndBins(file, bM, rM) );
-        std::cout << "rM.size() : " << rM.size() << std::endl;
-        betaTrueBinTuple = getGenBin(file);
-        if(i<matricesFiles.size()/2)  bT.push_back( std::get<0>(betaTrueBinTuple) );
-        file.close();
-    }
+//         betaVsRig.push_back( CSV::getMatrixAndBins(file, bM, rM) );
+//         std::cout << "rM.size() : " << rM.size() << std::endl;
+//         betaTrueBinTuple = getGenBin(file);
+//         if(i<matricesFiles.size()/2)  bT.push_back( std::get<0>(betaTrueBinTuple) );
+//         file.close();
+//     }
 
-    bT.push_back( std::get<1>(betaTrueBinTuple) );
+//     bT.push_back( std::get<1>(betaTrueBinTuple) );
 
-    for(int i = 0;i<bT.size();i++) rT.push_back( R_from_beta(bT[i], PDModel::mp) );
+//     for(int i = 0;i<bT.size();i++) rT.push_back( R_from_beta(bT[i], PDModel::mp) );
     
-    MatrixB _mask(bM.size()-1,rM.size()-1,true);
-    if( maskFile != "" ) _mask = CSV::getMask(maskFile,bM.size()-1,rM.size()-1);
+//     MatrixB _mask(bM.size()-1,rM.size()-1,true);
+//     if( maskFile != "" ) _mask = CSV::getMask(maskFile,bM.size()-1,rM.size()-1);
 
-    PDModel model(bT,bM,rT,rM,betaVsRig,_mask);
+//     PDModel model(bT,bM,rT,rM,betaVsRig,_mask);
     
-    return model;
-}
+//     return model;
+// }
 
 PDModel PDModel::FromCSVSBiDim(const std::string & firstFileName, int nFiles, const std::string & maskFile )
 {
@@ -203,9 +203,9 @@ PDModel PDModel::FromCSVSBiDim(const std::string & firstFileName, int nFiles, co
 
     std::cout << "nFiles : " << nFiles << std::endl;
     
-    // For the time being there is no deuton MC beta_vs_rig so we clone the proton one
     for(int i = 0;i< nFiles*2;i++){
         std::string filename = generalUtils::replacePattern(firstFileName, "0", generalUtils::toString(i%nFiles) );
+        if( i >= nFiles ) filename = generalUtils::replacePattern(filename, "_p_", "_d_" );
         std::cout << "filename : " << filename << std::endl;
         std::fstream file( filename );
 
@@ -219,8 +219,6 @@ PDModel PDModel::FromCSVSBiDim(const std::string & firstFileName, int nFiles, co
         //        std::cout << "rM.size() : " << rM.size() << std::endl;
         betaTrueBinTuple = getGenBin(file);
         if(i<nFiles){
-            std::cout << "pushing back" << std::endl;
-            
             bT.push_back( std::get<0>(betaTrueBinTuple) );
         }
         file.close();

@@ -49,6 +49,9 @@ public:
     // A destructor, nobody uses it anyway
     virtual ~Stack();
 
+    // Remove and destroy all objects
+    void clear();
+
     //////////////////////////////////////////////////////////
     //
     // Various way of stacking histos

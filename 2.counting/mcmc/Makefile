@@ -2,7 +2,7 @@ INCLUDE=-I./utils -I../../utils/include -I.
 LIBS=`root-config --cflags --libs | sed 's/-lPhysics//g' | sed 's/-lGraf3d//g' | sed 's/-lPostscript//g' ` -lMathMore -L../../utils/lib
 #LIBS=`root-config --cflags --libs`
 OPTIMIZATION=-O3
-CXXFLAGS=-Wall -Weffc++ -pedantic -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter\
+CXXFLAGS=-Wall -pedantic -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter\
     -pedantic-errors -Wextra -Wcast-align \
     -Wcast-qual  -Wchar-subscripts  -Wcomment \
     -Wdisabled-optimization \
@@ -27,30 +27,36 @@ CXXFLAGS=-Wall -Weffc++ -pedantic -Wno-sign-compare -Wno-unused-variable -Wno-un
 
 all: mcmc
 
-mcmc:	mcmc.cpp pd_model.o generalUtils.o
-	g++ ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} $(LIBS) $^ -o mcmc -std=c++11
+mcmc:	mcmc.cpp libpd_model.so generalUtils.o
+	$(CXX) ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} $(LIBS) $^ -o mcmc -std=c++11
 
 reader:	reader.cpp
-	g++ ${OPTIMIZATION} -std=c++11  -L${amsUtils}/lib ${INCLUDE} reader.cpp -o reader  ${LIBS} -lRootUtils  -lStack -lGeneralUtils
+	$(CXX) ${OPTIMIZATION} -std=c++11  -L${amsUtils}/lib ${INCLUDE} reader.cpp -o reader  ${LIBS} -lRootUtils  -lStack -lGeneralUtils
 
 generalUtils.o: utils/generalUtils.cpp utils/generalUtils.hpp 
-	g++ ${OPTIMIZATION} ${INCLUDE} -c $< -std=c++11 
+	$(CXX) ${OPTIMIZATION} ${INCLUDE} -c $< -std=c++11 
+
+libpd_model.so: pd_model.o
+	$(CXX) -shared $< -o $@ 
 
 pd_model.o: pd_model.cpp  pd_model.hpp
-	g++ ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} -c $< -std=c++11 
+	$(CXX) ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} -c -fPIC $< -std=c++11 
 
 test_matrix: tests/test_matrix.cpp utils/Matrix.hpp  generalUtils.o
-	g++ ${INCLUDE} $(CXXFLAGS) -o $@ $< -std=c++11 
+	$(CXX) ${INCLUDE} $(CXXFLAGS) -o $@ $< -std=c++11 
 
 test_model: tests/test_model.cpp pd_model.o generalUtils.o
-	g++ ${INCLUDE} $(CXXFLAGS) -o $@ $^ -std=c++11
+	$(CXX) ${INCLUDE} $(CXXFLAGS) -o $@ $^ -std=c++11
 
-gui: gui.cpp gui.hpp pd_model.o generalUtils.o
+gui: gui.cpp gui.hpp libpd_model.so
 	rootcint -f guiLinkDef.cpp -c ${INCLUDE} gui.hpp guiLinkDef.hpp
-	g++ ${INCLUDE} `root-config --cflags --glibs` -lMathMore gui.cpp guiLinkDef.cpp -o gui pd_model.o generalUtils.o `root-config --glibs`
+	$(CXX) ${INCLUDE} `root-config --cflags --glibs` -lMathMore gui.cpp guiLinkDef.cpp -o gui `root-config --glibs` -L../../utils/lib -lGeneralUtils -L. -lpd_model -lStack
 
 sigma: sigma.cpp sigma.hpp pd_model.o generalUtils.o gui.hpp
-	g++ ${INCLUDE} sigma.cpp -o sigma pd_model.o generalUtils.o  -lGraphFromHistos -lStack $(LIBS)
+	$(CXX) ${INCLUDE} sigma.cpp -o sigma pd_model.o generalUtils.o  -lGraphFromHistos -lStack $(LIBS)
+
+mask:
+	$(CXX) -o makeMask makeMask.cpp -L../../utils/lib -I../../utils/include -lGeneralUtils -std=c++11
 
 clean:
 	rm -f mcmc reader test_model test_matrix *.o guiLinkDef.cpp guiLinkDef_rdict.pcm

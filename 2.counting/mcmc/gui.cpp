@@ -4,12 +4,14 @@
 MyMainFrame::MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h)
     : nGenBins(19),
       TGMainFrame(p,w,h, kHorizontalFrame),
-      model(nGenBins,"tof"),
+      model(nGenBins,"tofh"),
       rightMargin(0.2),
       snapZScale(true),
       fileFlux("initialConditionsGui.txt"){
     // Creates widgets of the example
 
+    for(auto &name: {"proton","deuton", "d/p"}) gr[name] = new TGraphErrors();
+    
     initPoint();
 
     TGHorizontalFrame *hFrame=new TGHorizontalFrame(this, 200,40);
@@ -43,6 +45,7 @@ TGTab* MyMainFrame::createTabFrame(TGHorizontalFrame* frParent){
     addDiff();
     addContrib();
     addSlicePerRigBin();
+    addCounts();
 
     return fTab;
 }
@@ -131,7 +134,7 @@ void MyMainFrame::addDiff(){
 void MyMainFrame::addSlicePerRigBin(){
     TGHorizontalFrame* fr = AddTabFrame("Tab slice");
     addHistoFrame("slicePerRigBin", fr);
-    // addHistoFrame("slicePerRigBinRatio", fr);
+    addHistoFrame("slicePerRigBinRatio", fr);
 
     TGVerticalFrame *vframe=new TGVerticalFrame(fr, 20,20);
     slicedBinNumberButton = new TGNumberEntry(vframe, 20, 10, -1, TGNumberFormat::kNESInteger);
@@ -139,6 +142,12 @@ void MyMainFrame::addSlicePerRigBin(){
     (slicedBinNumberButton -> GetNumberEntry())->Connect("ReturnPressed()", "MyMainFrame", this, "drawTabSlice()");    
     vframe -> AddFrame(slicedBinNumberButton);
     fr ->  AddFrame(vframe);
+}
+
+void MyMainFrame::addCounts(){
+    TGHorizontalFrame* fr = AddTabFrame("Tab slice");
+    addHistoFrame("counts", fr);
+    addHistoFrame("countsRatio", fr);
 }
 
 void MyMainFrame::addContrib(){

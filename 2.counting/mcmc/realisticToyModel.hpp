@@ -54,8 +54,8 @@ struct RealDataModel: public PDModel
 {
     static const bool isToyMC = false;
 
-    RealDataModel(int _nGenBin):
-        PDModel( PDModel::FromCSVSBiDim( "beta_vs_rgdt_GenBin0.pd", _nGenBin, "../datasets/mask.csv" ) )
+    RealDataModel(int _nGenBin, std::string detector = "tofh" ):
+        PDModel( PDModel::FromCSVSBiDim( "../datasets/"+detector+"/beta_vs_rgdt_GenBin0_p_.pd", _nGenBin, "../datasets/mask.csv" ) )
         //PDModel(PDModel::FromCSVS("../datasets/B_resolution.csv", "../datasets/R_resolution.csv", "../datasets/mask.csv"))
     {
         // Get initial conditions

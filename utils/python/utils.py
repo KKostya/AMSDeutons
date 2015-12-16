@@ -27,8 +27,8 @@ try:
             del data[c]
 
         return data 
-except:
-    print 'import failed'
+except ImportError:
+    print 'ROOT or root_numpy import failed'
     pass
 
 def config_plots(rcParams):
@@ -61,13 +61,18 @@ def plot_matrix(frame, xInf=None,yInf=None,xSup=None,ySup=None, **args):
     return ret
 
 
-def binNumber(df,var,nBins,firstBin,lastBin):
-    binWidth=(lastBin-firstBin)/float(nBins)
-    return (df[var]-firstBin).floordiv(binWidth)
+def binIndex(df,var,bins,firstBin=None,lastBin=None):
+    if isinstance(bins,int):
+        if firstBin is None or lastBin is None:
+            print 'firstBin and lastBin must be set !'; return
+        binWidth=(lastBin-firstBin)/float(bins)
+        return (df[var]-firstBin).floordiv(binWidth)
+    else:
+        return pd.cut(df[var], bins, labels=False, include_lowest=True, right=False).fillna(-1)
 
 def binning(df,var,nBins,firstBin,lastBin):
     binWidth=(lastBin-firstBin)/float(nBins)
-    return firstBin + binWidth * binNumber(df,var,nBins,firstBin,lastBin)
+    return firstBin + binWidth * binIndex(df,var,nBins,firstBin,lastBin)
 
 def plotDataFrame2D(df,nBinsX,firstBinX,lastBinX,nBinsY,firstBinY,lastBinY,varX,varY):
     # Plot a 2D histogram of varX vs varY

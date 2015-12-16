@@ -62,5 +62,5 @@ def main(params,directory=None):
 if __name__ == "__main__":
     import json
     os.chdir("..")
-    print main(json.load(open('param.json')))
+    print main(json.load(open('param.json')))[['countP','countD']]
 

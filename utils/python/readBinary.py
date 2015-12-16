@@ -11,7 +11,7 @@ import glob
 import inspect
 import pickle
 
-def map_reduce(globPath, mapper, reducer, varToLoad=None, maxFiles=100000, useCachedMapper=False, mask=None):
+def map_reduce(globPath, mapper, reducer=None, varToLoad=None, maxFiles=100000, useCachedMapper=False, mask=None):
     files = glob.glob(globPath)[:maxFiles]
     if not files: print 'No file found in: '+globPath; return
     def mapperCached(f):
@@ -27,8 +27,9 @@ def map_reduce(globPath, mapper, reducer, varToLoad=None, maxFiles=100000, useCa
         file.close()
         return ret
                    
-    return reducer( map( mapperCached, files ) )
-
+    res=map( mapperCached, files )
+    if reducer is not None:
+        return reducer(res)
 
 def concat(globPath, varToLoad=None, filter=None, maxFiles=100000, mask=None):
     files = glob.glob(globPath)[:maxFiles]
@@ -59,8 +60,8 @@ def concat(globPath, varToLoad=None, filter=None, maxFiles=100000, mask=None):
     return df
 
 
-def read(dirname,varToLoad=None, mask=None):
-    print 'loading : ' + dirname
+def read(dirName,varToLoad=None, mask=None, useCache=True):
+    print 'loading : ' + dirName
     df = dict()
     data=dict()
 
@@ -72,7 +73,7 @@ def read(dirname,varToLoad=None, mask=None):
         if mask is not None and 'selStatus_' not in varToLoad:
             varToLoad = varToLoad + ('selStatus_',)
 
-    for line in open(dirname+'/metadata.txt'):
+    for line in open(dirName+'/metadata.txt'):
         words=line.split()
         if words[0] in ['chunkSize', 'nVar'] or words[0][-1] is ':' : continue
         vartype=words[2][0] + words[1]
@@ -82,17 +83,17 @@ def read(dirname,varToLoad=None, mask=None):
     print varType
     try:
         if varToLoad is None:
-            for file in os.listdir(dirname):
+            for file in os.listdir(dirName):
                 if file.endswith("metadata.txt"): continue
                 var=file.split('_chunk')[0]
-                data[var] = np.fromfile(fromCache(dirname+'/'+file), np.dtype(varType[var]))
+                data[var] = np.fromfile(fromCache(dirName+'/'+file,useCache=useCache), np.dtype(varType[var]))
         else:
             for var in varToLoad:
                 var=var.strip('_')
-                data[var] = np.fromfile(fromCache(dirname+'/'+var+'_chunk0.bin'), np.dtype(varType[var]))
+                data[var] = np.fromfile(fromCache(dirName+'/'+var+'_chunk0.bin',useCache=useCache), np.dtype(varType[var]))
                     
     except MemoryError:
-        print 'Memory error in np.fromfile, skipping next files: '+dirname
+        print 'Memory error in np.fromfile, skipping next files: '+dirName
         raise
 
     print 'end of loading'
@@ -100,14 +101,16 @@ def read(dirname,varToLoad=None, mask=None):
     try:
         df = pd.DataFrame(data)
     except MemoryError:
-        print 'Memory error in pd.DataFrame, skipping the file: '+dirname
+        print 'Memory error in pd.DataFrame, skipping the file: '+dirName
         raise
 
 
     if mask is not None:
-        cut=makeSelectionMask(df,dirname, mask)
+        cut=makeSelectionMask(df,dirName, mask)
         df=df[cut]
 
+    df.index.name=os.path.basename(dirName.strip('/'))
+    print 'name : '+df.index.name
     return df
 
 
@@ -155,8 +158,8 @@ def fromCache(pathname, funcNotInCache=None, useCache=True):
     return res
 
 
-def getSelStatus(dirname):
-    metadataFile=dirname+'/metadata.txt'
+def getSelStatus(dirName):
+    metadataFile=dirName+'/metadata.txt'
     try:
         f=open(metadataFile)
     except IOError:
@@ -170,11 +173,11 @@ def getSelStatus(dirname):
 
     return cuts
     
-def makeSelectionMask(df,dirname, cutList):
-    cuts=getSelStatus(dirname)
+def makeSelectionMask(df,dirName, cutList):
+    cuts=getSelStatus(dirName)
 
     if cuts is None:
-        print 'selStatus not found in '+dirname
+        print 'selStatus not found in '+dirName
         return None
 
     bitIndex=dict()
@@ -200,3 +203,21 @@ def makeSelectionMask(df,dirname, cutList):
 
 
 
+def binarytoBigQuery(dirName,bucketName, **kwargs):
+    if bucketName is None: bucketName=dirName
+
+    def mapper(df):
+        outfilename=df.index.name+'.csv'
+        df.to_csv(outfilename)
+        return (df.index.name, subprocess.call(['gsutil','cp',outfilename,bucketName]))
+
+    def reducer(ret):
+        fSuccess=open('successfullExport.txt','w')
+        fFailure=open('failedExport.txt','w')
+        for x in ret:
+            if x[1] == 0: fSuccess.write(x[0]+',')
+            else: fFailure.write(x[0]+',')
+
+    map_reduce(dirName, mapper, reducer, *kwargs)
+
+    

@@ -2,6 +2,7 @@ import argparse
 import os.path
 import numpy as np 
 import pandas as pd
+import glob
 
 #homePath  = "/afs/cern.ch/user/k/kostams/eos"
 #eosBenoit = "ams/user/b/bcoste"
@@ -71,7 +72,7 @@ if __name__ == "__main__":
     args = parser.parse_args()            
 
     # Learning how many chunks are there
-    nchunks = len(glob.glob(os.path.join(args.indir,"Run*.bin"))
+    nchunks = len(glob.glob(os.path.join(args.indir,"Run*.bin")))
     for i in range(nchunks):
         varNames = dump_binaries_as_csv(args.indir, ext="_chunk{0}.bin".format(i))
     with open("bins.txt","w") as binFile:

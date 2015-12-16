@@ -280,7 +280,7 @@ def makeSelectionMask(table, cutList):
             print 'Cut ' + cut + ' not found !'
             return ''
 
-    return ' ((selStatus^' + str(statusMask) + ')&' + str(selMask) + ')==0 '
+    return ' ((INTEGER(selStatus)^' + str(statusMask) + ')&' + str(selMask) + ')==0 '
 
 
 def getSelectionsFromMask(table, mask):

@@ -3,7 +3,7 @@
 std::map<std::string, TH2F*>  loadPredictedAndObservedMatrix(){
     std::map<std::string, TH2F*> h;
     RealDataModel model(19);
-
+nn
     SearchSpace point;
     MyMainFrame::readFlux("initialConditionsGui.txt", point.fluxP, point.fluxD);
     MatrixF predictedMatrix = model.GetPredictionFast(point);
@@ -51,3 +51,17 @@ int main(int argc, char **argv) {
 } 
 
 
+int main(int argc, char** argv){
+    TH2F* h2 = gFile -> Get("h2");
+    GraphFromHistos g( h2, "[0]+[1]*x+[2]*x*x", 1);
+    g.setFittingRange(0.8, 1.1);
+    //g.drawFit(true);
+    g.improveFittingRange(true);
+    std::vector<TGraphAsymmErrors*> res = g.build();
+    
+    for(int i = 0;i<res.size();i++){
+        new TCanvas();
+        res[i] -> Draw("ap");
+    }
+
+}

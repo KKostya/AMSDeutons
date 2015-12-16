@@ -11,7 +11,7 @@ export AMSWD=${Offline}/vdev
 export AMSDataDir=${Offline}/AMSDataDir
 export AMSSTATICLIBS="-L${AMSWD}/lib/linuxx8664icc6.04 -lntuple_slc6_PG_dynamic"
 export ROOTSYS=$Offline/root/Linux/root6-04-08-icc16
-export CXX=icc
+export CXX=gcc
 
 source $ROOTSYS/bin/thisroot.sh
 source /afs/cern.ch/sw/lcg/external/gcc/4.9.3/x86_64-slc6/setup.sh  /afs/cern.ch/sw/lcg/external

@@ -36,8 +36,9 @@ private:
     TGFrame* buttonFrame;
     float rightMargin;
     std::map<std::string, MatrixF> matrix;
+    std::map<std::string, TGraphErrors*> gr;
     TGNumberEntry *binToCompare, *valueToCompare, *slicedBinNumberButton;
-    Stack *stProj1d, *stProj1dRatio;
+    Stack *stProj1d, *stProj1dRatio, *stCounts, *stRatio;
     
     
     void initPoint();
@@ -115,8 +116,31 @@ public:
         gPad -> SetLeftMargin(0.3);
         canvas["slicePerRigBin"] -> GetCanvas() -> Update();
         
-        // canvas["slicePerRigBinRatio"] -> GetCanvas() -> cd();
-        // h["diff"] -> ProjectionY(Form("%s_proj_bin%i","diff",bin), bin,bin+1) -> Draw();
+        canvas["slicePerRigBinRatio"] -> GetCanvas() -> cd();
+        h["diff"] -> ProjectionY(Form("%s_proj_bin%i","diff",bin), bin,bin+1) -> Draw();
+        canvas["slicePerRigBinRatio"] -> GetCanvas() -> Update();
+    }
+
+    void drawCounts(){
+        stCounts = new Stack("counts");
+        stRatio = new Stack("ratio d/p");
+        for(int i = 0;i<point.fluxP.size();i++){
+            gr["proton"] -> SetPoint(i, model.getRgdtBinsT()[i], point.fluxP[i]);
+            gr["deuton"] -> SetPoint(i, model.getRgdtBinsT()[i], point.fluxD[i]);
+            gr["d/p"] -> SetPoint(i, model.getRgdtBinsT()[i], point.fluxD[i]/point.fluxP[i]);
+        }
+        
+        for(auto &name: {"proton","deuton"}) stCounts -> push_back(gr[name], name);
+        
+        stCounts -> draw(canvas["counts"] -> GetCanvas());
+        gPad -> SetLeftMargin(0.25);
+        canvas["counts"] -> GetCanvas() -> Update();
+        
+        stRatio -> push_back(gr["d/p"],"ratio d/p");
+        stRatio -> draw(canvas["countsRatio"] -> GetCanvas());
+        gPad -> SetLeftMargin(0.2);
+        canvas["countsRatio"] -> GetCanvas() -> Update();
+        
     }
 
     void drawAll() {
@@ -130,9 +154,10 @@ public:
         drawTabDiff();
         //drawTabContrib();
         drawTabSlice();
-
-
+        drawCounts();
     }
+
+    
 
     void DoSnapZScale(){
         snapZScale= !snapZScale;
@@ -155,6 +180,7 @@ public:
     void addDiff();
     void addContrib();
     void addSlicePerRigBin();
+    void addCounts();
     void addHistoFrame(std::string name, TGCompositeFrame* fr);
     TGHorizontalFrame* AddTabFrame(std::string name);
     TGTab* createTabFrame(TGHorizontalFrame* frParent);
