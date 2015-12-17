@@ -11,7 +11,6 @@ OBJECTS=$(EXEC:%=./%.o)
 
 
 ### Options
-AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
 LIBS	      := -L../../utils/lib -lRootUtils -lGeneralUtils -lStack
 INCLUDES      := -I. -I$(AMSROOTLIBS) -Iinclude/ -I../../utils/include
 #DEBUG	      := -g

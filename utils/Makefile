@@ -1,14 +1,13 @@
 # Makefile template for shared library
 
 ### Options
-AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
 INCLUDES      := -Iinclude
 ROOT_INCLUDES := -I$(AMSROOTLIBS)
 DEBUG	      := -O3
 
 #Ca va chier dans le compilo
 ROOTCFG  := root-config
-CXXFLAGS :=-std=c++11 $(INCLUDES) $(ROOT_INCLUDES) $(DEBUG) $(shell $(ROOTCFG) --cflags) -D_PGTRACK_ -Wno-write-strings -fPIC -wd3180 # TH1F... 
+CXXFLAGS :=-std=c++11 $(INCLUDES) $(ROOT_INCLUDES) $(DEBUG) $(shell $(ROOTCFG) --cflags) -D_PGTRACK_ -Wno-write-strings -fPIC #-wd3180 # TH1F... 
 
 #$?  List of dependencies changed more recently than current target.
 #$^  List of dependencies.
