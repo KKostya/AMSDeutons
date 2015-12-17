@@ -17,18 +17,21 @@ redoMatrices=True
 
 #  BINNINGS
 betaMeasuredNBins=100
-betaMeasuredMin=0.75
+betaMeasuredMin=0.5
 betaMeasuredMax=1.1
-rgdtMeasuredNBins=50
+
+rgdtMeasuredNBins=40
 rgdtMeasuredMin=1
-rgdtMeasuredMax=10
-betaTheoreticMax=0.5
+rgdtMeasuredMax=13
+
+maxRgdtTheoretic=13
 
 # PRESELECTION
 preselectionList=[' NTofClustersUsed >= 3 ']
 selStatusPreselection=["downGoing"]
 
 # TRACK SELECTION
+trackSelection=" NTofClustersUsed==4 and NTofClusters==4 "
 selStatusTrackSelection=[
     "physicsTrigger",
     "chargeOne",
@@ -38,6 +41,7 @@ selStatusTrackSelection=[
     "oneParticle",
     "goldenTRD",
     "betaNotCrazy"]
+
 
 
 ####################################################
@@ -77,7 +81,8 @@ bbins = sorted(bbins)
 mid1,mid2 = (bbins[1]+bbins[0])/2,(bbins[2]+bbins[1])/2
 bbins += make_beta_bins(mid1)
 bbins += make_beta_bins(mid2)
-bbins = np.array([bbin for bbin in sorted(bbins) ])
+
+bbins = np.array([bbin for bbin in sorted(bbins) if pd_model.R_from_beta(bbin, pd_model.mp) < maxRgdtTheoretic ])
 
 binningBetaTheoretic, binningRgdtTheoretic = np.array([bbins, pd_model.R_from_beta(bbins, pd_model.mp)])
 
@@ -122,8 +127,8 @@ preselectionData=b.makeSelectionMask( tableData, selStatusPreselection)   + " an
 
 # Track Selection magic
 
-trackSelectionMC  =b.makeSelectionMask(protonMC, selStatusTrackSelection)
-trackSelectionData=b.makeSelectionMask(tableData, selStatusTrackSelection)
+trackSelectionMC  =b.makeSelectionMask(protonMC, selStatusTrackSelection) + " and " + trackSelection
+trackSelectionData=b.makeSelectionMask(tableData, selStatusTrackSelection) + " and " + trackSelection
 
 ########################################################################################
 #

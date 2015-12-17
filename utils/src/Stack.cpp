@@ -459,6 +459,23 @@ void Stack::setDrawingOption( TObject* obj, std::string theDrawingOption ){
     drawingOption[ obj ] = theDrawingOption;
 }
 
+
+float* logarithmicBinning(int nBins, float min, float max){
+    float step = log10(max/min)/float(nBins);
+    float* binning = new float[nBins+1];
+    for(int i = 0;i<=nBins;i++) binning[i] =  min * pow(10, step*i);
+
+    return binning;
+}
+
+float* normalBinning(int nBins, float min, float max){
+    float step = (max-min)/float(nBins);
+    float* binning = new float[nBins+1];
+    for(int i = 0;i<=nBins;i++) binning[i] =  min + i*step;
+    return binning;
+}
+
+
 void Stack::draw1D(){
     if( debug > 0 ) std::cout << "Stack::draw1D()" << std::endl;
     int nHisto = vec.size();
@@ -466,7 +483,16 @@ void Stack::draw1D(){
   
     if( frame == NULL ){
         ComputeLimits();
-        frame = new TH2F( indexName("frame").c_str(), title.c_str(),1000, limitsX.first, limitsX.second,1000, limitsY.first, limitsY.second + topMarginFactor * (limitsY.second - limitsY.first) );
+
+        float *binX = normalBinning(100, limitsX.first, limitsX.second);
+        float *binY;
+        if(limitsY.first >= 0 && (limitsY.second - limitsY.first) > 1e3){
+            if(limitsY.first == 0) limitsY.first = 0.8;
+            binY = logarithmicBinning(100, limitsY.first, limitsY.second + topMarginFactor * (limitsY.second - limitsY.first) );
+        }
+        else binY = normalBinning(100, limitsY.first, limitsY.second + topMarginFactor * (limitsY.second - limitsY.first) );
+
+        frame = new TH2F( indexName("frame").c_str(), title.c_str(),100, binX, 100, binY);
         frame -> GetXaxis() -> SetTitle( titleX.c_str() );
         frame -> GetYaxis() -> SetTitle( titleY.c_str() );
     }

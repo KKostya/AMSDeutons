@@ -37,6 +37,7 @@ private:
     float rightMargin;
     std::map<std::string, MatrixF> matrix;
     std::map<std::string, TGraphErrors*> gr;
+    std::map<std::string, TGNumberEntry*> buttonEntries;
     TGNumberEntry *binToCompare, *valueToCompare, *slicedBinNumberButton;
     Stack *stProj1d, *stProj1dRatio, *stCounts, *stRatio;
     
@@ -46,6 +47,22 @@ private:
     float zAxisMin, zAxisMax;
 
     bool snapZScale;
+
+
+
+    void setFrameDiff(){
+        if(buttonEntries["xMin"] -> GetNumber() == -1) buttonEntries["xMin"] ->  SetNumber( h["diff"] -> GetXaxis() -> GetXmin() );
+        if(buttonEntries["xMax"] -> GetNumber() == -1) buttonEntries["xMax"] ->  SetNumber( h["diff"] -> GetXaxis() -> GetXmax() );
+        if(buttonEntries["yMin"] -> GetNumber() == -1) buttonEntries["yMin"] ->  SetNumber( h["diff"] -> GetYaxis() -> GetXmin() );
+        if(buttonEntries["yMax"] -> GetNumber() == -1) buttonEntries["yMax"] ->  SetNumber( h["diff"] -> GetYaxis() -> GetXmax() );
+        if(buttonEntries["zMin"] -> GetNumber() == -1) buttonEntries["zMin"] ->  SetNumber( h["diff"] -> GetZaxis() -> GetXmin() );
+        if(buttonEntries["zMax"] -> GetNumber() == -1) buttonEntries["zMax"] ->  SetNumber( h["diff"] -> GetZaxis() -> GetXmax() );
+        h["diff"] -> GetXaxis() -> SetRangeUser( buttonEntries["xMin"] -> GetNumber(), buttonEntries["xMax"] -> GetNumber() );
+        h["diff"] -> GetYaxis() -> SetRangeUser( buttonEntries["yMin"] -> GetNumber(), buttonEntries["yMax"] -> GetNumber() );
+        h["diff"] -> GetZaxis() -> SetRangeUser( buttonEntries["zMin"] -> GetNumber(), buttonEntries["zMax"] -> GetNumber() );
+
+        canvas["diff"] -> GetCanvas() -> Update();
+    }
 
 public:
     MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h);
@@ -98,6 +115,7 @@ public:
         h["diff"] -> Divide(h["observed"]);
         drawCanvas("diff");
         h["observed"] -> Draw("cont1same");
+        setFrameDiff();
     }
 
     void drawTabSlice(){
@@ -105,7 +123,6 @@ public:
         //stProj1dRatio.clear();
         int bin = slicedBinNumberButton -> GetNumberEntry() -> GetIntNumber();
         stProj1d = new Stack(Form("rig : [%f, %f]", h["observed"] -> GetXaxis() -> GetBinLowEdge(bin), h["observed"] -> GetXaxis() -> GetBinLowEdge(bin+1)));
-        std::cout << "bin : " << bin << std::endl;
 
         for(auto &name: {"observed", "predicted"}){
             h1d[name] = h[name] -> ProjectionY(Form("%s_proj_bin%i",name,bin), bin,bin+1);
@@ -125,6 +142,7 @@ public:
         stCounts = new Stack("counts");
         stRatio = new Stack("ratio d/p");
         for(int i = 0;i<point.fluxP.size();i++){
+            std::cout << "flux : " << i << ", P: " << point.fluxP[i] << ", D: " << point.fluxD[i] << std::endl;
             gr["proton"] -> SetPoint(i, model.getRgdtBinsT()[i], point.fluxP[i]);
             gr["deuton"] -> SetPoint(i, model.getRgdtBinsT()[i], point.fluxD[i]);
             gr["d/p"] -> SetPoint(i, model.getRgdtBinsT()[i], point.fluxD[i]/point.fluxP[i]);
@@ -173,6 +191,14 @@ public:
         logz = !logz;
         fCanvas->Update();
         canvas["observed"]->GetCanvas()->Update();
+    }
+
+    void DoLogYSlice() {
+        static bool logy = false;
+        canvas["slicePerRigBin"] -> GetCanvas() -> SetLogy(!logy);
+        canvas["slicePerRigBin"] -> GetCanvas() -> Update();
+
+        logy = !logy;
     }
     
     TGVerticalFrame * observedMatrixFrame(TGHorizontalFrame* fr);

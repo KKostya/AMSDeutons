@@ -194,7 +194,7 @@ private:
     std::map< TObject*, TLegendEntry* > mapLegEntry;
     std::pair<double, double> limitsX;
     std::pair<double, double> limitsY;
-  
+
     static std::map< std::string, int> canvasNameNumberOfInstance;
     bool _displayLegend;
 

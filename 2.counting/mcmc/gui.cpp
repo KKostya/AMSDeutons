@@ -2,7 +2,7 @@
 
 
 MyMainFrame::MyMainFrame(const TGWindow *p,UInt_t w,UInt_t h)
-    : nGenBins(19),
+    : nGenBins(18),
       TGMainFrame(p,w,h, kHorizontalFrame),
       model(nGenBins,"tofh"),
       rightMargin(0.2),
@@ -129,7 +129,18 @@ void MyMainFrame::addDiff(){
 
     TGHorizontalFrame* fr = AddTabFrame("Tab diff");
     addHistoFrame("diff", fr);
+
+    TGVerticalFrame *vframe=new TGVerticalFrame(fr, 20,20);
+    
+    for(auto &button: {"xMin", "xMax", "yMin", "yMax", "zMin", "zMax"}){
+        buttonEntries[button] = new TGNumberEntry(vframe, -1, 10, -1, TGNumberFormat::kNESRealThree);
+        buttonEntries[button] -> Connect("ValueSet(Long_t)", "MyMainFrame", this, "drawTabDiff()");
+        (buttonEntries[button] -> GetNumberEntry())->Connect("ReturnPressed()", "MyMainFrame", this, "drawTabDiff()");
+        vframe -> AddFrame(buttonEntries[button]);
+    }
+    fr ->  AddFrame(vframe);
 }
+
 
 void MyMainFrame::addSlicePerRigBin(){
     TGHorizontalFrame* fr = AddTabFrame("Tab slice");
@@ -137,15 +148,21 @@ void MyMainFrame::addSlicePerRigBin(){
     addHistoFrame("slicePerRigBinRatio", fr);
 
     TGVerticalFrame *vframe=new TGVerticalFrame(fr, 20,20);
+
     slicedBinNumberButton = new TGNumberEntry(vframe, 20, 10, -1, TGNumberFormat::kNESInteger);
     slicedBinNumberButton -> Connect("ValueSet(Long_t)", "MyMainFrame", this, "drawTabSlice()");
     (slicedBinNumberButton -> GetNumberEntry())->Connect("ReturnPressed()", "MyMainFrame", this, "drawTabSlice()");    
     vframe -> AddFrame(slicedBinNumberButton);
+
+    TGCheckButton *logButton = new TGCheckButton(vframe,"&LogY");
+    logButton->Connect("Clicked()","MyMainFrame",this,"DoLogYSlice()");
+    vframe -> AddFrame(logButton);
+
     fr ->  AddFrame(vframe);
 }
 
 void MyMainFrame::addCounts(){
-    TGHorizontalFrame* fr = AddTabFrame("Tab slice");
+    TGHorizontalFrame* fr = AddTabFrame("Tab counts");
     addHistoFrame("counts", fr);
     addHistoFrame("countsRatio", fr);
 }
