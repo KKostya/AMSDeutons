@@ -1,8 +1,8 @@
 INCLUDE=-I./utils -I../../utils/include -I.
-LIBS=`root-config --cflags --libs | sed 's/-lPhysics//g' | sed 's/-lGraf3d//g' | sed 's/-lPostscript//g' ` -lMathMore -L../../utils/lib
+LIBS=`root-config --cflags --libs | sed 's/-lPhysics//g' | sed 's/-lGraf3d//g' | sed 's/-lPostscript//g' ` -lMathMore -L. -lpd_model -L../../utils/lib -lGeneralUtils
 #LIBS=`root-config --cflags --libs`
 OPTIMIZATION=-O3
-CXXFLAGS=-Wall -pedantic -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter\
+CXXFLAGS=-std=c++11 -Wall -pedantic -Wno-sign-compare -Wno-unused-variable -Wno-unused-parameter\
     -pedantic-errors -Wextra -Wcast-align \
     -Wcast-qual  -Wchar-subscripts  -Wcomment \
     -Wdisabled-optimization \
@@ -27,14 +27,14 @@ CXXFLAGS=-Wall -pedantic -Wno-sign-compare -Wno-unused-variable -Wno-unused-para
 
 all: mcmc
 
-mcmc:	mcmc.cpp libpd_model.so generalUtils.o
-	$(CXX) ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} $(LIBS) $^ -o mcmc -std=c++11
+mcmc:	mcmc.cpp libpd_model.so ../../utils/lib/libGeneralUtils.so
+	$(CXX) ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} $(LIBS) mcmc.cpp -o mcmc 
+
+../../utils/lib/libGeneralUtils.so:
+	make --directory=../../utils
 
 reader:	reader.cpp
 	$(CXX) ${OPTIMIZATION} -std=c++11  -L${amsUtils}/lib ${INCLUDE} reader.cpp -o reader  ${LIBS} -lRootUtils  -lStack -lGeneralUtils
-
-generalUtils.o: utils/generalUtils.cpp utils/generalUtils.hpp 
-	$(CXX) ${OPTIMIZATION} ${INCLUDE} -c $< -std=c++11 
 
 libpd_model.so: pd_model.o
 	$(CXX) -shared $< -o $@ 
@@ -42,10 +42,10 @@ libpd_model.so: pd_model.o
 pd_model.o: pd_model.cpp  pd_model.hpp
 	$(CXX) ${OPTIMIZATION} $(CXXFLAGS) ${INCLUDE} -c -fPIC $< -std=c++11 
 
-test_matrix: tests/test_matrix.cpp utils/Matrix.hpp  generalUtils.o
+test_matrix: tests/test_matrix.cpp utils/Matrix.hpp
 	$(CXX) ${INCLUDE} $(CXXFLAGS) -o $@ $< -std=c++11 
 
-test_model: tests/test_model.cpp pd_model.o generalUtils.o
+test_model: tests/test_model.cpp pd_model.o
 	$(CXX) ${INCLUDE} $(CXXFLAGS) -o $@ $^ -std=c++11
 
 gui: gui.cpp gui.hpp libpd_model.so

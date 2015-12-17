@@ -12,7 +12,7 @@
 #include <cstring>
 #include <vector>
 
-#include "utils/generalUtils.hpp"
+#include "generalUtils.hpp"
 #include "realisticToyModel.hpp"
 #include "ProposalFunction.hpp"
 
