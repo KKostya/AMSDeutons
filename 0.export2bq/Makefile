@@ -12,13 +12,17 @@ OBJECTS=$(EXEC:%=./%.o)
 
 
 ### Options
-LIBS	      := -L../utils/lib -lRootUtils -lGeneralUtils
+AMSROOTLIBS   :=$(AMSWD)/include # amschain.h
+AMSSTATICLIBS := -L$(AMSWD)/lib/linuxx8664gcc5.34 -lntuple_slc6_PG_dynamic
+LIBS	      := -L../utils/lib -lRootUtils -lGeneralUtils $(shell cernlib mathlib)
 INCLUDES      := -I. -Iselections/ -I$(AMSROOTLIBS) -Iinclude/ -I../utils/include
 DEBUG	      := -O3
 
 #Ca va chier dans le compilo
 ROOTCFG  := root-config
-CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-write-strings #-wd3180 # TH1F...
+CXX      :=$(shell $(ROOTCFG) --cxx)   #g++
+CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-write-strings # TH1F...
+ROOTLIBS :=$(shell $(ROOTCFG) --libs) -lTMVA -lNetx -lNet -lRFIO
 
 
 #$?  List of dependencies changed more recently than current target.
@@ -39,18 +43,15 @@ selections/selections.a:
 utils:
 	make --directory=../utils
 
-bin/to_root: to_root.cpp
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $(ROOTLIBS) $^
-
 $(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@  dst.o $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) selections/selections.a -lDstAmsBinary
 
 
-$(OBJECTS): $(SRC) $(HEADER)
-	make -B gitversion.hpp
+$(OBJECTS): $(SRC) $(HEADER) gitversion.hpp
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
 
 clean:
 	rm -rf $(OBJECTS) bin/dst
-	rm -f selections/selections.a selections/*.o
+	rm -f selections/selections.a
 	rm -f gitversion.hpp
+	rm -f ../utils/lib/libGeneralUtils.so
