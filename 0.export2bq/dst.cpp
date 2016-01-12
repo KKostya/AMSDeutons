@@ -57,6 +57,7 @@ Dst::Selections Dst::selections = {
         {"ringBetaCons", ringBetaCons},
         {"ringNoNaFBorder", ringNoNaFBorder}
 
+
     };
 
 void Dst::registerVariables() {
@@ -124,20 +125,20 @@ void Dst::registerVariables() {
         add<float>(Form("GenDir%i",iCoo), [this, iCoo](){return mc ? mc -> Dir[iCoo]  : -999;});
     }    
 
-    add<double>("DistanceTOF_P",       LAMBDA( distanceMinimizer -> protonDists.UTOF;      ));
-    add<double>("DistanceTRD_P",       LAMBDA( distanceMinimizer -> protonDists.LTOF;      ));
-    add<double>("DistanceTracker_P",   LAMBDA( distanceMinimizer -> protonDists.Track;    ));
-    add<double>("DistanceBeta_P",      LAMBDA( distanceMinimizer -> protonDists.Beta;     ));
-    add<double>("DistanceRig_P",       LAMBDA( distanceMinimizer -> protonDists.Rig;      ));
-    add<double>("DistanceTotal_P",     LAMBDA( distanceMinimizer -> protonDists.Total;    ));
+    add<double>("DistanceUTOF_P",      LAMBDA( distanceMinimizer -> protonDists.UTOF;  ));
+    add<double>("DistanceLTOF_P",      LAMBDA( distanceMinimizer -> protonDists.LTOF;  ));
+    add<double>("DistanceTracker_P",   LAMBDA( distanceMinimizer -> protonDists.Track; ));
+    add<double>("DistanceBeta_P",      LAMBDA( distanceMinimizer -> protonDists.Beta;  ));
+    add<double>("DistanceRig_P",       LAMBDA( distanceMinimizer -> protonDists.Rig;   ));
+    add<double>("DistanceTotal_P",     LAMBDA( distanceMinimizer -> protonDists.Total; ));
     
+    add<double>("DistanceTOF_D",       LAMBDA( distanceMinimizer -> deutonDists.UTOF;  ));
+    add<double>("DistanceTRD_D",       LAMBDA( distanceMinimizer -> deutonDists.LTOF;  ));
+    add<double>("DistanceTracker_D",   LAMBDA( distanceMinimizer -> deutonDists.Track; ));
+    add<double>("DistanceBeta_D",      LAMBDA( distanceMinimizer -> deutonDists.Beta;  ));
+    add<double>("DistanceRig_D",       LAMBDA( distanceMinimizer -> deutonDists.Rig;   ));
+    add<double>("DistanceTotal_D",     LAMBDA( distanceMinimizer -> deutonDists.Total; ));
     
-    add<double>("DistanceUTOF_D",      LAMBDA( distanceMinimizer -> deutonDists.UTOF;     ));
-    add<double>("DistanceLTRD_D",      LAMBDA( distanceMinimizer -> deutonDists.LTOF;     ));
-    add<double>("DistanceTracker_D",   LAMBDA( distanceMinimizer -> deutonDists.Track;    ));
-    add<double>("DistanceBeta_D",      LAMBDA( distanceMinimizer -> deutonDists.Beta;     ));
-    add<double>("DistanceRig_P",       LAMBDA( distanceMinimizer -> deutonDists.Rig;      ));
-    add<double>("DistanceTotal_D",     LAMBDA( distanceMinimizer -> deutonDists.Total;    ));    
     
 
     variables.push_back(new Container<unsigned long long>("selStatus", [this](){
@@ -309,7 +310,6 @@ int main(int argc, char **argv){
     t.setMaxEntries(entries);
     t.setOutFileType(outFileType);
     if(!outFname.empty()) t.setOutputFileName(outFname);
-
     t.go();
 
     return 0;
