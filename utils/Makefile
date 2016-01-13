@@ -1,7 +1,7 @@
 # Makefile template for shared library
 
 ### Options
-INCLUDES      := -Iinclude
+INCLUDES      := -Iinclude -I$(AMSWD)/include
 ROOT_INCLUDES := -I$(AMSROOTLIBS)
 DEBUG	      := -O3
 

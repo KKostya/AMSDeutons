@@ -305,6 +305,7 @@ public:
 				distance.Track = 1000000;
 				distance.Beta	 = 1000000;
 				distance.Rig   = 1000000;
+				distance.Total = 1000000;
 
 				//Checking that we're good
 				if (rgdtMeasured  <= 0) return distance;
@@ -344,8 +345,8 @@ public:
 
 						if(CurrentDist	 < distance.Total)	 {
 							distance.Total = CurrentDist;
-							distance.Beta	 = betaDist;
-							distance.Rig 	 = rgdtDist;
+							distance.Beta  = betaDist;
+							distance.Rig   = rgdtDist;
 							distance.Track = etrkDist;
 							distance.UTOF  = etofuDist;
 							distance.LTOF  = etoflDist;
@@ -354,7 +355,15 @@ public:
 						else DR++;
 						
 					
-						if(DR > 25)	break;
+						/*if(DR > 25)	{
+							cout 
+								<< "  " << rgdtTrue
+								<< "  " << betaTrue
+								<< "  " << distance.Total
+								<< "  " << distance.Rig
+								<< endl;
+							break;
+						}*/
 
 						
 				}
