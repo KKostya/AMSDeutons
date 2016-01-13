@@ -355,15 +355,15 @@ public:
 						else DR++;
 						
 					
-						/*if(DR > 25)	{
-							cout 
+						if(DR > 25)	{
+							/*cout 
 								<< "  " << rgdtTrue
 								<< "  " << betaTrue
 								<< "  " << distance.Total
 								<< "  " << distance.Rig
-								<< endl;
+								<< endl;*/
 							break;
-						}*/
+						}
 
 						
 				}
