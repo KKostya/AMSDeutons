@@ -1,6 +1,6 @@
 # Change the two first lines
 
-EXEC = dst
+EXEC = dst 
 ADDCLASS= 
 
 CLASSES = $(ADDCLASS) $(ADDCLASS:include/%.h=src/%.cpp)
@@ -28,7 +28,7 @@ CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-wri
 #$*  Name of current dependency without extension.
 
 
-all :$(BIN)
+all :$(BIN) bin/to_root
 
 gitversion.hpp: ../.git/HEAD ../.git/index
 	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
@@ -42,9 +42,11 @@ utils:
 $(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@  dst.o $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) selections/selections.a -lDstAmsBinary
 
+bin/to_root: to_root.cpp 
+	$(CXX) $(CXXFLAGS) $(ROOTLIBS) -o $@ $^
 
 $(OBJECTS): $(SRC) $(HEADER) gitversion.hpp
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) $(ROOTLIBS) -o $@ -c $<
 
 clean:
 	rm -rf $(OBJECTS) bin/dst

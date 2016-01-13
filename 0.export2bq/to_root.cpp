@@ -10,9 +10,6 @@
 #include <TTree.h>
 #include <TLeafD.h>
 
-
-
-
 void MakeFile(const std::string & fname)
 {
     // Open ROOT and create a tree
@@ -66,17 +63,21 @@ std::map<std::string, std::string> rootTypeKeys = {
 
 int main(int argc, char **argv)
 {
+    if (argc==1){
+        std::cout
+            << "\n\nUsage:"
+            << "\n\t-i: input dirctory (produced by dst program)\n"
+            << "\n\t-o: output root file name\n"
+            << std::endl;
+        exit(-1);
+    }
+
     int c;
     std::string outFname, indirName;
     while((c = getopt(argc, argv, "o:i:")) != -1) {
         if(c == 'o') outFname  = std::string(optarg);
         if(c == 'i') indirName = std::string(optarg);
     }
-
-    std::cout << outFname <<  "  " << indirName << "\n";
-    
-    if(  outFname == "")  outFname = "test.root";
-    if( indirName == "") indirName = "test";
 
     MakeFile(outFname);
 
