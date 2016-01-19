@@ -161,7 +161,11 @@ double ETOFD[30]={9.42785,8.40718,7.59028,6.93065,6.38188,5.91976,5.50794,5.1413
 
 
 double weightedDiff(double xTrue, double xMeasured, double sigma)
-{ return (xTrue - xMeasured) / (pow(xTrue,2) * sigma); }
+   { return (xTrue - xMeasured) / (pow(xTrue,2) * sigma); }
+
+double weightedDiffSq(double xTrue, double xMeasured, double sigma)
+   { return pow(weightedDiff( xTrue,  xMeasured, sigma), 2) ; }
+
 
 
 // Structure for distance variables 
@@ -332,15 +336,15 @@ public:
 						double etoflTrue = EdepTOFUbeta -> Eval(betaTrue);
 
 						// Computing the 5 weighted distances
-						double rgdtDist  = weightedDiff(rgdtTrue, rgdtMeasured, sigma_rgdt->Eval(rgdtTrue));
-						double betaDist  = weightedDiff(betaTrue, betaMeasured, sigma_beta->Eval(betaTrue));
-						
-						double etofuDist = weightedDiff(etofuTrue, etofuMeasured,    sigma_etofu->Eval(betaTrue));
-						double etoflDist = weightedDiff(etoflTrue, etoflMeasured,    sigma_etofl->Eval(betaTrue));
-						double etrkDist  = weightedDiff(etrkTrue, etrkMeasured,     sigma_etrk ->Eval(betaTrue));
+						double rgdtDist  = weightedDiffSq(rgdtTrue, rgdtMeasured, sigma_rgdt->Eval(rgdtTrue));
+						double betaDist  = weightedDiffSq(betaTrue, betaMeasured, sigma_beta->Eval(betaTrue));
+						                               
+						double etofuDist = weightedDiffSq(etofuTrue, etofuMeasured,   sigma_etofu->Eval(betaTrue));
+						double etoflDist = weightedDiffSq(etoflTrue, etoflMeasured,   sigma_etofl->Eval(betaTrue));
+						double etrkDist  = weightedDiffSq(etrkTrue, etrkMeasured,     sigma_etrk ->Eval(betaTrue));
 						
 						// 5D-distance 
-						double CurrentDist = pow ( pow(rgdtDist,2) + pow(betaDist,2) + pow(etofuDist,2) + pow(etoflDist,2) + pow(etrkDist,2), 0.5);
+						double CurrentDist = pow ( rgdtDist + betaDist + etofuDist + etoflDist + etrkDist, 0.5);
 
 
 						if(CurrentDist	 < distance.Total)	 {
