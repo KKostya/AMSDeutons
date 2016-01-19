@@ -18,7 +18,7 @@ setenv WORKDIR /afs/cern.ch/work/f/fdimicco/private/Dimiccoli/Compiled/
 
 chmod +x \$WORKDIR/lsfdati/lsfDati$j.tcsh
 
-bsub -q 1nw -o \$WORKDIR/lsfdati/lsfDati$j.out -e \$WORKDIR/err/lsfDati$j.err \$WORKDIR/lsfdati/lsfDati$j.tcsh >>\$WORKDIR/lsfdati/lsfDati$j.log\n";
+bsub -q 1nd -o \$WORKDIR/lsfdati/lsfDati$j.out \$WORKDIR/lsfdati/lsfDati$j.tcsh >>\$WORKDIR/lsfdati/lsfDati$j.log\n";
 
 close (OUT);
 }

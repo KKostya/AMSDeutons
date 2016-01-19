@@ -303,10 +303,10 @@ int main(int argc, char * argv[]){
 			Level1R * trig=ev->pLevel1(0);
 			ev->SetDefaultMCTuningParameters();
 			if(ev&&trig){
-				if((trig->PhysBPatt & 1) && !((trig->PhysBPatt & 2) )) Unbias =1;
-				else Unbias=0;
-			}
-			if (ev==NULL) break;
+                                        if(trig->PhysBPatt == 0) Unbias =1;
+                                        else Unbias=0;
+                                }
+			//for(int k=0;k<8;k++) cout<<((trig->PhysBPatt>>k)&1)<<" "; cout<<endl;
 			Momento_gen=ev->pMCEventg(0)->Momentum;	
 			//Massa_gen=0.938;//3.725;//1.857;//+5.11e-6;//3.725;//0.938;
 			Massa_gen=Massa_gen;
@@ -331,7 +331,6 @@ int main(int argc, char * argv[]){
 			if(nTrTracks==1) CUTMASK=CUTMASK|(1<<7);
 			if(MinTOF[1]) CUTMASK=CUTMASK|(1<<8);
                         if(GolTOF[1]) CUTMASK=CUTMASK|(1<<9);
-			
 			for(int i=0;i<9;i++){trtot_edep[i]=0;trtrack_edep[i]=0;}
 			if(minimumbiasTRACKER(ev,3)){
 

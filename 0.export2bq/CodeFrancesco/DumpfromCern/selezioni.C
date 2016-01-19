@@ -132,8 +132,8 @@ void minimumbiasTOF(AMSEventR *ev, bool n[]){
         }
     }
     for(int i=0;i<4;i++) if (goodlayer[i]) c++;
-    if(c>=3) n[0]=true;
-    if(c>3) n[1]=true;	
+    if(c>=3) {n[0]=true;}
+    if(c>3) {n[1]=true;}
     if(!(ev->pBeta(0))||!(ev->pBeta(0)->Pattern<5)||!(ev->pBeta(0)->Beta>0.3)||!(ev->pBetaH(0))) {n[0]=false;n[1]=false;}
     return ;
 }
@@ -241,8 +241,8 @@ void goldenTOF(AMSEventR *ev,int s,int fit,bool m[])
     
     for(int i=0; i<4; i++)
         if(goodlayer[i]) c++;
-    if(c>=3) m[0]=true;
-    if(c>3) m[1]=true;	
+    if(c>=3) {m[0]=true;}
+    if(c>3) {m[1]=true;}	
     return;
 }
 

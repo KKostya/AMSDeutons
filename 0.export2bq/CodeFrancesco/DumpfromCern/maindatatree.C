@@ -163,14 +163,14 @@ int main(int argc, char * argv[])
 			ch= new AMSChain;
 			string ARGV(argv[1]);
 			int INDX=atoi(argv[1]);
-			for(int i=(int)3*INDX;i<(int)3*(INDX+1);i++){	
+			for(int i=(int)2*INDX;i<(int)2*(INDX+1);i++){	
 				string indirizzo="root://eosams.cern.ch///eos/ams/Data/AMS02/2014/"+tipo+"/"+energia+"/"+rootpla[i];
 				std::cout<<"Processing : "<<indirizzo<<endl;
 				ch->Add(indirizzo.c_str());
 			}
 
 
-			string istog= "/afs/cern.ch/user/f/fdimicco/Work/Dimiccoli/Compiled/istogrammidati/"+rootpla[(int)(3*INDX)];
+			string istog= "/afs/cern.ch/user/f/fdimicco/Work/Dimiccoli/Compiled/istogrammidati/"+rootpla[(int)(2*INDX)];
 			string *file=&istog;
 
 			File = new TFile(istog.c_str(), "RECREATE");
@@ -271,7 +271,7 @@ int main(int argc, char * argv[])
 			TkDBc::UseFinal();
 
 
-			for(int ii=770000;ii<entries;ii++)
+			for(int ii=0;ii<entries;ii++)
 			{ 
 				if (contaeventi>entries) break;
 				AMSEventR* ev=ch->GetEvent();

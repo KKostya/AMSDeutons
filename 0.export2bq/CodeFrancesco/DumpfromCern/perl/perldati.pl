@@ -14,7 +14,7 @@ print $num_rootuple."\n";
   print OUT "std::string tipo=\"ISS.B950\";\n";
   print OUT "std::string energia=\"pass6\";\n";
   print OUT "std::string rootpla[]={\n";
-  for ($j=0; $j<($num_rootuple)/2 ; $j++){
+  for ($j=0; $j<($num_rootuple/2) ; $j++){
       print OUT  "\"$rootuple[$j]\",\n";
 	}
   print OUT "};";	
