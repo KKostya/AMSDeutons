@@ -1,6 +1,6 @@
 # Change the two first lines
 
-EXEC = dst
+EXEC = dst 
 ADDCLASS= 
 
 CLASSES = $(ADDCLASS) $(ADDCLASS:include/%.h=src/%.cpp)
@@ -12,13 +12,13 @@ OBJECTS=$(EXEC:%=./%.o)
 
 
 ### Options
-LIBS	      := -L../utils/lib -lRootUtils -lGeneralUtils
+LIBS	      := -L../utils/lib -lRootUtils -lGeneralUtils $(shell cernlib mathlib)
 INCLUDES      := -I. -Iselections/ -I$(AMSROOTLIBS) -Iinclude/ -I../utils/include
 DEBUG	      := -O3
 
 #Ca va chier dans le compilo
 ROOTCFG  := root-config
-CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-write-strings #-wd3180 # TH1F...
+CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-write-strings # TH1F...
 
 
 #$?  List of dependencies changed more recently than current target.
@@ -28,7 +28,7 @@ CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-wri
 #$*  Name of current dependency without extension.
 
 
-all :$(BIN)
+all :$(BIN) bin/to_root
 
 gitversion.hpp: ../.git/HEAD ../.git/index
 	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
@@ -39,18 +39,17 @@ selections/selections.a:
 utils:
 	make --directory=../utils
 
-bin/to_root: to_root.cpp
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ $(ROOTLIBS) $^
-
 $(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils
 	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@  dst.o $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) selections/selections.a -lDstAmsBinary
 
+bin/to_root: to_root.cpp 
+	$(CXX) $(CXXFLAGS) $(ROOTLIBS) -o $@ $^
 
-$(OBJECTS): $(SRC) $(HEADER)
-	make -B gitversion.hpp
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@ -c $<
+$(OBJECTS): $(SRC) $(HEADER) gitversion.hpp
+	$(CXX)  $(CXXFLAGS) $(INCLUDES) $(ROOTLIBS) -o $@ -c $<
 
 clean:
 	rm -rf $(OBJECTS) bin/dst
-	rm -f selections/selections.a selections/*.o
+	rm -f selections/selections.a
 	rm -f gitversion.hpp
+	rm -f ../utils/lib/libGeneralUtils.so
