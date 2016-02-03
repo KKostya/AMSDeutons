@@ -2,6 +2,7 @@
 
 int main(void)
 {
+
     typedef Eigen::Tensor<double, 1>::DimensionPair DimPair;
 
     int NRm = 5;
