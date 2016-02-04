@@ -34,9 +34,17 @@ public:
 
 class Likelihood
 {
-    Model model;
+    Model m;
     Eigen::Tensor<double, 2> data;
-
 public: 
-    Likelihood(Model m) 
+    Likelihood(int NRm, int NBm, int NRt):
+        m( NRm, NBm, NRt), data(NRm, NBm){} 
+
+    double & N(int iRm, int iBm) { return protonP(iRm, iBm, iRt); }
+
+    Model & model() { return m; }
+    double logL()
+    {
+        m.get_lambda()
+    }
 };
