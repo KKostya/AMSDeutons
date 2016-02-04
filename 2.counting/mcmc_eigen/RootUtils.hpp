@@ -22,52 +22,56 @@ template<> struct hist_trait<TH3D>{typedef double type; enum { ndim = 3}; };
 // This thing here is needed because stupid C++ doensn't allow for 
 // partial function template specializaion
 // http://stackoverflow.com/questions/5101516/why-function-template-cannot-be-partially-specialized
+namespace {
 namespace detail {
     template<typename T, int N>
-    struct F { static Eigen::Tensor<T, N> impl();};
+    struct r2t { static Eigen::Tensor<typename hist_trait<T>::type, N> impl();};
 
     template<typename T>
-    struct F<T, 1> {
-        static Eigen::Tensor<T, 1> impl(const T & hist) { 
-            int nx = hist.GetNbinsX();
-            Eigen::Tensor<T, 1> result(nx);
-            for(int i=0; i<nx; i++) result(i) = hist.GetBinContent(i);
+    struct r2t<T, 1> {
+        typedef Eigen::Tensor<typename hist_trait<T>::type, 1> TensorType;
+        static TensorType impl(T * hist) { 
+            int nx = hist->GetNbinsX();
+            TensorType result(nx);
+            for(int i=0; i<nx; i++) result(i) = hist->GetBinContent(i);
             return result;
         }
     };
 
     template<typename T>
-    struct F<T, 2> {
-        static Eigen::Tensor<T, 2> impl(const T & hist) { 
-            int nx = hist.GetNbinsX();
-            int ny = hist.GetNbinsY();
-            Eigen::Tensor<T, 2> result(nx, ny);
+    struct r2t<T, 2> {
+        typedef Eigen::Tensor<typename hist_trait<T>::type, 2> TensorType;
+        static TensorType impl(T * hist) { 
+            int nx = hist->GetNbinsX();
+            int ny = hist->GetNbinsY();
+            TensorType result(nx, ny);
             for(int i=0; i<nx; i++) 
                 for(int j=0; j<ny; j++) 
-                    result(i,j) = hist.GetBinContent(i,j);
+                    result(i,j) = hist->GetBinContent(i,j);
             return result;
         }
     };
 
     template<typename T>
-    struct F<T, 3> {
-        static Eigen::Tensor<T, 3> impl(const T & hist) { 
+    struct r2t<T, 3> {
+        typedef Eigen::Tensor<typename hist_trait<T>::type, 3> TensorType;
+        static TensorType impl(T * hist) { 
             int nx = hist.GetNbinsX();
             int ny = hist.GetNbinsY();
             int nz = hist.GetNbinsZ();
-            Eigen::Tensor<T, 3> result(nx, ny);
+            TensorType result(nx, ny);
             for(int i=0; i<nx; i++) 
                 for(int j=0; j<ny; j++) 
                     for(int k=0; k<nz; k++) 
-                        result(i,j,k) = hist.GetBinContent(i,j,k);
+                        result(i,j,k) = hist->GetBinContent(i,j,k);
             return result;
         }
     };
-} 
+}} 
 
 template<typename T>
-Eigen::Tensor< hist_trait<T>::type, hist_trait<T>::ndim > 
-toRoot(const T & hist) { 
-    return detail::F<hist_trait<T>::type, hist_trait<T>::ndim>impl(hist); 
+Eigen::Tensor< typename hist_trait<T>::type, hist_trait<T>::ndim > 
+root_to_tensor(T * hist) { 
+    return detail::r2t<T, hist_trait<T>::ndim>::impl(hist); 
 }
 
