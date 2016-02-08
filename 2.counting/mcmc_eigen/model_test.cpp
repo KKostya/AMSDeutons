@@ -38,18 +38,23 @@ int main(void)
     Eigen::Tensor<double, 1> deutonF(NRt); deutonF(0) =  5; deutonF(1) = 2 ; deutonF(2) = 1;
 
     // Finally, some data 
-    Eigen::Tensor<double, 2> protonP(NRm, NBm);
+    Eigen::Tensor<double, 2> data(NRm, NBm);
 
-    std::vector<double> td {
+    std::vector<double> tt {
         0.0, 0.0, 0.1, 0.0, 0.0, 
         0.0, 0.6, 0.5, 0.3, 0.1, 
         1.5, 3.1, 1.3, 1.3, 0.7, 
         7.0, 2.0, 3.1, 0.7, 0.1, 
         1.0, 0.0, 0.5, 0.0, 0.0, 
     };
-    for(int i = 0; i < td.size(); i++) data(i/NBm,i%NBm) = td[i];
+    for(int i = 0; i < tt.size(); i++) data(i/NBm,i%NBm) = tt[i];
+
+    data = data + 0.1;
+
+    std::cout << data << "\n";
 
     Model model(protonP, deutonP, data);
+    std::cout << model.logL();
 }
 
 

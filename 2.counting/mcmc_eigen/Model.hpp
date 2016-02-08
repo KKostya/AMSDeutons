@@ -18,10 +18,10 @@ public:
 
     Model(const Eigen::Tensor<double, 3> & p, 
           const Eigen::Tensor<double, 3> & d,
-          const Eigen::Tensor<double, 3> & N):
+          const Eigen::Tensor<double, 2> & N):
         protonP(p), protonF(p.dimension(2)),
         deutonP(d), deutonF(d.dimension(2)),
-        data(N)
+            data(N)
     { 
         assert(p.dimension(0) == d.dimension(0));
         assert(p.dimension(1) == d.dimension(1));
@@ -46,22 +46,28 @@ public:
 
     double logL()
     {
-        auto l = lambda();
-        return (l*data.log() - l).sum();
+        typedef Eigen::Tensor<double, 1>::DimensionPair DimPair;
+        Eigen::array<DimPair, 1> indexes{{ DimPair(2, 0) }};
+        auto l = protonP.contract(protonF, indexes) + deutonP.contract(deutonF, indexes); 
+        auto z    = l.constant(0);                       // This is needed to cut away the log of zeros
+        auto llog = ( l > z ).select(l.log(), z);        // "select" is the t_if.select(t_then,t_else)
+        Eigen::Tensor<double, 2> ll = data*llog - l;     // Here evaluation is forced
+        Eigen::Tensor<double, 0> qq = ll.sum();          // The sum returns 0-rank tensor. 
+        return qq();
     }
 
-    double gradLogL_protons()
-    {
-        typedef Eigen::Tensor<double, 1>::DimensionPair DimPair;
-        Eigen::array<DimPair, 2> indexes{{ DimPair(0, 0), DimPair(1, 1) }};
-        return (data/lambda() - 1).contract(protonP, indexes);
-    }
-
-    double gradLogL_deutons()
-    {
-        typedef Eigen::Tensor<double, 1>::DimensionPair DimPair;
-        Eigen::array<DimPair, 2> indexes{{ DimPair(0, 0), DimPair(1, 1) }};
-        return (data/lambda() - 1).contract(deutonP, indexes);
-    }
+//    Eigen::Tensor<double, 1> gradLogL_protons()
+//    {
+//        typedef Eigen::Tensor<double, 1>::DimensionPair DimPair;
+//        Eigen::array<DimPair, 2> indexes{{ DimPair(0, 0), DimPair(1, 1) }};
+//        return (data/lambda()-1).contract(protonP, indexes);
+//    }
+//
+//    Eigen::Tensor<double, 1> gradLogL_deutons()
+//    {
+//        typedef Eigen::Tensor<double, 1>::DimensionPair DimPair;
+//        Eigen::array<DimPair, 2> indexes{{ DimPair(0, 0), DimPair(1, 1) }};
+//        return (data/lambda()-1).contract(deutonP, indexes);
+//    }
 
 };
