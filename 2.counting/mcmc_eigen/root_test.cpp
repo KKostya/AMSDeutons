@@ -5,7 +5,6 @@
 #include <Eigen/CXX11/Tensor>
 
 #include "RootUtils.hpp"
-#include "Utils.hpp"
 
 int main(void)
 {
@@ -18,11 +17,11 @@ int main(void)
 
     std::cout << "Without overfow:\n";
     Eigen::Tensor<float,2> t = root_to_tensor(h);
-    dump(t);
+    std::cout << t << "\n";
 
     std::cout << "\nWith overfow:\n";
     Eigen::Tensor<float,2> q = root_to_tensor(h, true);
-    dump(q);
+    std::cout << q << "\n";
 
     std::cout << "\nSum = " << q.sum() << "\n";
     

@@ -2,8 +2,6 @@
 #include <iostream>
 #include <Eigen/CXX11/Tensor>
 
-#include "Utils.hpp"
-
 int main(void)
 {
 
@@ -40,9 +38,9 @@ int main(void)
     std::cout.precision(1);
 
     std::cout << "\nProton resolution matrices \n";
-    dump(protonP);
+    std::cout << protonP << "\n";
     std::cout << "\nDeuton resolution matrices \n";
-    dump(deutonP);
+    std::cout << deutonP << "\n";
 
     // Declaring and filling the two flux vectors
     Eigen::Tensor<double, 1> protonF(NRt); protonF(0) = 10; protonF(1) = 5;  protonF(2) = 1;
@@ -50,11 +48,10 @@ int main(void)
 
     // Printing the vectors 
     std::cout << "\n";
-    std::cout << "Proton  flux = { " << protonF(0) << ", " << protonF(1) << ", " << protonF(2) << "}\n";
-    std::cout << "Deueron flux = { " << deutonF(0) << ", " << deutonF(1) << ", " << deutonF(2) << "}\n";
+    std::cout << "Proton  flux = { " << protonF << "}\n";
+    std::cout << "Deueron flux = { " << deutonF << "}\n";
     std::cout << "\n";
     
-
     // Making two contractions 
     Eigen::array<DimPair, 1> indexes{{ DimPair(2, 0) }};
     Eigen::Tensor<double, 2> protonL = protonP.contract(protonF, indexes);
@@ -65,7 +62,7 @@ int main(void)
 
     //Printing the prediction matrix
     std::cout << "Predicted counts: \n";
-    dump(lambda);
+    std::cout << lambda;
 
     return 0;
 }
