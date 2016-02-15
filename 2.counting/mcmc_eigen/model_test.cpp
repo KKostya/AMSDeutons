@@ -55,15 +55,14 @@ int main(void)
 
     Model model(protonP, deutonP, data);
 
-    model.fluxP() = Eigen::Tensor<double, 1>({10,5,2});
+    Model::FluxType fluxP(3), fluxD(3);
+    fluxP(0) = 10; fluxD(0) = 5;
+    fluxP(1) =  5; fluxD(1) = 2;
+    fluxP(2) =  2; fluxD(2) = 1;
 
-    model.fluxP()(0) = 10; model.fluxD()(0) = 5;
-    model.fluxP()(1) =  5; model.fluxD()(1) = 2;
-    model.fluxP()(2) =  2; model.fluxD()(2) = 1;
-
-    std::cout << model.logL() << "\n\n";
-    std::cout << model.gradLogL_protons() << "\n\n";
-    std::cout << model.gradLogL_deutons() << "\n\n";
+    std::cout << model.logL(fluxP, fluxD) << "\n\n";
+    std::cout << model.gradLogL_protons(fluxP, fluxD) << "\n\n";
+    std::cout << model.gradLogL_deutons(fluxP, fluxD) << "\n\n";
 }
 
 

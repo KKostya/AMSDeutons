@@ -1,23 +1,25 @@
+#ifndef MODEL_HPP
+#define MODEL_HPP
+
 #include <cassert>
 #include <Eigen/CXX11/Tensor>
 
 class Model
 {
+    // Optimizators are impletmented as some classes inheriting from the Model
+    // In order to have direct access to those tensors -- I make them protected
+protected: 
     Eigen::Tensor<double, 3> protonP;
     Eigen::Tensor<double, 3> deutonP;
 
-    Eigen::Tensor<double, 1> protonF;
-    Eigen::Tensor<double, 1> deutonF;
- 
     Eigen::Tensor<double, 2> data;
 public:
+    typedef Eigen::Tensor<double, 1> FluxType;
 
     Model(const Eigen::Tensor<double, 3> & p, 
           const Eigen::Tensor<double, 3> & d,
           const Eigen::Tensor<double, 2> & N):
-        protonP(p), protonF(p.dimension(2)),
-        deutonP(d), deutonF(d.dimension(2)),
-           data(N)
+        protonP(p), deutonP(d), data(N)
     { 
         assert(p.dimension(0) == d.dimension(0));
         assert(p.dimension(1) == d.dimension(1));
@@ -29,10 +31,7 @@ public:
     int getNBm() const { return protonP.dimension(1); } 
     int getNRt() const { return protonP.dimension(2); } 
 
-    double & fluxP(int iRt) { return protonF(iRt); }
-    double & fluxD(int iRt) { return deutonF(iRt); }
-
-    Eigen::Tensor<double, 2> lambda()
+    Eigen::Tensor<double, 2> lambda(const FluxType & protonF, const FluxType & deutonF) const
     {
         typedef Eigen::Tensor<double, 1>::DimensionPair DimPair;
         Eigen::array<DimPair, 1> indexes{{ DimPair(2, 0) }};
@@ -40,7 +39,7 @@ public:
                deutonP.contract(deutonF, indexes); 
     }
 
-    double logL()
+    double logL(const FluxType & protonF, const FluxType & deutonF) const
     {
         typedef Eigen::Tensor<double, 1>::DimensionPair DimPair;
         Eigen::array<DimPair, 1> indexes{{ DimPair(2, 0) }};
@@ -52,7 +51,7 @@ public:
         return res();                                    // 0-tensor call to operator() without aruments to get the value
     }
 
-    Eigen::Tensor<double, 1> gradLogL_protons()
+    Eigen::Tensor<double, 1> gradLogL_protons(const FluxType & protonF, const FluxType & deutonF) const
     {
         typedef Eigen::Tensor<double, 1>::DimensionPair DimPair;
         Eigen::array<DimPair, 1> indexesL {{ DimPair(2, 0) }};
@@ -65,7 +64,7 @@ public:
         return ds.contract(protonP, indexesG);
     }
 
-    Eigen::Tensor<double, 1> gradLogL_deutons()
+    Eigen::Tensor<double, 1> gradLogL_deutons(const FluxType & protonF, const FluxType & deutonF)
     {
         typedef Eigen::Tensor<double, 1>::DimensionPair DimPair;
         Eigen::array<DimPair, 1> indexesL {{ DimPair(2, 0) }};
@@ -78,3 +77,5 @@ public:
         return ds.contract(deutonP, indexesG);
     }
 };
+
+#endif
