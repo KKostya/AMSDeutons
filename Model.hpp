@@ -1,6 +1,7 @@
 #ifndef MODEL_HPP
 #define MODEL_HPP
 
+#include <iostream>
 #include <cassert>
 #include <Eigen/CXX11/Tensor>
 
@@ -76,6 +77,27 @@ public:
         Eigen::array<DimPair, 2> indexesG {{ DimPair(0, 0), DimPair(1, 1) }};
         return ds.contract(deutonP, indexesG);
     }
+
+    void NormalizeTemplates()
+    {
+        for(int i = 0; i < protonP.dimension(2); i++ )
+        {
+            Eigen::Tensor<double,0> d = protonP.chip(i, 2).sum();
+            //std::cout << "#TP = " << i << " sum= " << d() << "\n";
+            if( d() == 0 ) continue;
+            protonP.chip(i,2) = protonP.chip(i, 2) * protonP.chip(i, 2).constant(1/d());
+        }
+        for(int i = 0; i < deutonP.dimension(2); i++ )
+        {
+            Eigen::Tensor<double,0> d = deutonP.chip(i, 2).sum();
+            //std::cout << "#TD = " << i << " sum= " << d() << "\n";
+            if( d() == 0 ) continue;
+            deutonP.chip(i,2) = deutonP.chip(i, 2) * deutonP.chip(i, 2).constant(1/d());
+        }
+    }
+
+    Eigen::Tensor<double, 2> getProtonTemplate(int n) { return protonP.chip(n, 2); }
+    Eigen::Tensor<double, 2> getDeutonTemplate(int n) { return deutonP.chip(n, 2); }
 };
 
 #endif

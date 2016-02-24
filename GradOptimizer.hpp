@@ -15,7 +15,7 @@ class GradOptimizer: public Model
 public:
     GradOptimizer(const Model & m, const FluxType & fluxP, const FluxType & fluxD):
         Model(m), protonF(fluxP), deutonF(fluxD), 
-        epsilon(0.001), iterations(100000), verbose(false) { }
+        epsilon(0.001), iterations(10), verbose(true) { }
 
     void run()
     {
@@ -33,10 +33,10 @@ public:
             protonF += epsilonP * gradLogL_protons(protonF,deutonF);
             deutonF += epsilonD * gradLogL_deutons(protonF,deutonF);
 
-            if(verbose && i % 1000 == 0) {
-                std::cout << "Current logL = " << logL(protonF, deutonF) << "\n";
-                std::cout << "P = " << protonF << "\n";
-                std::cout << "D = " << deutonF << "\n";
+            if(verbose) {
+                std::cout << "I = " << i << " Current logL = " << logL(protonF, deutonF) << "\n";
+                //std::cout << "P = " << protonF << "\n";
+                //std::cout << "D = " << deutonF << "\n";
             }
         }
         std::cout << "finished.\n";

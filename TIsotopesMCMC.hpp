@@ -17,6 +17,9 @@ public:
     TH1D * GetProtonFlux();
     TH1D * GetDeutonFlux();
     double GetLogLikelihood(TH1D * p, TH1D * d);
+    void NormalizeTemplates();
+    TH2D * GetProtonTemplate(int);
+    TH2D * GetDeutonTemplate(int);
     ClassDef(TIsotopesMCMC,1)  
 };
 #endif
