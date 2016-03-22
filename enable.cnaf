@@ -1,0 +1,2 @@
+source /opt/rh/devtoolset-3/enable
+source /storage/gpfs_ams/ams/users/kostya/VirtualEnv/install/bin/thisroot.sh

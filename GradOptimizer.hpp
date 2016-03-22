@@ -12,6 +12,7 @@ class GradOptimizer: public Model
     bool verbose;
     FluxType protonF;
     FluxType deutonF;
+
 public:
     GradOptimizer(const Model & m, const FluxType & fluxP, const FluxType & fluxD):
         Model(m), protonF(fluxP), deutonF(fluxD), 
@@ -41,6 +42,9 @@ public:
         }
         std::cout << "finished.\n";
     }
+
+    void SetIterations(int i) { iterations = i; }
+    void SetEpsilon(double e) { epsilon = e; }
 
     const FluxType & GetProtonFlux()   const { return protonF; }
     const FluxType & GetDeuteronFlux() const { return deutonF; }
