@@ -55,8 +55,8 @@ public:
         Eigen::Tensor<double, 1> fluxP = root_to_tensor(protonF);
         Eigen::Tensor<double, 1> fluxD = root_to_tensor(deutonF);
 
-        GradOptimizer opt(*model, fluxP.setConstant(1), fluxD.setConstant(1));
-        opt.run();
+        GradOptimizer opt(*model, fluxP, fluxD);
+        opt.run(eps, nsteps);
 
         tensor_to_root(opt.GetProtonFlux(),   protonF);
         tensor_to_root(opt.GetDeuteronFlux(), deutonF);
@@ -73,6 +73,19 @@ public:
         tensor_to_root(model->getDeutonTemplate(n), ret);
         return ret;
     }
+
+    TH2D * GetPredicted() {
+        if(!performed_fit) Run(nsteps, eps);
+        TH2D * ret = new TH2D("","",model->getNRm(), minX, maxX, model->getNBm(), minY, maxY);
+
+        Eigen::Tensor<double, 1> fluxP = root_to_tensor(protonF);
+        Eigen::Tensor<double, 1> fluxD = root_to_tensor(deutonF);
+
+        tensor_to_root(model->lambda(fluxP, fluxD), ret);
+
+        return ret;
+
+    }
 };
 
 
@@ -83,11 +96,14 @@ TIsotopesMCMC::TIsotopesMCMC(TH3D * protonP, TH3D * deutonP, TH2D * data)
 TIsotopesMCMC::~TIsotopesMCMC(){ delete pImpl; }
 
 double TIsotopesMCMC::GetLogLikelihood(TH1D * p, TH1D * d){ return pImpl->GetLogLikelihood(p,d); }
+
+
 TH1D * TIsotopesMCMC::GetProtonFlux()     { return pImpl->GetProtonFlux(); }
 TH1D * TIsotopesMCMC::GetDeutonFlux()     { return pImpl->GetDeutonFlux(); }
 void   TIsotopesMCMC::NormalizeTemplates(){ pImpl->NormalizeTemplates();   }
 void   TIsotopesMCMC::Run(int n, double epsilon){ pImpl->Run(n, epsilon);   }
 TH2D * TIsotopesMCMC::GetProtonTemplate(int n){ return pImpl->GetProtonTemplate(n); }
 TH2D * TIsotopesMCMC::GetDeutonTemplate(int n){ return pImpl->GetDeutonTemplate(n); }
+TH2D * TIsotopesMCMC::GetPredicted(){ return pImpl->GetPredicted();}
 
 ClassImp(TIsotopesMCMC)

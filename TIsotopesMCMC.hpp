@@ -17,6 +17,8 @@ public:
     TH1D * GetProtonFlux();
     TH1D * GetDeutonFlux();
     double GetLogLikelihood(TH1D * p, TH1D * d);
+
+    TH2D * GetPredicted();
     void NormalizeTemplates();
     void Run(int n, double epsilon);
     TH2D * GetProtonTemplate(int);
