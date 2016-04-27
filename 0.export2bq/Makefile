@@ -1,24 +1,9 @@
 # Change the two first lines
 
-EXEC = dst 
-ADDCLASS= 
-
-CLASSES = $(ADDCLASS) $(ADDCLASS:include/%.h=src/%.cpp)
-
-BIN    =$(EXEC:%=bin/%)
-SRC    =$(EXEC:%=./%.cpp)
-HEADER =$(EXEC:%=./%.hpp)
-OBJECTS=$(EXEC:%=./%.o)
-
-
 ### Options
-LIBS	      := -L../utils/lib -lRootUtils -lGeneralUtils $(shell cernlib mathlib)
-INCLUDES      := -I. -Iselections/ -I$(AMSROOTLIBS) -Iinclude/ -I../utils/include
-DEBUG	      := -O3
-
-#Ca va chier dans le compilo
-ROOTCFG  := root-config
-CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-write-strings # TH1F...
+LIBS	      := -L../utils/lib -lRootUtils -lGeneralUtils $(shell root-config --libs) $(AMSLIBso) 
+INCLUDES      := -I. -Iselections/ -I$(AMSWD)/include -Iinclude/ -I../utils/include $(shell root-config --cflags) 
+FLAGS         := -O3 -std=c++11 -D_PGTRACK_ -Wno-write-strings -fPIC
 
 
 #$?  List of dependencies changed more recently than current target.
@@ -28,7 +13,7 @@ CXXFLAGS :=$(DEBUG) $(shell $(ROOTCFG) --cflags) -std=c++11 -D_PGTRACK_ -Wno-wri
 #$*  Name of current dependency without extension.
 
 
-all :$(BIN) bin/to_root
+all :bin/dst bin/to_root
 
 gitversion.hpp: ../.git/HEAD ../.git/index
 	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
@@ -39,14 +24,14 @@ selections/selections.a:
 utils:
 	make --directory=../utils
 
-$(BIN) : $(OBJECTS) $(CLASSES) selections/selections.a utils
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) -o $@  dst.o $(AMSSTATICLIBS) $(ROOTLIBS) $(LIBS) selections/selections.a -lDstAmsBinary
+bin/dst: dst.o selections/selections.a utils
+	$(CXX)  $(FLAGS) $(INCLUDES) -o $@  dst.o $(LIBS) selections/selections.a -lDstAmsBinary
 
 bin/to_root: to_root.cpp 
-	$(CXX) $(CXXFLAGS) $(ROOTLIBS) -o $@ $^
+	$(CXX) $(FLAGS) $(INCLUDES) -o $@ $(LIBS)$^
 
-$(OBJECTS): $(SRC) $(HEADER) gitversion.hpp
-	$(CXX)  $(CXXFLAGS) $(INCLUDES) $(ROOTLIBS) -o $@ -c $<
+dst.o: dst.cpp dst.hpp gitversion.hpp
+	$(CXX) $(FLAGS) $(INCLUDES) -o $@ -c $<
 
 clean:
 	rm -rf $(OBJECTS) bin/dst
